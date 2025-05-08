@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="KLP\KlpMcpServer\Controllers\SseController" class="KLP\KlpMcpServer\Controllers\SseController">
+            <argument type="service" id="klp_mcp_server.server" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
+
+        <service id="KLP\KlpMcpServer\Controllers\MessageController" class="KLP\KlpMcpServer\Controllers\MessageController">
+            <argument type="service" id="klp_mcp_server.server" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" />
+
+        <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.in_memory" />
+        <service id="klp_mcp_server.adapter.in_memory" class="KLP\KlpMcpServer\Transports\SseAdapters\InMemoryAdapter" />
+        <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
+            <argument type="service" id="logger" on-invalid="null" />
+        </service>
+        <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
+            <argument type="string">%klp_mcp_server.default_path%</argument>
+            <argument type="service" id="logger" on-invalid="null" />
+        </service>
+
+        <service id="klp_mcp_server.protocol" class="KLP\KlpMcpServer\Protocol\MCPProtocol">
+            <argument type="service" id="klp_mcp_server.transport.sse" on-invalid="null" />
+        </service>
+        <service id="klp_mcp_server.server" class="KLP\KlpMcpServer\Server\MCPServer">
+            <argument type="service" id="klp_mcp_server.protocol" on-invalid="null" />
+            <argument type="collection">
+                <argument key="name">%klp_mcp_server.server.name%</argument>
+                <argument key="version">%klp_mcp_server.server.version%</argument>
+            </argument>
+        </service>
+    </services>
+
+</container>
