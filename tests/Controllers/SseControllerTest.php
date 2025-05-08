@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class SseControllerTest extends TestCase
 {
     private SseController $controller;
+
     private MCPServerInterface $mockServer;
 
     protected function setUp(): void
@@ -19,7 +20,7 @@ class SseControllerTest extends TestCase
         $this->controller = new SseController($this->mockServer);
     }
 
-    public function testHandleReturnsStreamedResponse(): void
+    public function test_handle_returns_streamed_response(): void
     {
         $request = $this->createMock(Request::class);
 
@@ -33,7 +34,7 @@ class SseControllerTest extends TestCase
         $this->assertEquals('no', $headers->get('X-Accel-Buffering'));
     }
 
-    public function testHandleExecutesServerConnect(): void
+    public function test_handle_executes_server_connect(): void
     {
         $this->mockServer
             ->expects($this->once())

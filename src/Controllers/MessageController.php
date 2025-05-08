@@ -3,15 +3,12 @@
 namespace KLP\KlpMcpServer\Controllers;
 
 use KLP\KlpMcpServer\Server\MCPServer;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class MessageController
 {
-    public function __construct(private readonly MCPServer $server)
-    {
-    }
+    public function __construct(private readonly MCPServer $server) {}
 
     public function handle(Request $request)
     {

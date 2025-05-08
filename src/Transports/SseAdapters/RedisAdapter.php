@@ -33,9 +33,7 @@ final class RedisAdapter implements SseAdapterInterface
 
     public function __construct(
         private readonly ?LoggerInterface $logger
-    )
-    {
-    }
+    ) {}
 
     /**
      * Initialize the adapter with any required configuration
@@ -48,8 +46,8 @@ final class RedisAdapter implements SseAdapterInterface
     {
         try {
             $connection = $config['connection'] ?? 'default';
-            $this->redis = new Redis();
-            $this->redis->connect( 'localhost', 6379 );
+            $this->redis = new Redis;
+            $this->redis->connect('localhost', 6379);
 
             if (isset($config['prefix'])) {
                 $this->keyPrefix = $config['prefix'];

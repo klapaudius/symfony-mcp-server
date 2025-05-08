@@ -18,14 +18,12 @@ use Psr\Log\LoggerInterface;
  */
 final class SseTransport implements TransportInterface
 {
-    public function __construct(private readonly string $defaultPath, private readonly ?LoggerInterface $logger = null)
-    {
-    }
+    public function __construct(private readonly string $defaultPath, private readonly ?LoggerInterface $logger = null) {}
 
     private function getEndpoint(string $sessionId): string
     {
-        return sprintf("/%s/message?sessionId=%s",
-            trim($this->defaultPath,'/'),
+        return sprintf('/%s/message?sessionId=%s',
+            trim($this->defaultPath, '/'),
             $sessionId,
         );
     }
@@ -120,9 +118,9 @@ final class SseTransport implements TransportInterface
         }
 
         // 모든 버퍼 비우기
-//        while (ob_get_level() > 0) {
-//            ob_end_flush();
-//        }
+        //        while (ob_get_level() > 0) {
+        //            ob_end_flush();
+        //        }
 
         echo sprintf('event: %s', $event).PHP_EOL;
         echo sprintf('data: %s', $data).PHP_EOL;

@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Protocol;
 
-
 use Exception;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;

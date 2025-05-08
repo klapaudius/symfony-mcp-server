@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Server;
 
-
 /**
  * Represents the server's capabilities according to the MCP specification.
  * This class defines what features the MCP server supports, such as tools.
@@ -15,9 +14,8 @@ interface ServerCapabilitiesInterface
      * Enables the tools capability for the server instance.
      * Allows specifying optional configuration details for the tools feature.
      *
-     * @param array|null $config Optional configuration data specific to the tools capability.
+     * @param  array|null  $config  Optional configuration data specific to the tools capability.
      *                              Defaults to an empty array if not provided.
-     * @return \KLP\KlpMcpServer\Server\ServerCapabilities
      *
      * @see https://modelcontextprotocol.io/docs/concepts/tools
      */

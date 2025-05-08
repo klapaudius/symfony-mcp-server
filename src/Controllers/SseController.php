@@ -8,9 +8,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SseController
 {
-    public function __construct(private readonly MCPServerInterface $server)
-    {
-    }
+    public function __construct(private readonly MCPServerInterface $server) {}
 
     public function handle(Request $request)
     {

@@ -5,14 +5,13 @@ namespace KLP\KlpMcpServer\Tests\Server;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServer;
-use KLP\KlpMcpServer\Server\ServerCapabilities;
 use KLP\KlpMcpServer\Server\ServerCapabilitiesInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 class MCPServerTest extends TestCase
 {
-    public function testRegisterRequestHandler(): void
+    public function test_register_request_handler(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -31,7 +30,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified
     }
 
-    public function testCreate(): void
+    public function test_create(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -47,7 +46,7 @@ class MCPServerTest extends TestCase
         $this->assertSame(['name' => $name, 'version' => $version], $this->getPrivateProperty($server, 'serverInfo'));
     }
 
-    public function testCreateWithCapabilities(): void
+    public function test_create_with_capabilities(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -70,6 +69,7 @@ class MCPServerTest extends TestCase
         $reflection = new ReflectionClass($object);
         $prop = $reflection->getProperty($property);
         $prop->setAccessible(true);
+
         return $prop->getValue($object);
     }
 }

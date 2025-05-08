@@ -72,9 +72,9 @@ class MakeMcpToolCommand extends Command
         if ($this->confirm('Would you like to automatically register this tool in config/package/klp-mcp-server.yaml?', true)) {
             $this->registerToolInConfig($fullClassName);
         } else {
-            $this->info("Don't forget to register your tool in config/package/klp-mcp-server.yaml:");;
+            $this->info("Don't forget to register your tool in config/package/klp-mcp-server.yaml:");
             $this->comment('    // config/package/klp-mcp-server.yaml');
-            $this->comment("    tools;");
+            $this->comment('    tools;');
             $this->comment('        // other tools...');
             $this->comment("        {$fullClassName}::class,");
         }

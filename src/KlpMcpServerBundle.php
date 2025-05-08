@@ -14,10 +14,10 @@ class KlpMcpServerBundle extends Bundle
     {
         parent::boot();
         $configPath = $this->container->getParameter('kernel.project_dir').'/config/packages/klp_mcp_server.yaml';
-        $filesystem = new Filesystem();
+        $filesystem = new Filesystem;
 
         // Check if the file already exists
-        if (!$filesystem->exists($configPath)) {
+        if (! $filesystem->exists($configPath)) {
             $defaultConfig = __DIR__.'/Resources/config/packages/klp_mcp_server.yaml';
             $filesystem->copy($defaultConfig, $configPath);
         }
