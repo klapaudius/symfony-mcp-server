@@ -47,3 +47,7 @@ jobs:
 
       - name: Run test suite
         uses: php-actions/phpunit@v4
+        env:
+          XDEBUG_MODE: coverage
+        with:
+          php_extensions: "xdebug"
