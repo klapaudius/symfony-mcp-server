@@ -21,7 +21,7 @@ use ReflectionClass;
 #[Small]
 class MCPServerTest extends TestCase
 {
-    public function testRegisterToolRepository(): void
+    public function test_register_tool_repository(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -29,12 +29,13 @@ class MCPServerTest extends TestCase
 
         $invocations = [
             new ToolsListHandler($mockToolRepository),
-            new ToolsCallHandler($mockToolRepository)
+            new ToolsCallHandler($mockToolRepository),
         ];
         $mockProtocol->expects($matcher = $this->exactly(count($invocations)))
             ->method('registerRequestHandler')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
-                $this->assertEquals($invocations[$matcher->numberOfInvocations()-1], $arg);
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
+
                 return true;
             }));
 
@@ -48,7 +49,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock protocol are automatically verified.
     }
 
-    public function testRegisterToolRepositoryReturnsInstance(): void
+    public function test_register_tool_repository_returns_instance(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -65,7 +66,7 @@ class MCPServerTest extends TestCase
         $this->assertSame($instance, $result);
     }
 
-    public function testRegisterRequestHandler(): void
+    public function test_register_request_handler(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -84,7 +85,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified
     }
 
-    public function testCreate(): void
+    public function test_create(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -100,7 +101,7 @@ class MCPServerTest extends TestCase
         $this->assertSame(['name' => $name, 'version' => $version], $this->getPrivateProperty($server, 'serverInfo'));
     }
 
-    public function testCreateWithCapabilities(): void
+    public function test_create_with_capabilities(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -127,7 +128,7 @@ class MCPServerTest extends TestCase
         return $prop->getValue($object);
     }
 
-    public function testConnect(): void
+    public function test_connect(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -145,7 +146,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
-    public function testDisconnect(): void
+    public function test_disconnect(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -163,7 +164,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
-    public function testRegisterNotificationHandler(): void
+    public function test_register_notification_handler(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -183,7 +184,7 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
-    public function testRequestMessage(): void
+    public function test_request_message(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -208,7 +209,7 @@ class MCPServerTest extends TestCase
      * Tests that the initialize method correctly sets the client capabilities,
      * assigns the protocol version, and marks the server as initialized.
      */
-    public function testInitializeSetsCapabilitiesAndMarksInitialized(): void
+    public function test_initialize_sets_capabilities_and_marks_initialized(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -235,7 +236,7 @@ class MCPServerTest extends TestCase
      * Tests that the initialize method throws an exception if the server
      * has already been initialized.
      */
-    public function testInitializeThrowsWhenAlreadyInitialized(): void
+    public function test_initialize_throws_when_already_initialized(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
@@ -259,7 +260,7 @@ class MCPServerTest extends TestCase
      * Tests that the initialize method returns a correctly constructed
      * InitializeResource object with expected values.
      */
-    public function testInitializeReturnsCorrectResource(): void
+    public function test_initialize_returns_correct_resource(): void
     {
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
