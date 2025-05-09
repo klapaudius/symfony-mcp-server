@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 class SseTransportTest extends TestCase
 {
     private LoggerInterface|MockObject $loggerMock;
+
     private SseTransport $instance;
 
     protected function setUp(): void
@@ -41,8 +42,8 @@ class SseTransportTest extends TestCase
 
         // Assert
         $this->assertEquals(
-            'event: message' . PHP_EOL
-            . 'data: ' .$message . PHP_EOL . PHP_EOL,
+            'event: message'.PHP_EOL
+            .'data: '.$message.PHP_EOL.PHP_EOL,
             $output
         );
     }
@@ -63,8 +64,8 @@ class SseTransportTest extends TestCase
 
         // Assert
         $expectedClientId = $this->getProtectedProperty($this->instance, 'clientId');
-        $expectedOutput = 'event: endpoint' . PHP_EOL
-            . 'data: /default-path/message?sessionId=' . $expectedClientId . PHP_EOL . PHP_EOL;
+        $expectedOutput = 'event: endpoint'.PHP_EOL
+            .'data: /default-path/message?sessionId='.$expectedClientId.PHP_EOL.PHP_EOL;
 
         $this->assertNotNull($expectedClientId);
         $this->assertEquals($expectedOutput, $output);
@@ -73,7 +74,7 @@ class SseTransportTest extends TestCase
     /**
      * Test that initialize does not overwrite an existing client ID.
      */
-    public function test_initializeD_does_not_overwrite_existing_client_id(): void
+    public function test_initialize_d_does_not_overwrite_existing_client_id(): void
     {
         // Arrange
         $existingClientId = 'predefined-client-id';
@@ -90,8 +91,8 @@ class SseTransportTest extends TestCase
 
         // Assert
         $currentClientId = $this->getProtectedProperty($this->instance, 'clientId');
-        $expectedOutput = 'event: endpoint' . PHP_EOL
-            . 'data: /default-path/message?sessionId=' . $existingClientId . PHP_EOL . PHP_EOL;
+        $expectedOutput = 'event: endpoint'.PHP_EOL
+            .'data: /default-path/message?sessionId='.$existingClientId.PHP_EOL.PHP_EOL;
 
         $this->assertSame($existingClientId, $currentClientId);
         $this->assertEquals($expectedOutput, $output);
@@ -118,8 +119,8 @@ class SseTransportTest extends TestCase
 
         // Assert
         $this->assertEquals(
-            'event: message' . PHP_EOL
-            . 'data: ' .$messageJson . PHP_EOL . PHP_EOL,
+            'event: message'.PHP_EOL
+            .'data: '.$messageJson.PHP_EOL.PHP_EOL,
             $output
         );
     }
@@ -132,7 +133,7 @@ class SseTransportTest extends TestCase
         return $prop->getValue($instance);
     }
 
-    private function setProtectedProperty(SseTransport $instance, string $propertyName, string $propertyValue):void
+    private function setProtectedProperty(SseTransport $instance, string $propertyName, string $propertyValue): void
     {
         $reflection = new \ReflectionClass($instance);
         $prop = $reflection->getProperty($propertyName);
@@ -242,8 +243,8 @@ class SseTransportTest extends TestCase
 
         // Assert
         $this->assertEquals(
-            'event: close' . PHP_EOL
-            . 'data: {"reason":"server_closed"}' . PHP_EOL . PHP_EOL,
+            'event: close'.PHP_EOL
+            .'data: {"reason":"server_closed"}'.PHP_EOL.PHP_EOL,
             $output
         );
     }
@@ -278,12 +279,13 @@ class SseTransportTest extends TestCase
         $this->setProtectedProperty($this->instance, 'connected', true);
         $invocations = [
             'Error in SSE close handler: Handler Exception',
-            'Error cleaning up SSE adapter resources on close: Adapter Exception'
+            'Error cleaning up SSE adapter resources on close: Adapter Exception',
         ];
         $this->loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
                 $this->assertEquals($arg, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 

@@ -2,7 +2,4 @@
 
 namespace KLP\KlpMcpServer\Transports;
 
-class SseTransportException extends \Exception
-{
-
-}
+class SseTransportException extends \Exception {}
