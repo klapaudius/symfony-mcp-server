@@ -143,7 +143,7 @@ final class MCPProtocol implements MCPProtocolInterface
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
         } catch (ToolParamsValidatorException $e) {
-            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage() . implode( ',', $e->getErrors() ), code: JsonRpcErrorCode::INVALID_PARAMS);
+            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage().implode(',', $e->getErrors()), code: JsonRpcErrorCode::INVALID_PARAMS);
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $jsonRpcErrorException, id: $messageId));
         } catch (Exception $e) {
             $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage(), code: JsonRpcErrorCode::INTERNAL_ERROR);
