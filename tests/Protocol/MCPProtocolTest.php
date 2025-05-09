@@ -142,7 +142,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that handleMessage handles invalid JSON-RPC messages by sending an error response
      */
-    public function test_handleMessage_handles_invalid_jsonrpc(): void
+    public function test_handle_message_handles_invalid_jsonrpc(): void
     {
         $clientId = 'client_1';
         $invalidMessage = ['id' => 1, 'method' => 'example.method'];
@@ -156,6 +156,7 @@ class MCPProtocolTest extends TestCase
                     $this->assertEquals('2.0', $response['jsonrpc']);
                     $this->assertEquals(-32600, $response['error']['code']);
                     $this->assertEquals('Invalid Request: Not a valid JSON-RPC 2.0 message', $response['error']['message']);
+
                     return true;
                 })
             );
@@ -166,7 +167,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that handleMessage processes valid request messages and sends results using the transport
      */
-    public function test_handleMessage_handles_valid_request(): void
+    public function test_handle_message_handles_valid_request(): void
     {
         $clientId = 'client_1';
         $validRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'value1']];
@@ -185,6 +186,7 @@ class MCPProtocolTest extends TestCase
                     $this->assertEquals('2.0', $response['jsonrpc']);
                     $this->assertEquals(1, $response['id']);
                     $this->assertEquals(['response' => 'ok'], $response['result']);
+
                     return true;
                 })
             );
@@ -195,7 +197,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that handleMessage processes valid notification messages without sending a response
      */
-    public function test_handleMessage_handles_valid_notification(): void
+    public function test_handle_message_handles_valid_notification(): void
     {
         $clientId = 'client_1';
         $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
@@ -215,7 +217,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that handleMessage responds with an error for unknown methods in requests
      */
-    public function test_handleMessage_handles_unknown_method(): void
+    public function test_handle_message_handles_unknown_method(): void
     {
         $clientId = 'client_1';
         $unknownRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'unknown.method'];
@@ -230,6 +232,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals(1, $data['id']);
                 $this->assertEquals(-32601, $data['error']['code']);
                 $this->assertEquals('Method not found: unknown.method', $data['error']['message']);
+
                 return true;
             }));
 
@@ -239,7 +242,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that handleMessage responds with an error for unknown notification in requests
      */
-    public function test_handleMessage_handles_unknown_notification(): void
+    public function test_handle_message_handles_unknown_notification(): void
     {
         $clientId = 'client_1';
         $unknownNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'unknown.notify'];
@@ -253,6 +256,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals('2.0', $data['jsonrpc']);
                 $this->assertEquals(-32601, $data['error']['code']);
                 $this->assertEquals('Method not found: unknown.notify', $data['error']['message']);
+
                 return true;
             }));
 
