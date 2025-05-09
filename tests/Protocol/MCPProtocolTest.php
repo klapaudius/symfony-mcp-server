@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Tests\Protocol;
 
-use Exception;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
@@ -13,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 class MCPProtocolTest extends TestCase
 {
     private TransportInterface|MockObject $mockTransport;
+
     private MCPProtocol $mcpProtocol;
 
     protected function setUp(): void
@@ -24,7 +24,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that connect method starts the transport
      */
-    public function testConnectStartsTransport(): void
+    public function test_connect_starts_transport(): void
     {
         $this->mockTransport
             ->expects($this->once())
@@ -45,7 +45,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test connect processes messages when transport is connected
      */
-    public function testConnectProcessesMessages(): void
+    public function test_connect_processes_messages(): void
     {
         $messages = ['message1', 'message2'];
 
@@ -65,7 +65,8 @@ class MCPProtocolTest extends TestCase
             ->expects($matcher = $this->exactly(count($messages)))
             ->method('send')
             ->with($this->callback(function ($message) use ($messages, $matcher) {
-                $this->assertEquals($messages[$matcher->numberOfInvocations()-1], $message);
+                $this->assertEquals($messages[$matcher->numberOfInvocations() - 1], $message);
+
                 return true;
             }));
 
@@ -79,7 +80,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that connect method ignores null messages without sending
      */
-    public function testConnectIgnoresNullMessages(): void
+    public function test_connect_ignores_null_messages(): void
     {
         $messages = [null, 'validMessage', null];
 
@@ -110,7 +111,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that connect sends messages using the transport's send method
      */
-    public function testConnectSendsMessages(): void
+    public function test_connect_sends_messages(): void
     {
         $messages = ['test_message'];
 
