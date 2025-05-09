@@ -52,7 +52,6 @@ final class MCPProtocol implements MCPProtocolInterface
      * The method starts the transport, continuously checks for incoming messages while connected,
      * handles each message appropriately, and disconnects when the connection ends.
      *
-     * @return void
      * @throws Exception
      */
     public function connect(): void
@@ -77,8 +76,7 @@ final class MCPProtocol implements MCPProtocolInterface
     /**
      * Sends a message using the configured transport.
      *
-     * @param string|array $message The message to be sent, either as a string or an array.
-     * @return void
+     * @param  string|array  $message  The message to be sent, either as a string or an array.
      */
     public function send(string|array $message): void
     {
@@ -87,8 +85,6 @@ final class MCPProtocol implements MCPProtocolInterface
 
     /**
      * Disconnects the current transport by closing the connection.
-     *
-     * @return void
      */
     public function disconnect(): void
     {
@@ -98,8 +94,7 @@ final class MCPProtocol implements MCPProtocolInterface
     /**
      * Registers a request handler to manage incoming requests.
      *
-     * @param RequestHandler $handler The request handler instance to be registered.
-     * @return void
+     * @param  RequestHandler  $handler  The request handler instance to be registered.
      */
     public function registerRequestHandler(RequestHandler $handler): void
     {
@@ -109,8 +104,7 @@ final class MCPProtocol implements MCPProtocolInterface
     /**
      * Registers a notification handler to handle incoming notifications.
      *
-     * @param NotificationHandler $handler The notification handler instance to be registered.
-     * @return void
+     * @param  NotificationHandler  $handler  The notification handler instance to be registered.
      */
     public function registerNotificationHandler(NotificationHandler $handler): void
     {
@@ -121,9 +115,9 @@ final class MCPProtocol implements MCPProtocolInterface
      * Handles an incoming JSON-RPC message from a client, processes it as either a request or notification,
      * and manages error responses when necessary.
      *
-     * @param string $clientId The unique identifier for the client sending the message
-     * @param array $message The JSON-RPC message data to process
-     * @return void
+     * @param  string  $clientId  The unique identifier for the client sending the message
+     * @param  array  $message  The JSON-RPC message data to process
+     *
      * @throws JsonRpcErrorException
      */
     public function handleMessage(string $clientId, array $message): void
@@ -181,7 +175,7 @@ final class MCPProtocol implements MCPProtocolInterface
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
         } catch (ToolParamsValidatorException $e) {
-            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage() . ' ' . implode(',', $e->getErrors()), code: JsonRpcErrorCode::INVALID_PARAMS);
+            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage().' '.implode(',', $e->getErrors()), code: JsonRpcErrorCode::INVALID_PARAMS);
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $jsonRpcErrorException, id: $messageId));
         } catch (Exception $e) {
             $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage(), code: JsonRpcErrorCode::INTERNAL_ERROR);
