@@ -104,29 +104,28 @@ final class SseTransport implements TransportInterface
      */
     private function sendEvent(string $event, string $data): void
     {
-        // 헤더 설정이 이미 전송되었는지 확인
+        // Check if the headers have already been sent
         if (! headers_sent()) {
-            // 버퍼링 비활성화
+            // Disable buffering
             ini_set('output_buffering', 'off');
             ini_set('zlib.output_compression', false);
 
-            // 필수 SSE 헤더 추가
+            // Add required SSE headers
             header('Content-Type: text/event-stream');
             header('Cache-Control: no-cache');
             header('X-Accel-Buffering: no');
             header('Connection: keep-alive');
         }
 
-        // 모든 버퍼 비우기
-        //        while (ob_get_level() > 0) {
-        //            ob_end_flush();
-        //        }
+        // Just ensure output gets flushed
+        ob_flush(); // Flushes the active buffer
+        flush(); // Flushes the system-level buffer (important for real-time outputs)
 
         echo sprintf('event: %s', $event).PHP_EOL;
         echo sprintf('data: %s', $data).PHP_EOL;
         echo PHP_EOL;
 
-        flush();
+        flush(); // Ensure the data is sent to the client
     }
 
     /**
@@ -176,11 +175,7 @@ final class SseTransport implements TransportInterface
             }
         }
 
-        try {
-            $this->sendEvent(event: 'close', data: '{"reason":"server_closed"}');
-        } catch (Exception $e) {
-            $this->logger?->info('Could not send final SSE close event: '.$e->getMessage());
-        }
+        $this->sendEvent(event: 'close', data: '{"reason":"server_closed"}');
     }
 
     /**
@@ -305,17 +300,17 @@ final class SseTransport implements TransportInterface
      * @param  string  $clientId  The target client ID.
      * @param  array  $message  The message payload (as an array).
      *
-     * @throws Exception If adapter is not set, JSON encoding fails, or adapter push fails.
+     * @throws SseTransportException If adapter is not set, JSON encoding fails, or adapter push fails.
      */
     public function pushMessage(string $clientId, array $message): void
     {
         if ($this->adapter === null) {
-            throw new Exception('Cannot push message: SSE Adapter is not configured.');
+            throw new SseTransportException('Cannot push message: SSE Adapter is not configured.');
         }
 
         $messageString = json_encode($message);
         if ($messageString === false) {
-            throw new Exception('Failed to JSON encode message for pushing: '.json_last_error_msg());
+            throw new SseTransportException('Failed to JSON encode message for pushing: '.json_last_error_msg());
         }
 
         $this->adapter->pushMessage(clientId: $clientId, message: $messageString);

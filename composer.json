@@ -8,6 +8,7 @@
         "php": "^8.2",
         "ext-json": "*",
         "ext-redis": "*",
+        "psr/log": "^3.0",
         "symfony/console": "~7.0",
         "symfony/dependency-injection": "~7.0",
         "symfony/http-foundation": "~7.0"
