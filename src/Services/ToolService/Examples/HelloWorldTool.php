@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
-use Illuminate\Support\Facades\Validator;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 
 class HelloWorldTool implements ToolInterface
@@ -38,10 +37,6 @@ class HelloWorldTool implements ToolInterface
 
     public function execute(array $arguments): string
     {
-        Validator::make($arguments, [
-            'name' => ['required', 'string'],
-        ])->validate();
-
         $name = $arguments['name'] ?? 'MCP';
 
         return "Hello, HelloWorld `{$name}` developer.";

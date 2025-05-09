@@ -4,6 +4,11 @@ namespace KLP\KlpMcpServer\Services\ToolService;
 
 interface ToolInterface
 {
+    /**
+     * Retrieves the name.
+     *
+     * @return string The name.
+     */
     public function getName(): string;
 
     public function getDescription(): string;

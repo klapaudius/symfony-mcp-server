@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
-use Illuminate\Support\Facades\App;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use stdClass;
 
@@ -34,7 +33,7 @@ class VersionCheckTool implements ToolInterface
 
     public function execute(array $arguments): string
     {
-        $now = now()->format('Y-m-d H:i:s');
+        $now = (new \DateTime('now'))->format('Y-m-d H:i:s');
         $version = App::version();
 
         return "current Version: {$version} - {$now}";

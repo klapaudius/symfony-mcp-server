@@ -3,13 +3,13 @@
 namespace KLP\KlpMcpServer\Protocol;
 
 use Exception;
-use Illuminate\Validation\ValidationException;
 use KLP\KlpMcpServer\Data\Requests\NotificationData;
 use KLP\KlpMcpServer\Data\Requests\RequestData;
 use KLP\KlpMcpServer\Data\Resources\JsonRpc\JsonRpcErrorResource;
 use KLP\KlpMcpServer\Data\Resources\JsonRpc\JsonRpcResultResource;
 use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
+use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Transports\TransportInterface;
@@ -142,8 +142,8 @@ final class MCPProtocol implements MCPProtocolInterface
             throw new JsonRpcErrorException("Method not found: {$requestData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND);
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
-        } catch (ValidationException $e) { // Todo remove this Undefined Exception
-            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage(), code: JsonRpcErrorCode::INVALID_PARAMS);
+        } catch (ToolParamsValidatorException $e) {
+            $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage() . implode( ',', $e->getErrors() ), code: JsonRpcErrorCode::INVALID_PARAMS);
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $jsonRpcErrorException, id: $messageId));
         } catch (Exception $e) {
             $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage(), code: JsonRpcErrorCode::INTERNAL_ERROR);
