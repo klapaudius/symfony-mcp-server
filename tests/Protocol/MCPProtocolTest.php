@@ -138,4 +138,124 @@ class MCPProtocolTest extends TestCase
 
         $this->mcpProtocol->connect();
     }
+
+    /**
+     * Test that handleMessage handles invalid JSON-RPC messages by sending an error response
+     */
+    public function test_handleMessage_handles_invalid_jsonrpc(): void
+    {
+        $clientId = 'client_1';
+        $invalidMessage = ['id' => 1, 'method' => 'example.method'];
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with(
+                $clientId,
+                $this->callback(function (array $response) {
+                    $this->assertEquals('2.0', $response['jsonrpc']);
+                    $this->assertEquals(-32600, $response['error']['code']);
+                    $this->assertEquals('Invalid Request: Not a valid JSON-RPC 2.0 message', $response['error']['message']);
+                    return true;
+                })
+            );
+
+        $this->mcpProtocol->handleMessage($clientId, $invalidMessage);
+    }
+
+    /**
+     * Test that handleMessage processes valid request messages and sends results using the transport
+     */
+    public function test_handleMessage_handles_valid_request(): void
+    {
+        $clientId = 'client_1';
+        $validRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'value1']];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->method('execute')->with('test.method', ['param1' => 'value1'])->willReturn(['response' => 'ok']);
+        $this->mcpProtocol->registerRequestHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with(
+                $clientId,
+                $this->callback(function (array $response) {
+                    $this->assertEquals('2.0', $response['jsonrpc']);
+                    $this->assertEquals(1, $response['id']);
+                    $this->assertEquals(['response' => 'ok'], $response['result']);
+                    return true;
+                })
+            );
+
+        $this->mcpProtocol->handleMessage($clientId, $validRequestMessage);
+    }
+
+    /**
+     * Test that handleMessage processes valid notification messages without sending a response
+     */
+    public function test_handleMessage_handles_valid_notification(): void
+    {
+        $clientId = 'client_1';
+        $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler::class);
+        $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('execute')->with(['param1' => 'value1']);
+        $this->mcpProtocol->registerNotificationHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $validNotificationMessage);
+    }
+
+    /**
+     * Test that handleMessage responds with an error for unknown methods in requests
+     */
+    public function test_handleMessage_handles_unknown_method(): void
+    {
+        $clientId = 'client_1';
+        $unknownRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'unknown.method'];
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(1, $data['id']);
+                $this->assertEquals(-32601, $data['error']['code']);
+                $this->assertEquals('Method not found: unknown.method', $data['error']['message']);
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $unknownRequestMessage);
+    }
+
+    /**
+     * Test that handleMessage responds with an error for unknown notification in requests
+     */
+    public function test_handleMessage_handles_unknown_notification(): void
+    {
+        $clientId = 'client_1';
+        $unknownNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'unknown.notify'];
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(-32601, $data['error']['code']);
+                $this->assertEquals('Method not found: unknown.notify', $data['error']['message']);
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $unknownNotificationMessage);
+    }
 }
