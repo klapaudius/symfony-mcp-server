@@ -280,6 +280,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals(1, $data['id']);
                 $this->assertEquals(-32600, $data['error']['code']);
                 $this->assertEquals('Invalid Request: Message format not recognized', $data['error']['message']);
+
                 return true;
             }));
 
@@ -307,6 +308,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals(-32602, $data['error']['code']);
 
                 $this->assertEquals('An error occurred. Invalid params param1', $data['error']['message']);
+
                 return true;
             }));
 
@@ -334,6 +336,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals(1, $data['id']);
                 $this->assertEquals(-32603, $data['error']['code']);
                 $this->assertEquals('An error occurred.', $data['error']['message']);
+
                 return true;
             }));
         $this->mcpProtocol->registerRequestHandler($mockHandler);
@@ -351,7 +354,7 @@ class MCPProtocolTest extends TestCase
         $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
         $mockHandler->expects($this->once())->method('execute')
             ->with(['param1' => 'value1'])
-        ->willThrowException(new \Exception('An error occurred.'));;
+            ->willThrowException(new \Exception('An error occurred.'));
         $this->mcpProtocol->registerNotificationHandler($mockHandler);
 
         $this->mockTransport
@@ -363,6 +366,7 @@ class MCPProtocolTest extends TestCase
                 $this->assertEquals('2.0', $data['jsonrpc']);
                 $this->assertEquals(-32603, $data['error']['code']);
                 $this->assertEquals('An error occurred.', $data['error']['message']);
+
                 return true;
             }));
 
