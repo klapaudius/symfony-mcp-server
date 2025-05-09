@@ -4,6 +4,12 @@ use KLP\KlpMcpServer\Controllers\MessageController;
 use KLP\KlpMcpServer\Controllers\SseController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
+/**
+ * Configures routes for the application.
+ *
+ * @param RoutingConfigurator $routes The routing configurator used to define routes.
+ * @return void
+ */
 return function (RoutingConfigurator $routes) {
     $routes->add('sse_route', '/mcp/sse')
         ->controller([SseController::class, 'handle'])
