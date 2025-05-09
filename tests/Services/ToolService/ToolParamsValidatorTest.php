@@ -75,13 +75,13 @@ class ToolParamsValidatorTest extends TestCase
     {
         $toolSchema = [
             'arguments' => [
-                'arg1' => ['type' => 'string'],
+                'arg1' => ['type' => 'array'],
             ],
             'required' => ['arg1'],
         ];
 
         $arguments = [
-            'arg1' => 'validString',
+            'arg1' => ['validArray'],
             'arg2' => 'extra',
         ];
 
@@ -101,7 +101,7 @@ class ToolParamsValidatorTest extends TestCase
         $toolSchema = [
             'arguments' => [
                 'arg1' => ['type' => 'string'],
-                'arg2' => ['type' => 'integer'],
+                'arg2' => ['type' => 'boolean'],
             ],
             'required' => ['arg1', 'arg2'],
         ];
@@ -117,7 +117,7 @@ class ToolParamsValidatorTest extends TestCase
         try {
             ToolParamsValidator::validate($toolSchema, $arguments);
         } catch (ToolParamsValidatorException $exception) {
-            $this->assertContains('Invalid argument type for: arg2. Expected: integer, got: string', $exception->getErrors());
+            $this->assertContains('Invalid argument type for: arg2. Expected: boolean, got: string', $exception->getErrors());
             throw $exception;
         }
     }

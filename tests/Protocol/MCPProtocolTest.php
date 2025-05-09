@@ -2,6 +2,8 @@
 
 namespace KLP\KlpMcpServer\Tests\Protocol;
 
+use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
+use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
@@ -202,7 +204,7 @@ class MCPProtocolTest extends TestCase
         $clientId = 'client_1';
         $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler::class);
+        $mockHandler = $this->createMock(NotificationHandler::class);
         $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
         $mockHandler->expects($this->once())->method('execute')->with(['param1' => 'value1']);
         $this->mcpProtocol->registerNotificationHandler($mockHandler);
@@ -261,5 +263,109 @@ class MCPProtocolTest extends TestCase
             }));
 
         $this->mcpProtocol->handleMessage($clientId, $unknownNotificationMessage);
+    }
+
+    public function test_handle_message_handles_no_method(): void
+    {
+        $clientId = 'client_1';
+        $noMethodMessage = ['jsonrpc' => '2.0', 'id' => 1];
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(1, $data['id']);
+                $this->assertEquals(-32600, $data['error']['code']);
+                $this->assertEquals('Invalid Request: Message format not recognized', $data['error']['message']);
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $noMethodMessage);
+    }
+
+    public function test_handle_message_handles_invalid_params(): void
+    {
+        $clientId = 'client_1';
+        $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->method('execute')->with('test.method', ['param1' => 'invalid'])
+            ->willThrowException(new ToolParamsValidatorException('An error occurred.', ['Invalid params param1']));
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(1, $data['id']);
+                $this->assertEquals(-32602, $data['error']['code']);
+
+                $this->assertEquals('An error occurred. Invalid params param1', $data['error']['message']);
+                return true;
+            }));
+
+        $this->mcpProtocol->registerRequestHandler($mockHandler);
+        $this->mcpProtocol->handleMessage($clientId, $invalidParamsMessage);
+    }
+
+    public function test_handle_message_handles_handler_throw_exception(): void
+    {
+        // Arrange
+        $clientId = 'client_1';
+        $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->method('execute')->with('test.method', ['param1' => 'invalid'])
+            ->willThrowException(new \Exception('An error occurred.'));
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(1, $data['id']);
+                $this->assertEquals(-32603, $data['error']['code']);
+                $this->assertEquals('An error occurred.', $data['error']['message']);
+                return true;
+            }));
+        $this->mcpProtocol->registerRequestHandler($mockHandler);
+
+        // Act
+        $this->mcpProtocol->handleMessage($clientId, $invalidParamsMessage);
+    }
+
+    public function test_handle_message_handles_notification_handler_throw_exception(): void
+    {
+        $clientId = 'client_1';
+        $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
+
+        $mockHandler = $this->createMock(NotificationHandler::class);
+        $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('execute')
+            ->with(['param1' => 'value1'])
+        ->willThrowException(new \Exception('An error occurred.'));;
+        $this->mcpProtocol->registerNotificationHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals(-32603, $data['error']['code']);
+                $this->assertEquals('An error occurred.', $data['error']['message']);
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $validNotificationMessage);
     }
 }
