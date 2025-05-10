@@ -5,7 +5,6 @@ namespace KLP\KlpMcpServer\Tests\Transports;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\SseTransport;
 use KLP\KlpMcpServer\Transports\SseTransportException;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -349,7 +348,7 @@ class SseTransportTest extends TestCase
     /**
      * Test that `receive` calls the adapter's `receiveMessages` method with the correct client ID.
      */
-    public function test_receive_calls_adapter_receiveMessages_with_correct_client_id(): void
+    public function test_receive_calls_adapter_receive_messages_with_correct_client_id(): void
     {
         // Arrange
         $this->setProtectedProperty($this->instance, 'connected', true);
@@ -522,7 +521,6 @@ class SseTransportTest extends TestCase
         $this->instance->onError(function () use (&$handlerCalled) {
             $handlerCalled = true;
         });
-
 
         // Act
         $this->invokeProtectedMethod($this->instance, 'triggerError', [$message]);
