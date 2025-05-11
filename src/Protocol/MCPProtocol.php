@@ -211,8 +211,8 @@ final class MCPProtocol implements MCPProtocolInterface
     /**
      * Pushes a message to a specified client.
      *
-     * @param string $clientId The unique identifier of the client to push the message to.
-     * @param array|JsonRpcResultResource|JsonRpcErrorResource $message The message to be pushed to the client, either as an array or an instance of JsonRpcResultResource/JsonRpcErrorResource.
+     * @param  string  $clientId  The unique identifier of the client to push the message to.
+     * @param  array|JsonRpcResultResource|JsonRpcErrorResource  $message  The message to be pushed to the client, either as an array or an instance of JsonRpcResultResource/JsonRpcErrorResource.
      *
      * @throws Exception If transport is unable to push the message to client
      */
@@ -230,8 +230,8 @@ final class MCPProtocol implements MCPProtocolInterface
     /**
      * Process an incoming message from a specified client.
      *
-     * @param string $clientId The unique identifier of the client.
-     * @param array $message The message data to be processed.
+     * @param  string  $clientId  The unique identifier of the client.
+     * @param  array  $message  The message data to be processed.
      *
      * @throws Exception If the message cannot be processed
      */
