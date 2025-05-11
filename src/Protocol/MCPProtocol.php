@@ -122,7 +122,7 @@ final class MCPProtocol implements MCPProtocolInterface
         $messageId = $message['id'] ?? null;
         try {
             if (! isset($message['jsonrpc']) || $message['jsonrpc'] !== '2.0') {
-                throw new JsonRpcErrorException(message: 'Invalid Request: Not a valid JSON-RPC 2.0 message', code: JsonRpcErrorCode::INVALID_REQUEST);
+                throw new JsonRpcErrorException(message: 'Invalid Request: Not a valid JSON-RPC 2.0 message', code: JsonRpcErrorCode::INVALID_REQUEST, data: $message);
             }
 
             $requestData = DataUtil::makeRequestData(message: $message);
@@ -137,7 +137,7 @@ final class MCPProtocol implements MCPProtocolInterface
                 return;
             }
 
-            throw new JsonRpcErrorException(message: 'Invalid Request: Message format not recognized', code: JsonRpcErrorCode::INVALID_REQUEST);
+            throw new JsonRpcErrorException(message: 'Invalid Request: Message format not recognized', code: JsonRpcErrorCode::INVALID_REQUEST, data: $message);
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
         } catch (Exception $e) {
@@ -168,7 +168,7 @@ final class MCPProtocol implements MCPProtocolInterface
                 }
             }
 
-            throw new JsonRpcErrorException("Method not found: {$requestData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND);
+            throw new JsonRpcErrorException("Method not found: {$requestData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND, data: $requestData->toArray());
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
         } catch (ToolParamsValidatorException $e) {
@@ -199,7 +199,7 @@ final class MCPProtocol implements MCPProtocolInterface
                 }
             }
 
-            throw new JsonRpcErrorException("Method not found: {$notificationData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND);
+            throw new JsonRpcErrorException("Method not found: {$notificationData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND, data: $notificationData->toArray());
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: null));
         } catch (Exception $e) {
@@ -209,7 +209,12 @@ final class MCPProtocol implements MCPProtocolInterface
     }
 
     /**
-     * @throws Exception
+     * Pushes a message to a specified client.
+     *
+     * @param string $clientId The unique identifier of the client to push the message to.
+     * @param array|JsonRpcResultResource|JsonRpcErrorResource $message The message to be pushed to the client, either as an array or an instance of JsonRpcResultResource/JsonRpcErrorResource.
+     *
+     * @throws Exception If transport is unable to push the message to client
      */
     private function pushMessage(string $clientId, array|JsonRpcResultResource|JsonRpcErrorResource $message): void
     {
@@ -222,6 +227,14 @@ final class MCPProtocol implements MCPProtocolInterface
         $this->transport->pushMessage(clientId: $clientId, message: $message);
     }
 
+    /**
+     * Process an incoming message from a specified client.
+     *
+     * @param string $clientId The unique identifier of the client.
+     * @param array $message The message data to be processed.
+     *
+     * @throws Exception If the message cannot be processed
+     */
     public function requestMessage(string $clientId, array $message): void
     {
         $this->transport->processMessage(clientId: $clientId, message: $message);

@@ -164,7 +164,7 @@ final class MCPServer implements MCPServerInterface
     public function initialize(InitializeData $data): InitializeResource
     {
         if ($this->initialized) {
-            throw new JsonRpcErrorException(message: 'Server already initialized', code: JsonRpcErrorCode::INVALID_REQUEST);
+            throw new JsonRpcErrorException(message: 'Server already initialized', code: JsonRpcErrorCode::INVALID_REQUEST, data: $data);
         }
 
         $this->initialized = true;

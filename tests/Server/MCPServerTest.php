@@ -249,11 +249,16 @@ class MCPServerTest extends TestCase
         $server->initialize($initializeData);
 
         // Expect
-        $this->expectException(JsonRpcErrorException::class);
-        $this->expectExceptionMessage('Server already initialized');
 
         // Act
-        $server->initialize($initializeData);
+        try {
+            $server->initialize($initializeData);
+            $this->fail('Expected exception not thrown');
+        } catch (JsonRpcErrorException $e) {
+            $this->assertEquals(-32600, $e->getJsonRpcErrorCode());
+            $this->assertEquals('Server already initialized', $e->getMessage());
+            $this->assertEquals($initializeData, $e->getErrorData());
+        }
     }
 
     /**

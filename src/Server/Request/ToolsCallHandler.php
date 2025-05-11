@@ -37,12 +37,12 @@ class ToolsCallHandler implements RequestHandler
     {
         $name = $params['name'] ?? null;
         if ($name === null) {
-            throw new JsonRpcErrorException(message: 'Tool name is required', code: JsonRpcErrorCode::INVALID_REQUEST);
+            throw new JsonRpcErrorException(message: 'Tool name is required', code: JsonRpcErrorCode::INVALID_REQUEST, data: $params);
         }
 
         $tool = $this->toolRepository->getTool($name);
         if (! $tool) {
-            throw new JsonRpcErrorException(message: "Tool '{$name}' not found", code: JsonRpcErrorCode::METHOD_NOT_FOUND);
+            throw new JsonRpcErrorException(message: "Tool '{$name}' not found", code: JsonRpcErrorCode::METHOD_NOT_FOUND, data:$params);
         }
 
         $arguments = $params['arguments'] ?? [];
