@@ -4,11 +4,10 @@ namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
+use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Tests for the ToolParamsValidator class and its validate method.
- */
+#[Small]
 class ToolParamsValidatorTest extends TestCase
 {
     public function test_validate_with_valid_arguments(): void

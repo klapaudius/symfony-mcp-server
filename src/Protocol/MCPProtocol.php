@@ -24,8 +24,6 @@ final class MCPProtocol implements MCPProtocolInterface
 {
     public const PROTOCOL_VERSION = '2024-11-05';
 
-    private TransportInterface $transport;
-
     /**
      * @var RequestHandler[]
      */
@@ -40,9 +38,8 @@ final class MCPProtocol implements MCPProtocolInterface
      * @param  TransportInterface  $transport  The transport implementation to use for communication
      * @return void
      */
-    public function __construct(TransportInterface $transport)
+    public function __construct(private readonly TransportInterface $transport)
     {
-        $this->transport = $transport;
         $this->transport->onMessage([$this, 'handleMessage']);
     }
 
