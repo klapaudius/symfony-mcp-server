@@ -14,12 +14,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class KlpMcpServerExtensionTest extends TestCase
 {
     private KlpMcpServerExtension $extension;
+
     private ContainerBuilder $container;
 
     protected function setUp(): void
     {
-        $this->extension = new KlpMcpServerExtension();
-        $this->container = new ContainerBuilder();
+        $this->extension = new KlpMcpServerExtension;
+        $this->container = new ContainerBuilder;
     }
 
     public function test_load_sets_all_parameters_correctly(): void
@@ -60,7 +61,7 @@ class KlpMcpServerExtensionTest extends TestCase
         $configs = [
             'enabled' => true,
             'server' => [
-                'name' => null
+                'name' => null,
             ],
         ];
 
