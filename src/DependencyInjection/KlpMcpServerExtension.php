@@ -16,9 +16,14 @@ class KlpMcpServerExtension extends Extension
         $loader->load('services.xml');
 
         $container->setParameter('klp_mcp_server.enabled', $config['enabled']);
-        $container->setParameter('klp_mcp_server.default_path', $config['default_path']);
         $container->setParameter('klp_mcp_server.server.name', $config['server']['name']);
         $container->setParameter('klp_mcp_server.server.version', $config['server']['version']);
+        $container->setParameter('klp_mcp_server.default_path', $config['default_path']);
+        $container->setParameter('klp_mcp_server.middlewares', $config['middlewares']);
+        $container->setParameter('klp_mcp_server.provider', 'klp_mcp_server.provider.'.$config['server_provider']);
         $container->setParameter('klp_mcp_server.adapter', 'klp_mcp_server.adapter.'.$config['sse_adapter']);
+        $container->setParameter('klp_mcp_server.tools', $config['tools']);
+        $container->setParameter('klp_mcp_server.prompts', $config['prompts']);
+        $container->setParameter('klp_mcp_server.resources', $config['resources']);
     }
 }

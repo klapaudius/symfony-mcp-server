@@ -9,6 +9,7 @@
         "ext-json": "*",
         "ext-redis": "*",
         "psr/log": "^3.0",
+        "symfony/config": "^7.2",
         "symfony/console": "~7.0",
         "symfony/dependency-injection": "~7.0",
         "symfony/http-foundation": "~7.0",
