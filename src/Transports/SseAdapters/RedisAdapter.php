@@ -17,6 +17,7 @@ use Redis;
 final class RedisAdapter implements SseAdapterInterface
 {
     const FAILED_TO_INITIALIZE = 'Failed to initialize Redis SSE Adapter: ';
+
     /**
      * Redis connection instance
      */
@@ -38,13 +39,13 @@ final class RedisAdapter implements SseAdapterInterface
     ) {
         try {
             $this->keyPrefix = $this->config['prefix'] ?? 'mcp_sse_';
-            $this->messageTtl = (int)$this->config['ttl'] ?: 100;
+            $this->messageTtl = (int) $this->config['ttl'] ?: 100;
             $this->redis = new Redis;
             $this->redis->connect($this->config['connection'], 6379);
             $this->redis->setOption(Redis::OPT_PREFIX, $this->keyPrefix);
         } catch (Exception $e) {
-            $this->logger?->error(self::FAILED_TO_INITIALIZE .$e->getMessage());
-            throw new \Exception(self::FAILED_TO_INITIALIZE .$e->getMessage());
+            $this->logger?->error(self::FAILED_TO_INITIALIZE.$e->getMessage());
+            throw new \Exception(self::FAILED_TO_INITIALIZE.$e->getMessage());
         }
     }
 
