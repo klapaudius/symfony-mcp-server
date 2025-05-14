@@ -33,6 +33,13 @@ class KlpMcpServerExtensionTest extends TestCase
             ],
             'default_path' => '/default/path',
             'middlewares' => ['middleware1', 'middleware2'],
+            'adapters' => [
+                'redis' => [
+                    'prefix' => 'prefix',
+                    'connection' => 'localhost',
+                    'ttl' => 100,
+                ]
+            ],
             'server_provider' => 'sse',
             'sse_adapter' => 'custom_adapter',
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
