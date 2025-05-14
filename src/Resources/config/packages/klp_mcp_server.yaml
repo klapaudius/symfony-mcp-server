@@ -44,7 +44,7 @@ klp_mcp_server:
         in_memory: {}
         redis:
             prefix: 'mcp_sse_'
-            connection: '%env(MCP_REDIS_CONNECTION)' # database.php redis
+            connection: 'localhost' # change it as needed
             ttl: 100
         # Add more adapter configurations as needed
 

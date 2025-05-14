@@ -67,13 +67,4 @@ interface SseAdapterInterface
      * @return int The number of messages
      */
     public function getMessageCount(string $clientId): int;
-
-    /**
-     * Initialize the adapter with any required configuration
-     *
-     * @param  array  $config  Configuration options for the adapter
-     *
-     * @throws \Exception If initialization fails
-     */
-    public function initialize(array $config): void;
 }

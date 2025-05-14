@@ -16,6 +16,7 @@ use Redis;
  */
 final class RedisAdapter implements SseAdapterInterface
 {
+    const FAILED_TO_INITIALIZE = 'Failed to initialize Redis SSE Adapter: ';
     /**
      * Redis connection instance
      */
@@ -32,33 +33,18 @@ final class RedisAdapter implements SseAdapterInterface
     protected int $messageTtl = 100;
 
     public function __construct(
+        private readonly array $config,
         private readonly ?LoggerInterface $logger
-    ) {}
-
-    /**
-     * Initialize the adapter with any required configuration
-     *
-     * @param  array  $config  Configuration options for the adapter
-     *
-     * @throws Exception If initialization fails
-     */
-    public function initialize(array $config): void
-    {
+    ) {
         try {
-            $connection = $config['connection'] ?? 'default';
+            $this->keyPrefix = $this->config['prefix'] ?? 'mcp_sse_';
+            $this->messageTtl = (int)$this->config['ttl'] ?: 100;
             $this->redis = new Redis;
-            $this->redis->connect('localhost', 6379);
-
-            if (isset($config['prefix'])) {
-                $this->keyPrefix = $config['prefix'];
-            }
-
-            if (isset($config['ttl'])) {
-                $this->messageTtl = (int) $config['ttl'];
-            }
+            $this->redis->connect($this->config['connection'], 6379);
+            $this->redis->setOption(Redis::OPT_PREFIX, $this->keyPrefix);
         } catch (Exception $e) {
-            $this->logger?->error('Failed to initialize Redis SSE Adapter: '.$e->getMessage());
-            throw new Exception('Failed to initialize Redis SSE Adapter: '.$e->getMessage());
+            $this->logger?->error(self::FAILED_TO_INITIALIZE .$e->getMessage());
+            throw new \Exception(self::FAILED_TO_INITIALIZE .$e->getMessage());
         }
     }
 
