@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 class SseTransportTest extends TestCase
 {
     private LoggerInterface|MockObject $loggerMock;
+
     private SseAdapterInterface|MockObject $adapterMock;
 
     private SseTransport $instance;
