@@ -110,7 +110,6 @@ final class SseTransport implements TransportInterface
         $this->logger?->debug('SSE Transport::sendEvent: event: '.$event.PHP_EOL.'data: '.$data.PHP_EOL);
 
         // Just ensure output gets flushed
-        ob_flush(); // Flushes the active buffer
         flush(); // Flushes the system-level buffer (important for real-time outputs)
 
         echo sprintf('event: %s', $event).PHP_EOL;
