@@ -18,16 +18,6 @@ use Psr\Log\LoggerInterface;
  */
 final class SseTransport implements TransportInterface
 {
-    public function __construct(private readonly string $defaultPath, private readonly ?LoggerInterface $logger = null) {}
-
-    private function getEndpoint(string $sessionId): string
-    {
-        return sprintf('/%s/message?sessionId=%s',
-            trim($this->defaultPath, '/'),
-            $sessionId,
-        );
-    }
-
     /**
      * Tracks if the server-side connection is considered active.
      */
@@ -65,6 +55,14 @@ final class SseTransport implements TransportInterface
      */
     protected ?string $clientId = null;
 
+    public function __construct(
+        private readonly string $defaultPath,
+        ?SseAdapterInterface $adapter = null,
+        private readonly ?LoggerInterface $logger = null
+    ) {
+        $this->adapter = $adapter;
+    }
+
     /**
      * Starts the SSE transport connection.
      * Sets the connected flag and initializes the transport. Idempotent.
@@ -76,6 +74,11 @@ final class SseTransport implements TransportInterface
         if ($this->connected) {
             return;
         }
+
+        set_time_limit(0);
+        ini_set('output_buffering', 'off');
+        ini_set('zlib.output_compression', false);
+        ini_set('zlib.default_socket_timeout', 5);
 
         $this->connected = true;
         $this->initialize();
@@ -104,18 +107,7 @@ final class SseTransport implements TransportInterface
      */
     private function sendEvent(string $event, string $data): void
     {
-        // Check if the headers have already been sent
-        if (! headers_sent()) {
-            // Disable buffering
-            ini_set('output_buffering', 'off');
-            ini_set('zlib.output_compression', false);
-
-            // Add required SSE headers
-            header('Content-Type: text/event-stream');
-            header('Cache-Control: no-cache');
-            header('X-Accel-Buffering: no');
-            header('Connection: keep-alive');
-        }
+        $this->logger?->debug('SSE Transport::sendEvent: event: '.$event.PHP_EOL.'data: '.$data.PHP_EOL);
 
         // Just ensure output gets flushed
         ob_flush(); // Flushes the active buffer
@@ -264,9 +256,9 @@ final class SseTransport implements TransportInterface
     /**
      * Sets the adapter instance used for message persistence/retrieval.
      *
-     * @param  SseAdapterInterface  $adapter  The adapter implementation.
+     * @param  SseAdapterInterface|null  $adapter  The adapter implementation.
      */
-    public function setAdapter(SseAdapterInterface $adapter): void
+    public function setAdapter(?SseAdapterInterface $adapter): void
     {
         $this->adapter = $adapter;
     }
@@ -314,5 +306,13 @@ final class SseTransport implements TransportInterface
         }
 
         $this->adapter->pushMessage(clientId: $clientId, message: $messageString);
+    }
+
+    private function getEndpoint(string $sessionId): string
+    {
+        return sprintf('/%s/message?sessionId=%s',
+            trim($this->defaultPath, '/'),
+            $sessionId,
+        );
     }
 }
