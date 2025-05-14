@@ -38,7 +38,7 @@ class KlpMcpServerExtensionTest extends TestCase
                     'prefix' => 'prefix',
                     'connection' => 'localhost',
                     'ttl' => 100,
-                ]
+                ],
             ],
             'server_provider' => 'sse',
             'sse_adapter' => 'custom_adapter',
