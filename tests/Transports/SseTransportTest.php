@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 class SseTransportTest extends TestCase
 {
     private LoggerInterface|MockObject $loggerMock;
+    private SseAdapterInterface|MockObject $adapterMock;
 
     private SseTransport $instance;
 
@@ -21,7 +22,8 @@ class SseTransportTest extends TestCase
     {
         parent::setUp();
         $this->loggerMock = $this->createMock(LoggerInterface::class);
-        $this->instance = new SseTransport('/default-path', $this->loggerMock);
+        $this->adapterMock = $this->createMock(SseAdapterInterface::class);
+        $this->instance = new SseTransport('/default-path', $this->adapterMock, $this->loggerMock);
     }
 
     /**
@@ -313,6 +315,7 @@ class SseTransportTest extends TestCase
     public function test_receive_logs_info_when_no_adapter(): void
     {
         // Arrange
+        $this->instance->setAdapter(null);
         $this->loggerMock->expects($this->once())
             ->method('info')
             ->with('SSE Transport::receive called but no adapter is configured.');
@@ -419,6 +422,7 @@ class SseTransportTest extends TestCase
     public function test_push_message_throws_exception_without_adapter(): void
     {
         // Expect exception
+        $this->instance->setAdapter(null);
         $this->expectException(SseTransportException::class);
         $this->expectExceptionMessage('Cannot push message: SSE Adapter is not configured.');
 

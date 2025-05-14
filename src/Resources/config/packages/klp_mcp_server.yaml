@@ -54,8 +54,8 @@ klp_mcp_server:
     # generating the tool list for the client.
     # Register your tools here
     tools:
-        - \KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool::class
-        - \KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool::class
+        - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
 
     # Prompts List
     # https://modelcontextprotocol.io/docs/concepts/prompts

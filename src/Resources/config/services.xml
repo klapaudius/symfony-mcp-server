@@ -12,17 +12,18 @@
 
         <service id="KLP\KlpMcpServer\Controllers\MessageController" class="KLP\KlpMcpServer\Controllers\MessageController">
             <argument type="service" id="klp_mcp_server.server" />
+            <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
         <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" />
 
-        <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.in_memory" />
-        <service id="klp_mcp_server.adapter.in_memory" class="KLP\KlpMcpServer\Transports\SseAdapters\InMemoryAdapter" />
+        <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.redis" />
         <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
             <argument type="service" id="logger" on-invalid="null" />
         </service>
         <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
             <argument type="string">%klp_mcp_server.default_path%</argument>
+            <argument type="service" id="klp_mcp_server.adapter.redis" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>
 
