@@ -194,4 +194,54 @@ final class RedisAdapter implements SseAdapterInterface
             return 0;
         }
     }
+
+    /**
+     * Store the last pong response timestamp for a specific client
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @param  int|null  $timestamp  The timestamp to store (defaults to current time if null)
+     *
+     * @throws Exception If the timestamp cannot be stored
+     */
+    public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void
+    {
+        try {
+            $key = $this->getQueueKey($clientId).":last_pong";
+            $timestamp = $timestamp ?? time();
+
+            $this->redis->set($key, $timestamp);
+            $this->redis->expire($key, $this->messageTtl);
+
+        } catch (Exception $e) {
+            $this->logger?->error('Failed to store last pong timestamp: '.$e->getMessage());
+            throw new Exception('Failed to store last pong timestamp: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Get the last pong response timestamp for a specific client
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @return int|null The timestamp or null if no timestamp is stored
+     *
+     * @throws Exception If the timestamp cannot be retrieved
+     */
+    public function getLastPongResponseTimestamp(string $clientId): ?int
+    {
+        try {
+            $key = $this->getQueueKey($clientId).":last_pong";
+
+            $timestamp = $this->redis->get($key);
+
+            if ($timestamp === false) {
+                return null;
+            }
+
+            return (int) $timestamp;
+
+        } catch (Exception $e) {
+            $this->logger?->error('Failed to get last pong timestamp: '.$e->getMessage());
+            throw new Exception('Failed to get last pong timestamp: '.$e->getMessage());
+        }
+    }
 }

@@ -7,16 +7,19 @@ use KLP\KlpMcpServer\Data\Requests\RequestData;
 
 class DataUtil
 {
-    public static function makeRequestData(array $message): RequestData|NotificationData|null
+    public static function makeRequestData(string $clientId, array $message): RequestData|NotificationData|null
     {
+        $data = null;
         if (isset($message['method'])) {
             if (isset($message['id'])) {
-                return RequestData::fromArray(data: $message);
+                $data = RequestData::fromArray(data: $message);
             } else {
-                return NotificationData::fromArray(data: $message);
+                $data = NotificationData::fromArray(data: array_merge(['clientId' => $clientId], $message));
             }
+        } elseif (isset($message['result'])) {
+            $data = NotificationData::fromArray(data: array_merge(['clientId' => $clientId], $message));
         }
 
-        return null;
+        return $data;
     }
 }

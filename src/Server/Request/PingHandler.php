@@ -6,29 +6,24 @@ use KLP\KlpMcpServer\Data\Requests\InitializeData;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Server\MCPServer;
+use KLP\KlpMcpServer\Transports\SseTransportInterface;
 
-class InitializeHandler implements RequestHandler
+class PingHandler implements RequestHandler
 {
-    private MCPServer $server;
 
-    public function __construct(MCPServer $server)
+    public function __construct(private readonly SseTransportInterface $transport)
     {
-        $this->server = $server;
     }
 
     public function isHandle(string $method): bool
     {
-        return $method === 'initialize';
+        return $method === 'ping';
     }
 
-    /**
-     * @throws JsonRpcErrorException
-     */
+
     public function execute(string $method, string|int $messageId, ?array $params = null): array
     {
-        $data = InitializeData::fromArray(data: $params);
-        $result = $this->server->initialize(data: $data);
-
-        return $result->toArray();
+        $this->transport->send(["id" => $messageId, "jsonrpc" => "2.0", "result" => []]);
+        return [];
     }
 }

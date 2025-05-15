@@ -10,10 +10,17 @@ namespace KLP\KlpMcpServer\Data\Requests;
  */
 class NotificationData
 {
+
+    /**
+     * The client ID of the client that sent the notification.
+     *
+     */
+    public string $clientId;
+
     /**
      * The method to be invoked.
      */
-    public string $method;
+    public ?string $method = null;
 
     /**
      * The JSON-RPC version string. MUST be "2.0".
@@ -30,11 +37,11 @@ class NotificationData
     /**
      * Constructor for NotificationData.
      *
-     * @param  string  $method  The notification method name.
+     * @param  string|null  $method  The notification method name.
      * @param  string  $jsonRpc  The JSON-RPC version (should be "2.0").
      * @param  array<mixed>|null  $params  The notification parameters.
      */
-    public function __construct(string $method, string $jsonRpc, ?array $params)
+    public function __construct(?string $method, string $jsonRpc, ?array $params)
     {
         $this->method = $method;
         $this->jsonRpc = $jsonRpc;
@@ -49,8 +56,11 @@ class NotificationData
      */
     public static function fromArray(array $data): self
     {
+        if (isset($data['clientId']) && empty($data['params'])) {
+            $data['params'] = ['clientId' => $data['clientId']];
+        }
         return new self(
-            method: $data['method'],
+            method: $data['method'] ?? null,
             jsonRpc: $data['jsonrpc'],
             params: $data['params'] ?? null
         );

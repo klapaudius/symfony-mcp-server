@@ -109,7 +109,7 @@ class SseTransportTest extends TestCase
     {
         // Define the input array and expected JSON
         // Arrange
-        $messageArray = ['key' => 'value', 'anotherKey' => 123];
+        $messageArray = ['id' => 1234567890, 'key' => 'value', 'anotherKey' => 123];
         $messageJson = json_encode($messageArray);
 
         // Act
@@ -127,6 +127,29 @@ class SseTransportTest extends TestCase
             .'data: '.$messageJson.PHP_EOL.PHP_EOL,
             $output
         );
+    }
+
+    /**
+     * Test that sending an array message encodes it to JSON and calls sendEvent with 'message' event.
+     */
+    public function test_send_array_message_without_id_will_add_unique_id(): void
+    {
+        // Define the input array and expected JSON
+        // Arrange
+        $messageArray = ['key' => 'value', 'anotherKey' => 123];
+        $messageJson = json_encode($messageArray);
+
+        // Act
+        ob_start();
+        try {
+            $this->instance->send($messageArray);
+            $output = ob_get_contents(); // Capture the output before clearing the buffer
+        } finally {
+            ob_end_clean(); // Ensure the buffer is cleaned even if an exception occurs
+        }
+
+        // Assert
+        $this->assertStringContainsString('data: {"id"', $output);
     }
 
     /**
@@ -599,5 +622,160 @@ class SseTransportTest extends TestCase
         $reflection = new \ReflectionClass($instance);
         $prop = $reflection->getProperty($propertyName);
         $prop->setValue($instance, $propertyValue);
+    }
+
+    /**
+     * Test that `setPingInterval` updates `pingInterval` correctly for valid values.
+     */
+    public function test_set_ping_interval_updates_correctly(): void
+    {
+        // Arrange
+        $validPingInterval = 15000; // A valid interval in milliseconds
+        $reflection = new \ReflectionClass($this->instance);
+        $method = $reflection->getMethod('setPingInterval');
+
+        // Act
+        $method->invoke($this->instance, $validPingInterval);
+        $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
+
+        // Assert
+        $this->assertEquals($validPingInterval, $updatedPingInterval);
+    }
+
+    /**
+     * Test that `setPingInterval`set the ping interval to the minimum allowed value when the value is less than the minimum allowed value.
+     */
+    public function test_set_ping_interval_with_less_than_minimum_value(): void
+    {
+        // Arrange
+        $invalidPingInterval = 5000; // Less than the minimum allowed value (10,000 ms)
+        $reflection = new \ReflectionClass($this->instance);
+        $method = $reflection->getMethod('setPingInterval');
+
+        // Act
+        $method->invoke($this->instance, $invalidPingInterval);
+        $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
+
+        // Assert
+        $this->assertEquals(10000, $updatedPingInterval);
+    }
+
+    /**
+     * Test that `setPingInterval`set the ping interval to the maximum allowed value when the value is more than the maximum allowed value.
+     */
+    public function test_set_ping_interval_with_more_than_maximum_value(): void
+    {
+        // Arrange
+        $invalidPingInterval = 50000; // More than the maximum allowed value (30,000 ms)
+        $reflection = new \ReflectionClass($this->instance);
+        $method = $reflection->getMethod('setPingInterval');
+
+        // Act
+        $method->invoke($this->instance, $invalidPingInterval);
+        $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
+
+        // Assert
+        $this->assertEquals(30000, $updatedPingInterval);
+    }
+
+    /**
+     * Test that `isConnected` returns true when the connection is active and conditions are met.
+     */
+    public function test_is_connected_returns_true_when_connected(): void
+    {
+        // Arrange
+        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
+        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $adapterMock->expects($this->once())
+            ->method('getLastPongResponseTimestamp')
+            ->willReturn(time());
+        $this->instance->setAdapter($adapterMock);
+
+        // Act
+        $result = $this->instance->isConnected();
+
+        // Assert
+        $this->assertTrue($result, 'Expected isConnected to return true when conditions are met.');
+    }
+
+    /**
+     * Test that `getAdapter` returns the correct adapter instance when set.
+     */
+    public function test_get_adapter_returns_set_adapter(): void
+    {
+        // Arrange
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $this->instance->setAdapter($adapterMock);
+
+        // Act
+        $result = $this->instance->getAdapter();
+
+        // Assert
+        $this->assertSame($adapterMock, $result, 'Expected getAdapter to return the set adapter instance.');
+    }
+
+    /**
+     * Test that `getAdapter` returns null when no adapter is set.
+     */
+    public function test_get_adapter_returns_null_when_no_adapter_set(): void
+    {
+        // Arrange
+        $this->instance->setAdapter(null);
+
+        // Act
+        $result = $this->instance->getAdapter();
+
+        // Assert
+        $this->assertNull($result, 'Expected getAdapter to return null when no adapter is set.');
+    }
+
+    /**
+     * Test that `isConnected` returns false when the connection is inactive or conditions are not met.
+     */
+    public function test_is_connected_returns_false_when_not_connected(): void
+    {
+        // Arrange
+        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
+        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $adapterMock->expects($this->once())
+            ->method('getLastPongResponseTimestamp')
+            ->willReturn(time() - 15);
+        $this->instance->setAdapter($adapterMock);
+
+        // Act
+        $result = $this->instance->isConnected();
+
+        // Assert
+        $this->assertFalse($result, 'Expected isConnected to return false when not connected.');
+    }
+
+    public function test_is_connected_triggers_a_ping_message_if_needed(): void
+    {
+        // Arrange
+        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time() - 11);
+        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $adapterMock->expects($this->once())
+            ->method('getLastPongResponseTimestamp')
+            ->willReturn(time() - 10);
+        $this->instance->setAdapter($adapterMock);
+
+        // Act
+        ob_start();
+        try {
+            $result = $this->instance->isConnected();
+            $output = ob_get_contents(); // Capture the output before clearing the buffer
+        } finally {
+            ob_end_clean(); // Ensure the buffer is cleaned even if an exception occurs
+        }
+
+        // Assert
+        $this->assertTrue($result, 'Expected isConnected to return false when connection is not active.');
+        $this->assertStringContainsString('"method":"ping"', $output);
     }
 }

@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events
  * @since 1.0.0
  */
-final class SseTransport implements TransportInterface
+final class SseTransport implements SseTransportInterface
 {
     /**
      * Tracks if the server-side connection is considered active.
@@ -54,6 +54,16 @@ final class SseTransport implements TransportInterface
      * Unique identifier for the client connection, generated during initialization.
      */
     protected ?string $clientId = null;
+
+    /**
+     * Stores the timestamp of the most recent ping, represented as an integer.
+     */
+    protected int $lastPingTimestamp = 0;
+
+    /**
+     * Defines the interval, in milliseconds, at which ping messages are sent to maintain the connection.
+     */
+    protected int $pingInterval = 10000;
 
     public function __construct(
         private readonly string $defaultPath,
@@ -95,6 +105,8 @@ final class SseTransport implements TransportInterface
         if ($this->clientId === null) {
             $this->clientId = uniqid();
         }
+        $this->lastPingTimestamp = time();
+        $this->adapter->storeLastPongResponseTimestamp($this->clientId, time());
 
         $this->sendEvent(event: 'endpoint', data: $this->getEndpoint(sessionId: $this->clientId));
     }
@@ -130,7 +142,7 @@ final class SseTransport implements TransportInterface
     public function send(string|array $message): void
     {
         if (is_array($message)) {
-            $message = json_encode($message);
+            $message = json_encode(array_merge(['id' => uniqid('r')], $message));
         }
 
         $this->sendEvent(event: 'message', data: $message);
@@ -200,13 +212,22 @@ final class SseTransport implements TransportInterface
     }
 
     /**
-     * Checks if the client connection is still active using `connection_aborted()`.
+     * Checks if the connection is currently active based on the last ping timestamp
+     * and the defined ping interval.
      *
-     * @return bool True if connected, false if aborted.
+     * @return bool True if the connection is active, false otherwise.
      */
     public function isConnected(): bool
     {
-        return connection_aborted() === 0;
+        if ( time() - $this->lastPingTimestamp > $this->pingInterval / 1000 ) {
+            $this->lastPingTimestamp = time();
+            $this->send(message: ['jsonrpc' => '2.0', 'method' => 'ping']);
+        }
+        $pingTest = time() - $this->getLastPongResponseTimestamp() < ($this->pingInterval / 1000) + 5;
+        if (! $pingTest) {
+            $this->logger?->info('SSE Transport::isConnected: pingTest failed');
+        }
+        return $pingTest && connection_aborted() === 0;
     }
 
     /**
@@ -214,7 +235,7 @@ final class SseTransport implements TransportInterface
      * Returns an empty array if no adapter, no messages, or on error.
      * Triggers error handlers on adapter failure.
      *
-     * @return array<array> An array of message payloads.
+     * @return array<string|array> An array of message payloads.
      */
     public function receive(): array
     {
@@ -313,5 +334,31 @@ final class SseTransport implements TransportInterface
             trim($this->defaultPath, '/'),
             $sessionId,
         );
+    }
+
+    /**
+     * @return int|null
+     * @throws Exception
+     */
+    protected function getLastPongResponseTimestamp(): ?int
+    {
+        return $this->adapter->getLastPongResponseTimestamp($this->clientId);
+    }
+
+    /**
+     * Sets the interval for sending ping requests.
+     *
+     * @param int $pingInterval The interval in milliseconds at which ping requests should be sent.
+     *                          The value must be between 10,000 and 30,000 ms.
+     * @return void
+     */
+    protected function setPingInterval(int $pingInterval): void
+    {
+        $this->pingInterval = max(10000, min($pingInterval, 30000));
+    }
+
+    public function getAdapter(): ?SseAdapterInterface
+    {
+        return $this->adapter;
     }
 }

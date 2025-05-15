@@ -6,5 +6,5 @@ interface NotificationHandler
 {
     public function execute(?array $params = null): array;
 
-    public function isHandle(string $method): bool;
+    public function isHandle(?string $method): bool;
 }

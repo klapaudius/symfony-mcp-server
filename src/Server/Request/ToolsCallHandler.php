@@ -27,13 +27,14 @@ class ToolsCallHandler implements RequestHandler
      * Executes a specified method with provided parameters and returns the result.
      *
      * @param  string  $method  The method to be executed.
+     * @param  string|int $messageId  The ID of the request message. Used for response identification.
      * @param  array|null  $params  An associative array of parameters required for execution. Must include 'name' as the tool identifier and optionally 'arguments'.
      * @return array The response array containing the execution result, which may vary based on the method.
      *
      * @throws JsonRpcErrorException If the tool name is missing or the tool is not found
      * @throws ToolParamsValidatorException If the provided arguments are invalid.
      */
-    public function execute(string $method, ?array $params = null): array
+    public function execute(string $method, string|int $messageId, ?array $params = null): array
     {
         $name = $params['name'] ?? null;
         if ($name === null) {

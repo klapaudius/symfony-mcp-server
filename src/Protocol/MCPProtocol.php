@@ -12,6 +12,9 @@ use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Server\Notification\PongHandler;
+use KLP\KlpMcpServer\Server\Request\PingHandler;
+use KLP\KlpMcpServer\Transports\SseTransportInterface;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use KLP\KlpMcpServer\Utils\DataUtil;
 
@@ -41,6 +44,10 @@ final class MCPProtocol implements MCPProtocolInterface
     public function __construct(private readonly TransportInterface $transport)
     {
         $this->transport->onMessage([$this, 'handleMessage']);
+        if ($this->transport instanceof SseTransportInterface) {
+            $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
+            $this->registerRequestHandler(new PingHandler( $this->transport ));
+        }
     }
 
     /**
@@ -125,7 +132,7 @@ final class MCPProtocol implements MCPProtocolInterface
                 throw new JsonRpcErrorException(message: 'Invalid Request: Not a valid JSON-RPC 2.0 message', code: JsonRpcErrorCode::INVALID_REQUEST, data: $message);
             }
 
-            $requestData = DataUtil::makeRequestData(message: $message);
+            $requestData = DataUtil::makeRequestData(clientId: $clientId, message: $message);
             if ($requestData instanceof RequestData) {
                 $this->handleRequestProcess(clientId: $clientId, requestData: $requestData);
 
@@ -159,7 +166,7 @@ final class MCPProtocol implements MCPProtocolInterface
         try {
             foreach ($this->requestHandlers as $handler) {
                 if ($handler->isHandle(method: $requestData->method)) {
-                    $result = $handler->execute(method: $requestData->method, params: $requestData->params);
+                    $result = $handler->execute(method: $requestData->method, messageId: $requestData->id, params: $requestData->params);
 
                     $resultResource = new JsonRpcResultResource(id: $requestData->id, result: $result);
                     $this->pushMessage(clientId: $clientId, message: $resultResource);
