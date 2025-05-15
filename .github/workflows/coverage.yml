@@ -16,14 +16,6 @@ jobs:
     name: Coverage
 
     steps:
-      - name: Install PHP Redis extension
-        run: sudo apt-get install -y php-redis
-
-      - name: Enable Redis extension
-        run: |
-          echo "extension=redis.so" >> "$(php -r 'echo php_ini_loaded_file();')"
-          php -m | grep redis
-
       - name: Checkout code
         uses: actions/checkout@v4
 

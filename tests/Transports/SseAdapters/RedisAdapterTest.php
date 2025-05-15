@@ -22,6 +22,10 @@ final class RedisAdapterTest extends TestCase
 
     protected function setUp(): void
     {
+        if (!class_exists(\Redis::class)) {
+            eval('class Redis { public function __call($name, $arguments) {} }');
+        }
+
         $this->redisMock = $this->createMock(Redis::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
