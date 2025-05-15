@@ -16,6 +16,9 @@ jobs:
     name: Coverage
 
     steps:
+      - name: Install PHP Redis extension
+        run: sudo apt-get install -y php-redis
+
       - name: Checkout code
         uses: actions/checkout@v4
 
