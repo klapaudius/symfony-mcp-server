@@ -631,7 +631,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_updates_correctly(): void
     {
         // Arrange
-        $validPingInterval = 15000; // A valid interval in milliseconds
+        $validPingInterval = 120; // A valid interval in secondes
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -649,7 +649,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_with_less_than_minimum_value(): void
     {
         // Arrange
-        $invalidPingInterval = 5000; // Less than the minimum allowed value (10,000 ms)
+        $invalidPingInterval = 10; // Less than the minimum allowed value (60s)
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -658,7 +658,7 @@ class SseTransportTest extends TestCase
         $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
 
         // Assert
-        $this->assertEquals(10000, $updatedPingInterval);
+        $this->assertEquals(60, $updatedPingInterval);
     }
 
     /**
@@ -667,7 +667,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_with_more_than_maximum_value(): void
     {
         // Arrange
-        $invalidPingInterval = 50000; // More than the maximum allowed value (30,000 ms)
+        $invalidPingInterval = 240; // More than the maximum allowed value (180 s)
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -676,7 +676,7 @@ class SseTransportTest extends TestCase
         $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
 
         // Assert
-        $this->assertEquals(30000, $updatedPingInterval);
+        $this->assertEquals(180, $updatedPingInterval);
     }
 
     /**
@@ -744,7 +744,7 @@ class SseTransportTest extends TestCase
         $adapterMock = $this->createMock(SseAdapterInterface::class);
         $adapterMock->expects($this->once())
             ->method('getLastPongResponseTimestamp')
-            ->willReturn(time() - 15);
+            ->willReturn(time() - 200);
         $this->instance->setAdapter($adapterMock);
 
         // Act
@@ -757,13 +757,13 @@ class SseTransportTest extends TestCase
     public function test_is_connected_triggers_a_ping_message_if_needed(): void
     {
         // Arrange
-        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time() - 11);
+        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time() - 71);
         $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
 
         $adapterMock = $this->createMock(SseAdapterInterface::class);
         $adapterMock->expects($this->once())
             ->method('getLastPongResponseTimestamp')
-            ->willReturn(time() - 10);
+            ->willReturn(time() - 70);
         $this->instance->setAdapter($adapterMock);
 
         // Act

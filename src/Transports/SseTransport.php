@@ -62,9 +62,9 @@ final class SseTransport implements SseTransportInterface
     protected int $lastPingTimestamp = 0;
 
     /**
-     * Defines the interval, in milliseconds, at which ping messages are sent to maintain the connection.
+     * Defines the interval, in secondes, at which ping messages are sent to maintain the connection.
      */
-    protected int $pingInterval = 10000;
+    protected int $pingInterval = 60;
 
     public function __construct(
         private readonly string $defaultPath,
@@ -220,11 +220,11 @@ final class SseTransport implements SseTransportInterface
      */
     public function isConnected(): bool
     {
-        if (time() - $this->lastPingTimestamp > $this->pingInterval / 1000) {
+        if (time() - $this->lastPingTimestamp > $this->pingInterval) {
             $this->lastPingTimestamp = time();
             $this->send(message: ['jsonrpc' => '2.0', 'method' => 'ping']);
         }
-        $pingTest = time() - $this->getLastPongResponseTimestamp() < ($this->pingInterval / 1000) + 5;
+        $pingTest = time() - $this->getLastPongResponseTimestamp() < $this->pingInterval + 60;
         if (! $pingTest) {
             $this->logger?->info('SSE Transport::isConnected: pingTest failed');
         }
@@ -350,11 +350,11 @@ final class SseTransport implements SseTransportInterface
      * Sets the interval for sending ping requests.
      *
      * @param  int  $pingInterval  The interval in milliseconds at which ping requests should be sent.
-     *                             The value must be between 10,000 and 30,000 ms.
+     *                             The value must be between 60 and 180 secondes.
      */
     protected function setPingInterval(int $pingInterval): void
     {
-        $this->pingInterval = max(10000, min($pingInterval, 30000));
+        $this->pingInterval = max(60, min($pingInterval, 180));
     }
 
     public function getAdapter(): ?SseAdapterInterface
