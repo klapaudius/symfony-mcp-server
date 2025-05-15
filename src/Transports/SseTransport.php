@@ -339,7 +339,6 @@ final class SseTransport implements SseTransportInterface
     }
 
     /**
-     * @return int|null
      * @throws SseAdapterException
      */
     protected function getLastPongResponseTimestamp(): ?int

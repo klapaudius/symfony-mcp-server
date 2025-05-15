@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Server\Notification;
 
-use Exception;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
