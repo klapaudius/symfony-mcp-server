@@ -23,7 +23,7 @@ final class RedisAdapterTest extends TestCase
     protected function setUp(): void
     {
         if (!class_exists(\Redis::class)) {
-            eval('class Redis { public function __call($name, $arguments) {} }');
+            eval('class Redis { const OPT_PREFIX = 2; public function __call($name, $arguments) {} }');
         }
 
         $this->redisMock = $this->createMock(Redis::class);
