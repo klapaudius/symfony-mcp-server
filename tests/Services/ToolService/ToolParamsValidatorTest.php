@@ -10,6 +10,12 @@ use PHPUnit\Framework\TestCase;
 #[Small]
 class ToolParamsValidatorTest extends TestCase
 {
+    /**
+     * Tests the `validate` method of `ToolParamsValidator` with valid arguments.
+     *
+     * Ensures that the provided valid arguments pass the validation process defined
+     * by the tool schema without throwing any exceptions or errors.
+     */
     public function test_validate_with_valid_arguments(): void
     {
         $toolSchema = [
@@ -30,6 +36,14 @@ class ToolParamsValidatorTest extends TestCase
         ToolParamsValidator::validate($toolSchema, $arguments);
     }
 
+    /**
+     * Tests the `validate` method of `ToolParamsValidator` with missing required arguments.
+     *
+     * Verifies that the validation process throws a `ToolParamsValidatorException` when
+     * the provided arguments are missing one or more keys that are marked as required
+     * in the tool schema. Confirms the exception contains specific error details about
+     * the missing argument(s).
+     */
     public function test_validate_with_missing_required_argument(): void
     {
         $toolSchema = [
@@ -55,6 +69,9 @@ class ToolParamsValidatorTest extends TestCase
         }
     }
 
+    /**
+     * Tests the validation process when an optional argument is provided with an empty string value.
+     */
     public function test_validate_with_empty_optional_argument(): void
     {
         $toolSchema = [
@@ -70,6 +87,9 @@ class ToolParamsValidatorTest extends TestCase
         ToolParamsValidator::validate($toolSchema, $arguments);
     }
 
+    /**
+     * Tests the validation process when an invalid argument that is not defined in the schema is provided.
+     */
     public function test_validate_with_invalid_argument_not_in_schema(): void
     {
         $toolSchema = [
@@ -95,6 +115,9 @@ class ToolParamsValidatorTest extends TestCase
         }
     }
 
+    /**
+     * Tests the validation process when a required argument is provided with an invalid type.
+     */
     public function test_validate_with_invalid_argument_type(): void
     {
         $toolSchema = [
@@ -121,6 +144,9 @@ class ToolParamsValidatorTest extends TestCase
         }
     }
 
+    /**
+     * Tests the validation process when a required argument is provided with an empty string value.
+     */
     public function test_validate_with_empty_required_argument(): void
     {
         $toolSchema = [
