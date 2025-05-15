@@ -23,17 +23,14 @@ jobs:
 
     name: PHP ${{ matrix.php }}
 
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-        options: >-
-          --entrypoint redis-server
-
     steps:
       - name: Install PHP Redis extension
         run: sudo apt-get install -y php-redis
+
+      - name: Enable Redis extension
+        run: |
+          echo "extension=redis.so" >> "$(php -r 'echo php_ini_loaded_file();')"
+          php -m | grep redis
 
       - name: Checkout code
         uses: actions/checkout@v4
