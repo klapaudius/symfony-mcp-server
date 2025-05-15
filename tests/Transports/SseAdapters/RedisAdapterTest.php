@@ -15,7 +15,9 @@ use Redis;
 final class RedisAdapterTest extends TestCase
 {
     private Redis|MockObject $redisMock;
+
     private LoggerInterface|MockObject $loggerMock;
+
     private RedisAdapter $redisAdapter;
 
     protected function setUp(): void
@@ -503,7 +505,7 @@ final class RedisAdapterTest extends TestCase
         $this->redisMock->expects($this->once())
             ->method('get')
             ->with($key)
-            ->willReturn((string)$expectedTimestamp);
+            ->willReturn((string) $expectedTimestamp);
 
         $timestamp = $this->redisAdapter->getLastPongResponseTimestamp($clientId);
 

@@ -17,8 +17,11 @@ use Redis;
 final class RedisAdapter implements SseAdapterInterface
 {
     private const DEFAULT_PREFIX = 'mcp_sse_';
+
     private const DEFAULT_MESSAGE_TTL = 100;
+
     private const DEFAULT_REDIS_PORT = 6379;
+
     private const FAILED_TO_INITIALIZE = 'Failed to initialize Redis SSE Adapter: ';
 
     /**
@@ -39,9 +42,9 @@ final class RedisAdapter implements SseAdapterInterface
     /**
      * Constructor method to initialize the class with configuration, logger, and Redis instance
      *
-     * @param array $config Configuration array containing details such as 'prefix', 'ttl', and 'connection'
-     * @param LoggerInterface|null $logger Logger instance for error and debugging logs
-     * @param Redis|null $redis Optional Redis instance used during tests
+     * @param  array  $config  Configuration array containing details such as 'prefix', 'ttl', and 'connection'
+     * @param  LoggerInterface|null  $logger  Logger instance for error and debugging logs
+     * @param  Redis|null  $redis  Optional Redis instance used during tests
      * @return void
      *
      * @throws SseAdapterException If the Redis connection fails to initialize
@@ -52,14 +55,14 @@ final class RedisAdapter implements SseAdapterInterface
         ?Redis $redis = null // Allow Redis to be injected
     ) {
         $this->keyPrefix = $this->config['prefix'] ?? self::DEFAULT_PREFIX;
-        $this->messageTtl = (int)($this->config['ttl'] ?? self::DEFAULT_MESSAGE_TTL);
+        $this->messageTtl = (int) ($this->config['ttl'] ?? self::DEFAULT_MESSAGE_TTL);
 
         try {
             $this->redis = $redis ?? new Redis;
             $this->redis->connect($this->config['connection'], self::DEFAULT_REDIS_PORT);
             $this->redis->setOption(Redis::OPT_PREFIX, $this->keyPrefix);
         } catch (Exception $e) {
-            $this->logAndThrow(self::FAILED_TO_INITIALIZE . $e->getMessage(), $e);
+            $this->logAndThrow(self::FAILED_TO_INITIALIZE.$e->getMessage(), $e);
         }
     }
 
@@ -78,7 +81,7 @@ final class RedisAdapter implements SseAdapterInterface
             $this->redis->rpush($key, $message);
             $this->setKeyExpiration($key);
         } catch (Exception $e) {
-            $this->logAndThrow('Failed to add message to Redis queue: ' . $e->getMessage(), $e);
+            $this->logAndThrow('Failed to add message to Redis queue: '.$e->getMessage(), $e);
         }
     }
 
@@ -92,7 +95,7 @@ final class RedisAdapter implements SseAdapterInterface
     public function removeAllMessages(string $clientId): void
     {
         $this->executeRedisCommand(
-            fn() => $this->redis->del($this->generateQueueKey($clientId)),
+            fn () => $this->redis->del($this->generateQueueKey($clientId)),
             'Failed to remove messages from Redis queue'
         );
     }
@@ -136,7 +139,7 @@ final class RedisAdapter implements SseAdapterInterface
 
             return $message === false ? null : $message;
         } catch (Exception $e) {
-            $this->logAndThrow('Failed to pop message from Redis queue: ' . $e->getMessage(), $e);
+            $this->logAndThrow('Failed to pop message from Redis queue: '.$e->getMessage(), $e);
         }
     }
 
@@ -149,6 +152,7 @@ final class RedisAdapter implements SseAdapterInterface
     public function hasMessages(string $clientId): bool
     {
         $key = $this->generateQueueKey($clientId);
+
         return $this->getRedisKeyLength($key) > 0;
     }
 
@@ -161,6 +165,7 @@ final class RedisAdapter implements SseAdapterInterface
     public function getMessageCount(string $clientId): int
     {
         $key = $this->generateQueueKey($clientId);
+
         return $this->getRedisKeyLength($key);
     }
 
@@ -176,7 +181,7 @@ final class RedisAdapter implements SseAdapterInterface
     {
         $this->executeRedisCommand(
             function () use ($clientId, $timestamp) {
-                $key = $this->generateQueueKey($clientId) . ':last_pong';
+                $key = $this->generateQueueKey($clientId).':last_pong';
                 $this->redis->set($key, $timestamp ?? time());
                 $this->setKeyExpiration($key);
             },
@@ -195,11 +200,12 @@ final class RedisAdapter implements SseAdapterInterface
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
         try {
-            $key = $this->generateQueueKey($clientId) . ':last_pong';
+            $key = $this->generateQueueKey($clientId).':last_pong';
             $timestamp = $this->redis->get($key);
-            return $timestamp === false ? null : (int)$timestamp;
+
+            return $timestamp === false ? null : (int) $timestamp;
         } catch (Exception $e) {
-            $this->logAndThrow('Failed to get last pong timestamp: ' . $e->getMessage(), $e);
+            $this->logAndThrow('Failed to get last pong timestamp: '.$e->getMessage(), $e);
         }
     }
 
@@ -217,8 +223,7 @@ final class RedisAdapter implements SseAdapterInterface
     /**
      * Set the expiration time for the specified key in Redis
      *
-     * @param string $key The key for which the expiration time will be set
-     * @return void
+     * @param  string  $key  The key for which the expiration time will be set
      */
     private function setKeyExpiration(string $key): void
     {
@@ -228,15 +233,16 @@ final class RedisAdapter implements SseAdapterInterface
     /**
      * Retrieve the length of a Redis list by its key
      *
-     * @param string $key The key of the Redis list
+     * @param  string  $key  The key of the Redis list
      * @return int The length of the Redis list, or 0 if an error occurs
      */
     private function getRedisKeyLength(string $key): int
     {
         try {
-            return (int)$this->redis->llen($key);
+            return (int) $this->redis->llen($key);
         } catch (Exception $e) {
-            $this->logger?->error('Failed to get message count: ' . $e->getMessage());
+            $this->logger?->error('Failed to get message count: '.$e->getMessage());
+
             return 0;
         }
     }
@@ -244,9 +250,8 @@ final class RedisAdapter implements SseAdapterInterface
     /**
      * Executes a Redis command and handles potential exceptions.
      *
-     * @param callable $command The Redis command to be executed
-     * @param string $errorMessage The error message to log and throw in case of failure
-     * @return void
+     * @param  callable  $command  The Redis command to be executed
+     * @param  string  $errorMessage  The error message to log and throw in case of failure
      *
      * @throws SseAdapterException
      */
@@ -255,15 +260,15 @@ final class RedisAdapter implements SseAdapterInterface
         try {
             $command();
         } catch (Exception $e) {
-            $this->logAndThrow($errorMessage . ': ' . $e->getMessage(), $e);
+            $this->logAndThrow($errorMessage.': '.$e->getMessage(), $e);
         }
     }
 
     /**
      * Logs an error message and throws an exception
      *
-     * @param string $message The error message to log
-     * @param Exception $e The original exception to be wrapped and thrown
+     * @param  string  $message  The error message to log
+     * @param  Exception  $e  The original exception to be wrapped and thrown
      * @return never This method does not return as it always throws an exception
      *
      * @throws SseAdapterException
