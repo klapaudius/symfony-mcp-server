@@ -67,7 +67,7 @@ interface SseAdapterInterface
      * @return int The number of messages
      */
     public function getMessageCount(string $clientId): int;
-    
+
     /**
      * Store the last pong response timestamp for a specific client
      *
@@ -77,7 +77,7 @@ interface SseAdapterInterface
      * @throws \Exception If the timestamp cannot be stored
      */
     public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void;
-    
+
     /**
      * Get the last pong response timestamp for a specific client
      *

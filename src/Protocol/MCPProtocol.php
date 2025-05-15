@@ -46,7 +46,7 @@ final class MCPProtocol implements MCPProtocolInterface
         $this->transport->onMessage([$this, 'handleMessage']);
         if ($this->transport instanceof SseTransportInterface) {
             $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
-            $this->registerRequestHandler(new PingHandler( $this->transport ));
+            $this->registerRequestHandler(new PingHandler($this->transport));
         }
     }
 

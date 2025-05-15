@@ -6,7 +6,6 @@ use Exception;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 
-
 /**
  * Handles the processing of "Pong" notifications for managing client-server interactions.
  * This class specifically implements the NotificationHandler interface.
@@ -15,9 +14,7 @@ use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
  */
 readonly class PongHandler implements NotificationHandler
 {
-    public function __construct(private ?SseAdapterInterface $adapter = null)
-    {
-    }
+    public function __construct(private ?SseAdapterInterface $adapter = null) {}
 
     public function isHandle(?string $method): bool
     {
@@ -27,7 +24,7 @@ readonly class PongHandler implements NotificationHandler
     /**
      * Executes a specified method with optional parameters.
      *
-     * @param array|null $params Optional parameters to pass to the method. Null if not provided.
+     * @param  array|null  $params  Optional parameters to pass to the method. Null if not provided.
      * @return array The result of the execution, returned as an array.
      */
     public function execute(?array $params = null): array

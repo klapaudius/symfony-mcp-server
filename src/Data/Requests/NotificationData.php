@@ -10,10 +10,8 @@ namespace KLP\KlpMcpServer\Data\Requests;
  */
 class NotificationData
 {
-
     /**
      * The client ID of the client that sent the notification.
-     *
      */
     public string $clientId;
 
@@ -59,6 +57,7 @@ class NotificationData
         if (isset($data['clientId']) && empty($data['params'])) {
             $data['params'] = ['clientId' => $data['clientId']];
         }
+
         return new self(
             method: $data['method'] ?? null,
             jsonRpc: $data['jsonrpc'],

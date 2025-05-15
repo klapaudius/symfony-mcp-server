@@ -206,7 +206,7 @@ final class RedisAdapter implements SseAdapterInterface
     public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void
     {
         try {
-            $key = $this->getQueueKey($clientId).":last_pong";
+            $key = $this->getQueueKey($clientId).':last_pong';
             $timestamp = $timestamp ?? time();
 
             $this->redis->set($key, $timestamp);
@@ -229,7 +229,7 @@ final class RedisAdapter implements SseAdapterInterface
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
         try {
-            $key = $this->getQueueKey($clientId).":last_pong";
+            $key = $this->getQueueKey($clientId).':last_pong';
 
             $timestamp = $this->redis->get($key);
 

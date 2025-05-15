@@ -219,7 +219,7 @@ final class SseTransport implements SseTransportInterface
      */
     public function isConnected(): bool
     {
-        if ( time() - $this->lastPingTimestamp > $this->pingInterval / 1000 ) {
+        if (time() - $this->lastPingTimestamp > $this->pingInterval / 1000) {
             $this->lastPingTimestamp = time();
             $this->send(message: ['jsonrpc' => '2.0', 'method' => 'ping']);
         }
@@ -227,6 +227,7 @@ final class SseTransport implements SseTransportInterface
         if (! $pingTest) {
             $this->logger?->info('SSE Transport::isConnected: pingTest failed');
         }
+
         return $pingTest && connection_aborted() === 0;
     }
 
@@ -337,7 +338,6 @@ final class SseTransport implements SseTransportInterface
     }
 
     /**
-     * @return int|null
      * @throws Exception
      */
     protected function getLastPongResponseTimestamp(): ?int
@@ -348,9 +348,8 @@ final class SseTransport implements SseTransportInterface
     /**
      * Sets the interval for sending ping requests.
      *
-     * @param int $pingInterval The interval in milliseconds at which ping requests should be sent.
-     *                          The value must be between 10,000 and 30,000 ms.
-     * @return void
+     * @param  int  $pingInterval  The interval in milliseconds at which ping requests should be sent.
+     *                             The value must be between 10,000 and 30,000 ms.
      */
     protected function setPingInterval(int $pingInterval): void
     {
