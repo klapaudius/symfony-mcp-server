@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Tests\Transports;
 
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\SseTransport;
 use KLP\KlpMcpServer\Transports\SseTransportException;
@@ -310,7 +311,7 @@ class SseTransportTest extends TestCase
         $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
         $adapterMock->expects($this->once())
             ->method('removeAllMessages')
-            ->willThrowException(new \Exception('Adapter Exception'));
+            ->willThrowException(new SseAdapterException('Adapter Exception'));
 
         // Act
         ob_start();
@@ -404,7 +405,7 @@ class SseTransportTest extends TestCase
 
         $adapterMock->expects($this->once())
             ->method('receiveMessages')
-            ->willThrowException(new \Exception('Adapter Exception'));
+            ->willThrowException(new SseAdapterException('Adapter Exception'));
 
         $errorTriggered = false;
         $this->instance->onError(function (string $error) use (&$errorTriggered) {

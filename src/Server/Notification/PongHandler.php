@@ -4,6 +4,7 @@ namespace KLP\KlpMcpServer\Server\Notification;
 
 use Exception;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 
 /**
@@ -31,7 +32,7 @@ readonly class PongHandler implements NotificationHandler
     {
         try {
             $this->adapter?->storeLastPongResponseTimestamp($params['clientId'], time());
-        } catch (Exception) {
+        } catch (SseAdapterException) {
             // Nothing to do here the client will be disconnected anyway
         }
 

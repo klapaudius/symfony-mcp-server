@@ -19,7 +19,7 @@ interface SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @param  string  $message  The message to be queued
      *
-     * @throws \Exception If the message cannot be added to the queue
+     * @throws SseAdapterException If the message cannot be added to the queue
      */
     public function pushMessage(string $clientId, string $message): void;
 
@@ -28,7 +28,7 @@ interface SseAdapterInterface
      *
      * @param  string  $clientId  The unique identifier for the client
      *
-     * @throws \Exception If the messages cannot be removed
+     * @throws SseAdapterException If the messages cannot be removed
      */
     public function removeAllMessages(string $clientId): void;
 
@@ -38,7 +38,7 @@ interface SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return array<string> Array of messages
      *
-     * @throws \Exception If the messages cannot be retrieved
+     * @throws SseAdapterException If the messages cannot be retrieved
      */
     public function receiveMessages(string $clientId): array;
 
@@ -48,7 +48,7 @@ interface SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return string|null The message or null if the queue is empty
      *
-     * @throws \Exception If the message cannot be popped
+     * @throws SseAdapterException If the message cannot be popped
      */
     public function popMessage(string $clientId): ?string;
 
@@ -74,7 +74,7 @@ interface SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @param  int|null  $timestamp  The timestamp to store (defaults to current time if null)
      *
-     * @throws \Exception If the timestamp cannot be stored
+     * @throws SseAdapterException If the timestamp cannot be stored
      */
     public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void;
 
@@ -84,7 +84,7 @@ interface SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return int|null The timestamp or null if no timestamp is stored
      *
-     * @throws \Exception If the timestamp cannot be retrieved
+     * @throws SseAdapterException If the timestamp cannot be retrieved
      */
     public function getLastPongResponseTimestamp(string $clientId): ?int;
 }

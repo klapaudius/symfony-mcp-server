@@ -45,7 +45,7 @@ final class RedisAdapter implements SseAdapterInterface
             $this->redis->setOption(Redis::OPT_PREFIX, $this->keyPrefix);
         } catch (Exception $e) {
             $this->logger?->error(self::FAILED_TO_INITIALIZE.$e->getMessage());
-            throw new \Exception(self::FAILED_TO_INITIALIZE.$e->getMessage());
+            throw new SseAdapterException(self::FAILED_TO_INITIALIZE.$e->getMessage());
         }
     }
 
@@ -55,7 +55,7 @@ final class RedisAdapter implements SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @param  string  $message  The message to be queued
      *
-     * @throws Exception If the message cannot be added to the queue
+     * @throws SseAdapterException If the message cannot be added to the queue
      */
     public function pushMessage(string $clientId, string $message): void
     {
@@ -68,7 +68,7 @@ final class RedisAdapter implements SseAdapterInterface
 
         } catch (Exception $e) {
             $this->logger?->error('Failed to add message to Redis queue: '.$e->getMessage());
-            throw new Exception('Failed to add message to Redis queue: '.$e->getMessage());
+            throw new SseAdapterException('Failed to add message to Redis queue: '.$e->getMessage());
         }
     }
 
@@ -88,7 +88,7 @@ final class RedisAdapter implements SseAdapterInterface
      *
      * @param  string  $clientId  The unique identifier for the client
      *
-     * @throws Exception If the messages cannot be removed
+     * @throws SseAdapterException If the messages cannot be removed
      */
     public function removeAllMessages(string $clientId): void
     {
@@ -99,7 +99,7 @@ final class RedisAdapter implements SseAdapterInterface
 
         } catch (Exception $e) {
             $this->logger?->error('Failed to remove messages from Redis queue: '.$e->getMessage());
-            throw new Exception('Failed to remove messages from Redis queue: '.$e->getMessage());
+            throw new SseAdapterException('Failed to remove messages from Redis queue: '.$e->getMessage());
         }
     }
 
@@ -109,7 +109,7 @@ final class RedisAdapter implements SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return array<string> Array of messages
      *
-     * @throws Exception If the messages cannot be retrieved
+     * @throws SseAdapterException If the messages cannot be retrieved
      */
     public function receiveMessages(string $clientId): array
     {
@@ -123,7 +123,7 @@ final class RedisAdapter implements SseAdapterInterface
 
             return $messages;
         } catch (Exception $e) {
-            throw new Exception('Failed to receive messages from Redis queue: '.$e->getMessage());
+            throw new SseAdapterException('Failed to receive messages from Redis queue: '.$e->getMessage());
         }
     }
 
@@ -133,7 +133,7 @@ final class RedisAdapter implements SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return string|null The message or null if the queue is empty
      *
-     * @throws Exception If the message cannot be popped
+     * @throws SseAdapterException If the message cannot be popped
      */
     public function popMessage(string $clientId): ?string
     {
@@ -149,7 +149,7 @@ final class RedisAdapter implements SseAdapterInterface
             return $message;
         } catch (Exception $e) {
             $this->logger?->error('Failed to pop message from Redis queue: '.$e->getMessage());
-            throw new Exception('Failed to pop message from Redis queue: '.$e->getMessage());
+            throw new SseAdapterException('Failed to pop message from Redis queue: '.$e->getMessage());
         }
     }
 
@@ -201,7 +201,7 @@ final class RedisAdapter implements SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @param  int|null  $timestamp  The timestamp to store (defaults to current time if null)
      *
-     * @throws Exception If the timestamp cannot be stored
+     * @throws SseAdapterException If the timestamp cannot be stored
      */
     public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void
     {
@@ -214,7 +214,7 @@ final class RedisAdapter implements SseAdapterInterface
 
         } catch (Exception $e) {
             $this->logger?->error('Failed to store last pong timestamp: '.$e->getMessage());
-            throw new Exception('Failed to store last pong timestamp: '.$e->getMessage());
+            throw new SseAdapterException('Failed to store last pong timestamp: '.$e->getMessage());
         }
     }
 
@@ -224,7 +224,7 @@ final class RedisAdapter implements SseAdapterInterface
      * @param  string  $clientId  The unique identifier for the client
      * @return int|null The timestamp or null if no timestamp is stored
      *
-     * @throws Exception If the timestamp cannot be retrieved
+     * @throws SseAdapterException If the timestamp cannot be retrieved
      */
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
@@ -241,7 +241,7 @@ final class RedisAdapter implements SseAdapterInterface
 
         } catch (Exception $e) {
             $this->logger?->error('Failed to get last pong timestamp: '.$e->getMessage());
-            throw new Exception('Failed to get last pong timestamp: '.$e->getMessage());
+            throw new SseAdapterException('Failed to get last pong timestamp: '.$e->getMessage());
         }
     }
 }

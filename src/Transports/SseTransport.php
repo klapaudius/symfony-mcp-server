@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Transports;
 
 use Exception;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use Psr\Log\LoggerInterface;
 
@@ -98,7 +99,7 @@ final class SseTransport implements SseTransportInterface
      * Initializes the transport: generates client ID and sends the initial 'endpoint' event.
      * Adapter-specific initialization might occur here or externally.
      *
-     * @throws Exception If sending the initial event fails.
+     * @throws SseAdapterException If sending the initial event fails.
      */
     public function initialize(): void
     {
@@ -106,7 +107,7 @@ final class SseTransport implements SseTransportInterface
             $this->clientId = uniqid();
         }
         $this->lastPingTimestamp = time();
-        $this->adapter->storeLastPongResponseTimestamp($this->clientId, time());
+        $this->adapter?->storeLastPongResponseTimestamp($this->clientId, time());
 
         $this->sendEvent(event: 'endpoint', data: $this->getEndpoint(sessionId: $this->clientId));
     }
@@ -173,7 +174,7 @@ final class SseTransport implements SseTransportInterface
         if ($this->adapter !== null && $this->clientId !== null) {
             try {
                 $this->adapter->removeAllMessages($this->clientId);
-            } catch (Exception $e) {
+            } catch (SseAdapterException $e) {
                 $this->logger?->error('Error cleaning up SSE adapter resources on close: '.$e->getMessage());
             }
         }
@@ -245,7 +246,7 @@ final class SseTransport implements SseTransportInterface
                 $messages = $this->adapter->receiveMessages($this->clientId);
 
                 return $messages ?: [];
-            } catch (Exception $e) {
+            } catch (SseAdapterException $e) {
                 $this->triggerError('SSE Failed to receive messages via adapter: '.$e->getMessage());
             }
         } elseif ($this->adapter === null) {
@@ -338,7 +339,8 @@ final class SseTransport implements SseTransportInterface
     }
 
     /**
-     * @throws Exception
+     * @return int|null
+     * @throws SseAdapterException
      */
     protected function getLastPongResponseTimestamp(): ?int
     {
