@@ -55,11 +55,33 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
      */
     public function toArray(): array
     {
-        $capabilities = [];
+        $capabilities = [
+            'prompts' => new stdClass,
+            'resources' => new stdClass,
+        ];
 
         if ($this->supportsTools) {
             // Use an empty stdClass to ensure JSON serialization as {} instead of [] for empty arrays.
-            $capabilities['tools'] = $this->toolsConfig ?? new stdClass;
+            $capabilities['tools'] = $this->toolsConfig ?: new stdClass;
+        }
+
+        return $capabilities;
+    }
+
+    /**
+     * Prepares and returns an array of capabilities required to initialize a message.
+     *
+     * @return array An associative array containing capabilities such as prompts, resources, and tools. If tools are supported, additional properties may be included.
+     */
+    public function toInitializeMessage(): array
+    {
+        $capabilities = [
+            'prompts' => new stdClass,
+            'resources' => new stdClass,
+            'tools' => new stdClass,
+        ];
+        if ($this->supportsTools) {
+            $capabilities['tools']->listChanged = true;
         }
 
         return $capabilities;

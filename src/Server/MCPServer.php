@@ -119,6 +119,7 @@ final class MCPServer implements MCPServerInterface
     {
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
         $this->registerRequestHandler(new ToolsCallHandler($toolRepository));
+        $this->capabilities = (new ServerCapabilities)->withTools($toolRepository->getToolSchemas());
 
         return $this;
     }
@@ -172,14 +173,12 @@ final class MCPServer implements MCPServerInterface
         $this->clientCapabilities = $data->capabilities;
         $protocolVersion = $data->protocolVersion ?? MCPProtocol::PROTOCOL_VERSION;
 
-        $initializeResource = new InitializeResource(
+        return new InitializeResource(
             $this->serverInfo['name'],
             $this->serverInfo['version'],
-            $this->capabilities->toArray(),
+            $this->capabilities->toInitializeMessage(),
             $protocolVersion
         );
-
-        return $initializeResource;
     }
 
     /**

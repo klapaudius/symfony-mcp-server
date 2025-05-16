@@ -21,7 +21,11 @@ class InitializeData
     {
         return new self(
             $data['version'] ?? '1.0',
-            $data['capabilities'] ?? []
+            $data['capabilities'] ?? [
+                'prompts' => [],
+                'tools' => [],
+                'resources' => [],
+            ]
         );
     }
 

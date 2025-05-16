@@ -17,6 +17,8 @@
         </service>
         <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" />
 
+        <service id="KLP\KlpMcpServer\Server\ServerCapabilitiesInterface" class="KLP\KlpMcpServer\Server\ServerCapabilities" />
+
         <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.redis" />
         <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
             <argument type="collection">
@@ -41,6 +43,14 @@
                 <argument key="name">%klp_mcp_server.server.name%</argument>
                 <argument key="version">%klp_mcp_server.server.version%</argument>
             </argument>
+        </service>
+
+        <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
+            <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <service id="klp_mcp_server.capabilities" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
+            <argument type="service" id="service_container" on-invalid="null" />
         </service>
     </services>
 

@@ -29,4 +29,11 @@ interface ServerCapabilitiesInterface
      *                              For tools, if enabled but no config is set, it defaults to an empty JSON object.
      */
     public function toArray(): array;
+
+    /**
+     * Prepares and returns an array of capabilities required to initialize a message.
+     *
+     * @return array<string, mixed> An associative array containing capabilities such as prompts, resources, and tools. If tools are supported, additional properties may be included.
+     */
+    public function toInitializeMessage(): array;
 }

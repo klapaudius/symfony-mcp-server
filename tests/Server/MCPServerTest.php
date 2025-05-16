@@ -123,7 +123,6 @@ class MCPServerTest extends TestCase
     {
         $reflection = new ReflectionClass($object);
         $prop = $reflection->getProperty($property);
-        $prop->setAccessible(true);
 
         return $prop->getValue($object);
     }
@@ -216,7 +215,7 @@ class MCPServerTest extends TestCase
         $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
         $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
         $mockCapabilities->expects($this->once())
-            ->method('toArray')
+            ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
         $server = MCPServer::create($mockProtocol, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
@@ -272,7 +271,7 @@ class MCPServerTest extends TestCase
         $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
         $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
         $mockCapabilities->expects($this->once())
-            ->method('toArray')
+            ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
         $server = MCPServer::create($mockProtocol, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);

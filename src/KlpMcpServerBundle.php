@@ -4,7 +4,8 @@ namespace KLP\KlpMcpServer;
 
 use KLP\KlpMcpServer\Console\Commands\MakeMcpToolCommand;
 use KLP\KlpMcpServer\Console\Commands\TestMcpToolCommand;
-use KLP\KlpMcpServer\Providers\SseServiceProvider;
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -39,9 +40,9 @@ class KlpMcpServerBundle extends Bundle
             ]);
     }
 
-    public function register(): void
+    public function build(ContainerBuilder $container): void
     {
-        parent::register();
-        $this->app->register(SseServiceProvider::class);
+        parent::build($container);
+        $container->addCompilerPass(new ToolsDefinitionCompilerPass());
     }
 }

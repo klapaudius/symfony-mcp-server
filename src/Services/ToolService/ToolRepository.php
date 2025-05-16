@@ -2,9 +2,11 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService;
 
-use Illuminate\Container\Container;
 use InvalidArgumentException;
 use stdClass;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
 /**
  * Manages the registration and retrieval of tools available to the MCP server.
@@ -22,18 +24,19 @@ class ToolRepository
     protected array $tools = [];
 
     /**
-     * The Laravel service container instance.
+     * The Symfony container.
      */
-    protected Container $container;
+    protected ContainerInterface $container;
 
     /**
      * Constructor.
      *
-     * @param  Container|null  $container  The Laravel service container instance. If null, it resolves from the facade.
+     * @param  ContainerInterface  $container  The Symfony service container. If null, it resolves from the facade.
      */
-    public function __construct(?Container $container = null)
+    public function __construct(ContainerInterface $container)
     {
-        $this->container = $container ?? Container::getInstance();
+        $this->container = $container;
+        $this->registerMany($container->getParameter('klp_mcp_server.tools'));
     }
 
     /**
@@ -61,11 +64,13 @@ class ToolRepository
      * @return $this The current ToolRepository instance for method chaining.
      *
      * @throws InvalidArgumentException If the provided $tool is not a string or ToolInterface, or if the resolved object does not implement ToolInterface.
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
     public function register(string|ToolInterface $tool): self
     {
         if (is_string($tool)) {
-            $tool = $this->container->make($tool);
+            $tool = $this->container->get($tool);
         }
 
         if (! $tool instanceof ToolInterface) {
