@@ -47,7 +47,7 @@ Key benefits:
 ## Requirements
 
 - PHP >=8.2
-- Symfony >=7.x
+- Symfony >=7
 
 ## Installation
 
@@ -75,8 +75,8 @@ php bin/console make:mcp-tool MyCustomTool
 This command:
 
 - Handles various input formats (spaces, hyphens, mixed case)
-- Automatically converts the name to proper case format
-- Creates a properly structured tool class in `app/MCP/Tools`
+- Automatically converts the name to the proper case format
+- Creates a properly structured tool class in `src/MCP/Tools`
 - Offers to automatically register the tool in your configuration
 
 You can also manually create and register tools in `config/packages/klp_mcp_server.yaml`:
