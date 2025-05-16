@@ -1,10 +1,10 @@
-<h1 style="text-align: center">Symfony MCP Server (work in progress)</h1>
+<h1 align="center">Symfony MCP Server (work in progress)</h1>
 
-<p style="text-align: center">
+<p align="center">
   A powerful Symfony package to build a Model Context Protocol Server seamlessly
 </p>
 
-<p style="text-align: center">
+<p align="center">
 <a href="https://github.com/klapaudius/symfony-mcp-server/actions"><img src="https://github.com/klapaudius/symfony-mcp-server/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1" alt="Coverage"/></a>
 
