@@ -2,14 +2,14 @@
 
 namespace KLP\KlpMcpServer\Controllers;
 
-use KLP\KlpMcpServer\Server\MCPServer;
+use KLP\KlpMcpServer\Server\MCPServerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class MessageController
 {
-    public function __construct(private readonly MCPServer $server, private readonly LoggerInterface $logger) {}
+    public function __construct(private readonly MCPServerInterface $server, private readonly ?LoggerInterface $logger = null) {}
 
     public function handle(Request $request)
     {

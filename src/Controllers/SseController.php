@@ -5,9 +5,9 @@ namespace KLP\KlpMcpServer\Controllers;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class SseController
+final readonly class SseController
 {
-    public function __construct(private readonly MCPServerInterface $server) {}
+    public function __construct(private MCPServerInterface $server) {}
 
     public function handle(): StreamedResponse
     {

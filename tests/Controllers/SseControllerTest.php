@@ -25,9 +25,7 @@ class SseControllerTest extends TestCase
 
     public function test_handle_returns_streamed_response(): void
     {
-        $request = $this->createMock(Request::class);
-
-        $response = $this->controller->handle($request);
+        $response = $this->controller->handle();
 
         $this->assertInstanceOf(StreamedResponse::class, $response);
         $headers = $response->headers;
