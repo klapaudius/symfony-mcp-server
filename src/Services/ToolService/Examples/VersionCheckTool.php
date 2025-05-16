@@ -4,8 +4,9 @@ namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use stdClass;
+use Symfony\Component\HttpKernel\Kernel;
 
-class VersionCheckTool implements ToolInterface
+final class VersionCheckTool implements ToolInterface
 {
     public function getName(): string
     {
@@ -34,7 +35,7 @@ class VersionCheckTool implements ToolInterface
     public function execute(array $arguments): string
     {
         $now = (new \DateTime('now'))->format('Y-m-d H:i:s');
-        $version = App::version();
+        $version = Kernel::VERSION;
 
         return "current Version: {$version} - {$now}";
     }

@@ -12,6 +12,7 @@ use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Server\Notification\InitializedHandler;
 use KLP\KlpMcpServer\Server\Notification\PongHandler;
 use KLP\KlpMcpServer\Server\Request\PingHandler;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
@@ -46,6 +47,7 @@ final class MCPProtocol implements MCPProtocolInterface
         $this->transport->onMessage([$this, 'handleMessage']);
         if ($this->transport instanceof SseTransportInterface) {
             $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
+            $this->registerNotificationHandler(new InitializedHandler());
             $this->registerRequestHandler(new PingHandler($this->transport));
         }
     }
