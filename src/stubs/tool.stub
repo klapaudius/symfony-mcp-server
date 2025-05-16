@@ -35,7 +35,7 @@ class {{ className }} implements ToolInterface
     {
         return [
             'type' => 'object',
-            'arguments' => [
+            'properties' => [
                 'param1' => [
                     'type' => 'string',
                     'description' => 'First parameter description',

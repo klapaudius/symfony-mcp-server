@@ -55,11 +55,11 @@ class ToolParamsValidator
 
         $valid = true;
         foreach ($arguments as $argument => $value) {
-            $test = isset($toolSchema['arguments'][$argument])
-                && self::validateType($toolSchema['arguments'][$argument]['type'], $value);
+            $test = isset($toolSchema['properties'][$argument])
+                && self::validateType($toolSchema['properties'][$argument]['type'], $value);
             if (! $test) {
-                self::$errors[] = isset($toolSchema['arguments'][$argument])
-                    ? "Invalid argument type for: $argument. Expected: {$toolSchema['arguments'][$argument]['type']}, got: ".gettype($value)
+                self::$errors[] = isset($toolSchema['properties'][$argument])
+                    ? "Invalid argument type for: $argument. Expected: {$toolSchema['properties'][$argument]['type']}, got: ".gettype($value)
                     : "Unknown argument: $argument";
             }
             $valid &= $test;

@@ -19,7 +19,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_valid_arguments(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'string'],
                 'arg2' => ['type' => 'integer'],
             ],
@@ -47,7 +47,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_missing_required_argument(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'string'],
                 'arg2' => ['type' => 'integer'],
             ],
@@ -75,7 +75,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_empty_optional_argument(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'string'],
             ],
             'required' => [],
@@ -93,7 +93,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_invalid_argument_not_in_schema(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'array'],
             ],
             'required' => ['arg1'],
@@ -121,7 +121,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_invalid_argument_type(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'string'],
                 'arg2' => ['type' => 'boolean'],
             ],
@@ -150,7 +150,7 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_empty_required_argument(): void
     {
         $toolSchema = [
-            'arguments' => [
+            'properties' => [
                 'arg1' => ['type' => 'string'],
             ],
             'required' => ['arg1'],

@@ -20,7 +20,7 @@ class HelloWorldTool implements ToolInterface
     {
         return [
             'type' => 'object',
-            'arguments' => [
+            'properties' => [
                 'name' => [
                     'type' => 'string',
                     'description' => 'Developer Name',
