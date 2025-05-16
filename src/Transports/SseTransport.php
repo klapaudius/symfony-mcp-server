@@ -56,6 +56,9 @@ final class SseTransport implements SseTransportInterface
      */
     protected ?string $clientId = null;
 
+
+    protected bool $pingEnabled = false;
+
     /**
      * Stores the timestamp of the most recent ping, represented as an integer.
      */

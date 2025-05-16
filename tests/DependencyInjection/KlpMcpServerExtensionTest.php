@@ -45,7 +45,7 @@ class KlpMcpServerExtensionTest extends TestCase
                 ],
             ],
             'server_provider' => 'sse',
-            'sse_adapter' => 'custom_adapter',
+            'sse_adapter' => 'redis',
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
             'prompts' => ['prompt1', 'prompt2'],
             'resources' => ['resource1', 'resource2'],
@@ -59,7 +59,7 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals('/default/path', $this->container->getParameter('klp_mcp_server.default_path'));
         $this->assertEquals(['middleware1', 'middleware2'], $this->container->getParameter('klp_mcp_server.middlewares'));
         $this->assertEquals('klp_mcp_server.provider.sse', $this->container->getParameter('klp_mcp_server.provider'));
-        $this->assertEquals('klp_mcp_server.adapter.custom_adapter', $this->container->getParameter('klp_mcp_server.adapter'));
+        $this->assertEquals('klp_mcp_server.adapter.redis', $this->container->getParameter('klp_mcp_server.adapter'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
         $this->assertEquals(['prompt1', 'prompt2'], $this->container->getParameter('klp_mcp_server.prompts'));
         $this->assertEquals(['resource1', 'resource2'], $this->container->getParameter('klp_mcp_server.resources'));

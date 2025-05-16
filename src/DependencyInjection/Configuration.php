@@ -12,9 +12,8 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('klp_mcp_server');
         $rootNode = $treeBuilder->getRootNode();
         $supportedAdapters = ['redis'];
-        $adapterPrefix = 'klp_mcp_server.adapter.';
-        $supportedAdaptersServices = array_map(function ($item) use ($adapterPrefix) {
-            return $adapterPrefix.$item;
+        $supportedAdaptersServices = array_map(function ($item) {
+            return $item;
         }, $supportedAdapters);
         $rootNode
             ->addDefaultsIfNotSet()
