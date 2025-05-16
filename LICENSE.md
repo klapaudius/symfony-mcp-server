@@ -1,6 +1,7 @@
 The MIT License (MIT)
 
 Copyright (c) OP.GG
+
 Copyright (c) 2025 klapaudius
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
