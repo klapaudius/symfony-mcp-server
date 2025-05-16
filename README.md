@@ -155,7 +155,7 @@ This will typically open a web interface at `localhost:6274`. To test your MCP s
 2. In the Inspector interface, enter your Symfony server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
 3. Connect and explore available tools visually
 
-The SSE URL follows the pattern: `http://[your-laravel-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
+The SSE URL follows the pattern: `http://[your-web-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
 
 ## Advanced Features
 
