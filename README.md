@@ -1,12 +1,12 @@
-<h1 align="center">Symfony MCP Server (work in progress)</h1>
+<h1 style="text-align: center">Symfony MCP Server (work in progress)</h1>
 
-<p align="center">
+<p style="text-align: center">
   A powerful Symfony package to build a Model Context Protocol Server seamlessly
 </p>
 
-<p align="center">
+<p style="text-align: center">
 <a href="https://github.com/klapaudius/symfony-mcp-server/actions"><img src="https://github.com/klapaudius/symfony-mcp-server/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
-<a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1"/></a>
+<a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1" alt="Coverage"/></a>
 
 [//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
 [//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/v/klapaudius/symfony-mcp-server" alt="Latest Stable Version"></a>)
@@ -182,7 +182,7 @@ The default Redis adapter can be configured as follows:
 'adapters' => [
     'redis' => [
         'prefix' => 'mcp_sse_',    // Prefix for Redis keys
-        'connection' => 'default', // Redis connection from database.php
+        'host' => 'default', // Redis connection from database.php
         'ttl' => 100,              // Message TTL in seconds
     ],
 ],

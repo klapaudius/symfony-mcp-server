@@ -220,13 +220,12 @@ final class SseTransport implements SseTransportInterface
      */
     public function isConnected(): bool
     {
-        if (time() - $this->lastPingTimestamp > $this->pingInterval) {
-            $this->lastPingTimestamp = time();
-            $this->send(message: ['jsonrpc' => '2.0', 'method' => 'ping']);
-        }
-        $pingTest = time() - $this->getLastPongResponseTimestamp() < $this->pingInterval + 60;
-        if (! $pingTest) {
-            $this->logger?->info('SSE Transport::isConnected: pingTest failed');
+        $pingTest = true;
+        if ($this->pingEnabled) {
+            $pingTest = $this->checkPing();
+            if (!$pingTest) {
+                $this->logger?->info('SSE Transport::checkPing: pingTest failed');
+            }
         }
 
         return $pingTest && connection_aborted() === 0;
@@ -344,6 +343,23 @@ final class SseTransport implements SseTransportInterface
     protected function getLastPongResponseTimestamp(): ?int
     {
         return $this->adapter->getLastPongResponseTimestamp($this->clientId);
+    }
+
+    /**
+     * @return bool
+     * @throws SseAdapterException
+     */
+    private function checkPing(): bool
+    {
+        if (time() - $this->lastPingTimestamp > $this->pingInterval) {
+            $this->lastPingTimestamp = time();
+            try {
+                $this->send(message: ['jsonrpc' => '2.0', 'method' => 'ping']);
+            } catch (Exception) {
+                return false;
+            }
+        }
+        return time() - $this->getLastPongResponseTimestamp() < $this->pingInterval + 60;
     }
 
     /**

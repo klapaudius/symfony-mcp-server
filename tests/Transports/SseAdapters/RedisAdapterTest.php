@@ -56,7 +56,7 @@ final class RedisAdapterTest extends TestCase
 
     private function getMockRedisConfiguration(): array
     {
-        return ['connection' => 'localhost', 'prefix' => 'test_', 'ttl' => 120];
+        return ['host' => 'localhost', 'prefix' => 'test_', 'ttl' => 120];
     }
 
     /**
@@ -101,7 +101,7 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_constructor_uses_default_values_when_config_is_partial(): void
     {
-        $config = ['connection' => 'localhost']; // Missing 'prefix' and 'ttl'
+        $config = ['host' => 'localhost']; // Missing 'prefix' and 'ttl'
 
         $this->redisMock->expects($this->once())
             ->method('connect')

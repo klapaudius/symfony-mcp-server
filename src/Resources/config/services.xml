@@ -21,7 +21,7 @@
         <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
             <argument type="collection">
                 <argument key="prefix">%klp_mcp_server.adapters.redis.prefix%</argument>
-                <argument key="connection">%klp_mcp_server.adapters.redis.connection%</argument>
+                <argument key="host">%klp_mcp_server.adapters.redis.host%</argument>
                 <argument key="ttl">%klp_mcp_server.adapters.redis.ttl%</argument>
             </argument>
             <argument type="service" id="logger" on-invalid="null" />

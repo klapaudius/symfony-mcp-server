@@ -42,7 +42,7 @@ final class RedisAdapter implements SseAdapterInterface
     /**
      * Constructor method to initialize the class with configuration, logger, and Redis instance
      *
-     * @param  array  $config  Configuration array containing details such as 'prefix', 'ttl', and 'connection'
+     * @param  array  $config  Configuration array containing details such as 'prefix', 'ttl', and 'host'
      * @param  LoggerInterface|null  $logger  Logger instance for error and debugging logs
      * @param  Redis|null  $redis  Optional Redis instance used during tests
      * @return void
@@ -59,7 +59,7 @@ final class RedisAdapter implements SseAdapterInterface
 
         try {
             $this->redis = $redis ?? new Redis;
-            $this->redis->connect($this->config['connection'], self::DEFAULT_REDIS_PORT);
+            $this->redis->connect($this->config['host'], self::DEFAULT_REDIS_PORT);
             $this->redis->setOption(Redis::OPT_PREFIX, $this->keyPrefix);
         } catch (Exception $e) {
             $this->logAndThrow(self::FAILED_TO_INITIALIZE.$e->getMessage(), $e);

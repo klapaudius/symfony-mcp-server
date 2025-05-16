@@ -11,7 +11,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('klp_mcp_server');
         $rootNode = $treeBuilder->getRootNode();
-        $supportedAdapters = ['in_memory', 'redis'];
+        $supportedAdapters = ['redis'];
         $adapterPrefix = 'klp_mcp_server.adapter.';
         $supportedAdaptersServices = array_map(function ($item) use ($adapterPrefix) {
             return $adapterPrefix.$item;
@@ -44,6 +44,18 @@ class Configuration implements ConfigurationInterface
             ->cannotBeEmpty()
             ->end()
 
+                // ping feature
+            ->arrayNode('ping')
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->end()
+            ->integerNode('interval')
+            ->defaultValue(60)
+            ->end()
+            ->end()
+            ->end()
+
                 // Middleware Configuration
             ->arrayNode('middlewares')
             ->prototype('scalar')
@@ -64,10 +76,10 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('sse_adapter')
             ->defaultValue('redis')
             ->cannotBeEmpty()
-//                    ->validate()
-//                        ->ifNotInArray($supportedAdaptersServices)
-//                        ->thenInvalid('The sse adapter "%s" is not supported. Please choose one of '.implode(', ', $supportedAdaptersServices))
-//                    ->end()
+            ->validate()
+            ->ifNotInArray($supportedAdaptersServices)
+            ->thenInvalid('The sse adapter "%s" is not supported. Please choose one of '.implode(', ', $supportedAdaptersServices))
+            ->end()
             ->end()
 
                 // Adapters for SSE
@@ -78,7 +90,7 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('prefix')
             ->defaultValue('mcp_sse_')
             ->end()
-            ->scalarNode('connection')
+            ->scalarNode('host')
             ->defaultValue('default')
             ->end()
             ->integerNode('ttl')

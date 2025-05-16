@@ -17,6 +17,13 @@ klp_mcp_server:
     # POST /{default_path}/message (This endpoint requires `sessionId` from `/sse`)
     default_path: 'mcp'
 
+    # Ping mechanism to ensure the clients are still connected
+    # This feature is optional. Enable it only if your clients are compliant,
+    # otherwise they will be periodically disconnected
+    ping:
+        enable: false
+        interval: 60
+
     # SSE Route Middleware
     # Middleware to apply to the SSE route (/{default_path}/sse). Use this to protect
     # your SSE endpoint with authentication or other middleware as needed.
@@ -41,12 +48,10 @@ klp_mcp_server:
     # scalable real-time communication in distributed environments.
     sse_adapter: 'redis'
     adapters:
-        in_memory: {}
         redis:
             prefix: 'mcp_sse_'
-            connection: 'localhost' # change it as needed
+            host: 'localhost' # change it as needed
             ttl: 100
-        # Add more adapter configurations as needed
 
     # Tools List
     # https://modelcontextprotocol.io/docs/concepts/tools

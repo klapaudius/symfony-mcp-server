@@ -687,6 +687,7 @@ class SseTransportTest extends TestCase
         // Arrange
         $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
         $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($this->instance, 'pingEnabled', true);
 
         $adapterMock = $this->createMock(SseAdapterInterface::class);
         $adapterMock->expects($this->once())
@@ -740,6 +741,7 @@ class SseTransportTest extends TestCase
         // Arrange
         $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
         $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($this->instance, 'pingEnabled', true);
 
         $adapterMock = $this->createMock(SseAdapterInterface::class);
         $adapterMock->expects($this->once())
@@ -759,6 +761,7 @@ class SseTransportTest extends TestCase
         // Arrange
         $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time() - 71);
         $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($this->instance, 'pingEnabled', true);
 
         $adapterMock = $this->createMock(SseAdapterInterface::class);
         $adapterMock->expects($this->once())

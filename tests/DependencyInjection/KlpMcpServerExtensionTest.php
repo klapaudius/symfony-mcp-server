@@ -32,11 +32,15 @@ class KlpMcpServerExtensionTest extends TestCase
                 'version' => '1.0',
             ],
             'default_path' => '/default/path',
+            'ping' => [
+                'enabled' => true,
+                'interval' => 60,
+            ],
             'middlewares' => ['middleware1', 'middleware2'],
             'adapters' => [
                 'redis' => [
                     'prefix' => 'prefix',
-                    'connection' => 'localhost',
+                    'host' => 'localhost',
                     'ttl' => 100,
                 ],
             ],
