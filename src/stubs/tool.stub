@@ -2,7 +2,6 @@
 
 namespace {{ namespace }};
 
-use Illuminate\Support\Facades\Validator;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 
 class {{ className }} implements ToolInterface
@@ -65,11 +64,6 @@ class {{ className }} implements ToolInterface
      */
     public function execute(array $arguments): string
     {
-        Validator::make($arguments, [
-            'param1' => ['required', 'string'],
-            // Add more validation rules as needed
-        ])->validate();
-
         $param1 = $arguments['param1'] ?? 'default';
 
         // Implement your tool logic here
