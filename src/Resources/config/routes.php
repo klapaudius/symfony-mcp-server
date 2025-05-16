@@ -11,11 +11,13 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
  * @return void
  */
 return function (RoutingConfigurator $routes) {
-    $routes->add('sse_route', '/mcp/sse')
+    $defaultPath = "%klp_mcp_server.default_path%";
+
+    $routes->add('sse_route', "/$defaultPath/sse")
         ->controller([SseController::class, 'handle'])
         ->methods(['GET', 'POST']);
 
-    $routes->add('message_route', '/mcp/message')
+    $routes->add('message_route', "/$defaultPath/message")
         ->controller([MessageController::class, 'handle'])
         ->methods(['POST']);
 };
