@@ -64,7 +64,7 @@ class ToolParamsValidator
             }
             $valid &= $test;
         }
-        foreach ($toolSchema['required'] as $argument) {
+        foreach ($toolSchema['required'] ?? [] as $argument) {
             $test = ! empty($arguments[$argument]);
             if (! $test) {
                 self::$errors[] = "Missing required argument: $argument";

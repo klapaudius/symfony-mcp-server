@@ -70,7 +70,7 @@ class SseTransportTest extends TestCase
         // Assert
         $expectedClientId = $this->getProtectedProperty($this->instance, 'clientId');
         $expectedOutput = 'event: endpoint'.PHP_EOL
-            .'data: /default-path/message?sessionId='.$expectedClientId.PHP_EOL.PHP_EOL;
+            .'data: /default-path/messages?sessionId='.$expectedClientId.PHP_EOL.PHP_EOL;
 
         $this->assertNotNull($expectedClientId);
         $this->assertEquals($expectedOutput, $output);
@@ -97,7 +97,7 @@ class SseTransportTest extends TestCase
         // Assert
         $currentClientId = $this->getProtectedProperty($this->instance, 'clientId');
         $expectedOutput = 'event: endpoint'.PHP_EOL
-            .'data: /default-path/message?sessionId='.$existingClientId.PHP_EOL.PHP_EOL;
+            .'data: /default-path/messages?sessionId='.$existingClientId.PHP_EOL.PHP_EOL;
 
         $this->assertSame($existingClientId, $currentClientId);
         $this->assertEquals($expectedOutput, $output);
@@ -631,7 +631,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_updates_correctly(): void
     {
         // Arrange
-        $validPingInterval = 120; // A valid interval in secondes
+        $validPingInterval = 10; // A valid interval in secondes
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -649,7 +649,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_with_less_than_minimum_value(): void
     {
         // Arrange
-        $invalidPingInterval = 10; // Less than the minimum allowed value (60s)
+        $invalidPingInterval = 1; // Less than the minimum allowed value (5s)
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -658,7 +658,7 @@ class SseTransportTest extends TestCase
         $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
 
         // Assert
-        $this->assertEquals(60, $updatedPingInterval);
+        $this->assertEquals(5, $updatedPingInterval);
     }
 
     /**
@@ -667,7 +667,7 @@ class SseTransportTest extends TestCase
     public function test_set_ping_interval_with_more_than_maximum_value(): void
     {
         // Arrange
-        $invalidPingInterval = 240; // More than the maximum allowed value (180 s)
+        $invalidPingInterval = 60; // More than the maximum allowed value (30 s)
         $reflection = new \ReflectionClass($this->instance);
         $method = $reflection->getMethod('setPingInterval');
 
@@ -676,7 +676,7 @@ class SseTransportTest extends TestCase
         $updatedPingInterval = $reflection->getProperty('pingInterval')->getValue($this->instance);
 
         // Assert
-        $this->assertEquals(180, $updatedPingInterval);
+        $this->assertEquals(30, $updatedPingInterval);
     }
 
     /**
@@ -779,7 +779,7 @@ class SseTransportTest extends TestCase
         }
 
         // Assert
-        $this->assertTrue($result, 'Expected isConnected to return false when connection is not active.');
+        $this->assertFalse($result, 'Expected isConnected to return false when connection is not active.');
         $this->assertStringContainsString('"method":"ping"', $output);
     }
 }

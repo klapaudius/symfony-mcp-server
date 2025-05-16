@@ -17,7 +17,7 @@ return function (RoutingConfigurator $routes) {
         ->controller([SseController::class, 'handle'])
         ->methods(['GET', 'POST']);
 
-    $routes->add('message_route', "/$defaultPath/message")
+    $routes->add('message_route', "/$defaultPath/messages")
         ->controller([MessageController::class, 'handle'])
         ->methods(['POST']);
 };

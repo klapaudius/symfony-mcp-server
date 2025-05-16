@@ -46,35 +46,33 @@ final class SseTransport implements SseTransportInterface
     protected array $messageHandlers = [];
 
     /**
-     * Optional adapter for message persistence and retrieval (e.g., Redis).
-     * Enables simulation of request/response patterns over SSE.
-     */
-    protected ?SseAdapterInterface $adapter = null;
-
-    /**
      * Unique identifier for the client connection, generated during initialization.
      */
     protected ?string $clientId = null;
-
-
-    protected bool $pingEnabled = false;
 
     /**
      * Stores the timestamp of the most recent ping, represented as an integer.
      */
     protected int $lastPingTimestamp = 0;
 
-    /**
-     * Defines the interval, in secondes, at which ping messages are sent to maintain the connection.
-     */
-    protected int $pingInterval = 60;
 
+    /**
+     * Initializes the class with the default path, adapter, logger, and ping settings.
+     *
+     * @param string $defaultPath The default path for resources.
+     * @param SseAdapterInterface|null $adapter Optional adapter for message persistence and retrieval (e.g., Redis).
+     *                                          Enables simulation of request/response patterns over SSE.
+     * @param LoggerInterface|null $logger The logger instance (optional).
+     * @param bool $pingEnabled Flag to enable or disable ping functionality.
+     * @param int $pingInterval The interval, in secondes, at which ping messages are sent to maintain the connection.
+     */
     public function __construct(
         private readonly string $defaultPath,
-        ?SseAdapterInterface $adapter = null,
-        private readonly ?LoggerInterface $logger = null
+        private ?SseAdapterInterface $adapter = null,
+        private readonly ?LoggerInterface $logger = null,
+        private bool $pingEnabled = false,
+        private int $pingInterval = 10
     ) {
-        $this->adapter = $adapter;
     }
 
     /**
@@ -334,7 +332,7 @@ final class SseTransport implements SseTransportInterface
 
     private function getEndpoint(string $sessionId): string
     {
-        return sprintf('/%s/message?sessionId=%s',
+        return sprintf('/%s/messages?sessionId=%s',
             trim($this->defaultPath, '/'),
             $sessionId,
         );
@@ -362,18 +360,18 @@ final class SseTransport implements SseTransportInterface
                 return false;
             }
         }
-        return time() - $this->getLastPongResponseTimestamp() < $this->pingInterval + 60;
+        return time() - $this->getLastPongResponseTimestamp() < $this->pingInterval * 1.8;
     }
 
     /**
      * Sets the interval for sending ping requests.
      *
      * @param  int  $pingInterval  The interval in milliseconds at which ping requests should be sent.
-     *                             The value must be between 60 and 180 secondes.
+     *                             The value must be between 5 and 30 secondes.
      */
     protected function setPingInterval(int $pingInterval): void
     {
-        $this->pingInterval = max(60, min($pingInterval, 180));
+        $this->pingInterval = max(5, min($pingInterval, 30));
     }
 
     public function getAdapter(): ?SseAdapterInterface

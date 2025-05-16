@@ -32,6 +32,8 @@
             <argument type="string">%klp_mcp_server.default_path%</argument>
             <argument type="service" id="klp_mcp_server.adapter.redis" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
+            <argument type="binary">%klp_mcp_server.ping.enabled%</argument>
+            <argument type="string">%klp_mcp_server.ping.interval%</argument>
         </service>
 
         <service id="klp_mcp_server.protocol" class="KLP\KlpMcpServer\Protocol\MCPProtocol">
