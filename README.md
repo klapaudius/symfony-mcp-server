@@ -56,11 +56,35 @@ Key benefits:
    ```bash
    composer require klapaudius/symfony-mcp-server
    ```
-2. Configure your redis connection:
+2. Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
 
-    ```dotenv
-    MCP_REDIS_CONNECTION="redis://localhost:6379/mcp" # change it to your needs
-    ```
+```yaml
+klp_mcp_server:
+    enabled: true
+    server:
+        name: 'Klp MCP Server'
+        version: '0.1.0'
+    default_path: 'mcp'
+    ping:
+        enable: false
+        interval: 60
+    middlewares:
+        []
+    server_provider: 'sse'
+    sse_adapter: 'redis'
+    adapters:
+        redis:
+            prefix: 'mcp_sse_'
+            host: 'localhost'  # change it as needed
+            ttl: 100
+    tools:
+        - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
+    prompts: []
+    resources: []
+```
+For more detailed explanations, you can open the default configuration file
+[from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
 
 ## Basic Usage
 
@@ -120,39 +144,18 @@ You can also use the Model Context Protocol Inspector to visualize and test your
 # Run the MCP Inspector without installation
 npx @modelcontextprotocol/inspector node build/index.js
 ```
-
-Documentation still in progress
-===============================
-
-### The following provides from the forked repository and is not relevant to this version.
-
 This will typically open a web interface at `localhost:6274`. To test your MCP server:
 
-1. **Warning**: `php artisan serve` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
-
-   * **Laravel Octane** (Easiest option):
-     ```bash
-     # Install and set up Laravel Octane with FrankenPHP (recommended)
-     composer require laravel/octane
-     php artisan octane:install --server=frankenphp
-     
-     # Start the Octane server
-     php artisan octane:start
-     ```
-     
-     > **Important**: When installing Laravel Octane, make sure to use FrankenPHP as the server. The package may not work properly with RoadRunner due to compatibility issues with SSE connections. If you can help fix this RoadRunner compatibility issue, please submit a Pull Request - your contribution would be greatly appreciated!
-     
-     For details, see the [Laravel Octane documentation](https://laravel.com/docs/12.x/octane)
-     
-   * **Production-grade options**:
+1. **Warning**: `symfony server:start` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
+   
      - Nginx + PHP-FPM
      - Apache + PHP-FPM
      - Custom Docker setup
      - Any web server that properly supports SSE streaming  
-2. In the Inspector interface, enter your Laravel server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
+2. In the Inspector interface, enter your Symfony server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
 3. Connect and explore available tools visually
 
-The SSE URL follows the pattern: `http://[your-laravel-server]/[default_path]/sse` where `default_path` is defined in your `config/mcp-server.php` file.
+The SSE URL follows the pattern: `http://[your-laravel-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
 
 ## Advanced Features
 
@@ -177,34 +180,15 @@ This architecture enables:
 
 The default Redis adapter can be configured as follows:
 
-```php
-'sse_adapter' => 'redis',
-'adapters' => [
-    'redis' => [
-        'prefix' => 'mcp_sse_',    // Prefix for Redis keys
-        'host' => 'default', // Redis connection from database.php
-        'ttl' => 100,              // Message TTL in seconds
-    ],
-],
-```
 
-## Environment Variables
-
-The package supports the following environment variables to allow configuration without modifying the config files:
-
-| Variable | Description | Default |
-|----------|-------------|--------|
-| `MCP_SERVER_ENABLED` | Enable or disable the MCP server | `true` |
-| `MCP_REDIS_CONNECTION` | Redis connection name from database.php | `default` |
-
-### Example .env Configuration
-
-```
-# Disable MCP server in specific environments
-MCP_SERVER_ENABLED=false
-
-# Use a specific Redis connection for MCP
-MCP_REDIS_CONNECTION=mcp
+```yaml
+klp_mcp_server:
+    sse_adapter: 'redis'
+    adapters:
+        redis:
+            prefix: 'mcp_sse_'  # Prefix for Redis keys
+            host: 'localhost'   # Change it as needed
+            ttl: 100            # Message TTL in seconds
 ```
 
 ## Credits

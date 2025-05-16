@@ -49,9 +49,9 @@ klp_mcp_server:
     sse_adapter: 'redis'
     adapters:
         redis:
-            prefix: 'mcp_sse_'
-            host: 'localhost' # change it as needed
-            ttl: 100
+            prefix: 'mcp_sse_'  # Prefix for Redis keys
+            host: 'localhost'   # Change it as needed
+            ttl: 100            # Message TTL in seconds
 
     # Tools List
     # https://modelcontextprotocol.io/docs/concepts/tools
