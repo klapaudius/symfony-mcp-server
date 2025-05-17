@@ -27,6 +27,9 @@ class MessageControllerTest extends TestCase
         $this->controller = new MessageController($this->mockServer, $this->mockLogger);
     }
 
+    /**
+     * Tests handling a request with session ID from request body
+     */
     public function test_handle_success_with_session_id_from_request_body(): void
     {
         $sessionId = '12345';
@@ -51,6 +54,9 @@ class MessageControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
+    /**
+     * Tests handling a request with session ID from query parameters
+     */
     public function test_handle_success_with_session_id_from_query(): void
     {
         $sessionId = '67890';
@@ -75,6 +81,9 @@ class MessageControllerTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
+    /**
+     * Tests that a JSON decode error is thrown when invalid JSON is provided
+     */
     public function test_handle_throws_json_decode_error(): void
     {
         $request = new Request([], [], [], [], [], [], '{invalid-json}');
@@ -87,6 +96,9 @@ class MessageControllerTest extends TestCase
         $this->controller->handle($request);
     }
 
+    /**
+     * Tests that a TypeError is thrown when no session ID is provided
+     */
     public function test_handle_without_session_id(): void
     {
         $messageData = ['key' => 'value'];

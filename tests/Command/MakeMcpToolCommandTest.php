@@ -29,7 +29,10 @@ YAML;
         $this->command = new MakeMcpToolCommand($this->kernel, $this->filesystem);
     }
 
-    public function testExecuteSuccessfullyCreatesTool(): void
+    /**
+     * Tests that a tool is successfully created when all conditions are met
+     */
+    public function test_execute_successfully_creates_tool(): void
     {
         $toolName = '1TestTool';
         $configPath = '/fake-path/config/packages/klp_mcp_server.yaml';
@@ -76,7 +79,10 @@ YAML;
         $this->assertStringContainsString("MCP tool {$toolName} created successfully.", $commandTester->getDisplay());
     }
 
-    public function testExecuteFailsWhenToolAlreadyExists(): void
+    /**
+     * Tests that execution fails when a tool with the given name already exists
+     */
+    public function test_execute_fails_when_tool_already_exists(): void
     {
         $toolName = 'ExistingTool';
         $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
@@ -90,7 +96,10 @@ YAML;
         $this->assertStringContainsString("MCP tool {$toolName} already exists!", $commandTester->getDisplay());
     }
 
-    public function testExecutePromptsForToolNameIfNotProvided(): void
+    /**
+     * Tests that the command prompts for a tool name when none is provided
+     */
+    public function test_execute_prompts_for_tool_name_if_not_provided(): void
     {
         $toolName = 'GeneratedTool';
         $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
@@ -110,7 +119,10 @@ YAML;
         $this->assertStringContainsString("MCP tool {$toolName} created successfully.", $commandTester->getDisplay());
     }
 
-    public function testExecuteDoesNotRegisterToolAutomatically(): void
+    /**
+     * Tests that a tool is not automatically registered when user chooses not to
+     */
+    public function test_execute_does_not_register_tool_automatically(): void
     {
         $toolName = 'UnregisteredTool';
         $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
@@ -127,10 +139,14 @@ YAML;
         $commandTester->setInputs(['no']);
         $commandTester->execute(['name' => $toolName]);
 
-        $this->assertStringContainsString("Don't forget to register your tool in config/package/klp-mcp-server.yaml:", $commandTester->getDisplay());
+        $this->assertStringContainsString("Don't forget to register your tool in", $commandTester->getDisplay());
+        $this->assertStringContainsString("config/package/klp-mcp-server.yaml:", $commandTester->getDisplay());
     }
 
-    public function testRegisterToolFailsWhenConfigFileDoesNotExist(): void
+    /**
+     * Tests that registration fails when configuration file does not exist
+     */
+    public function test_register_tool_fails_when_config_file_does_not_exist(): void
     {
         $toolName = 'TestToolConfig';
         $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . 'Tool.php';
