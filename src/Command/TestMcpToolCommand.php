@@ -1,6 +1,6 @@
 <?php
 
-namespace KLP\KlpMcpServer\Console\Commands;
+namespace KLP\KlpMcpServer\Command;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;

@@ -11,6 +11,11 @@ use Symfony\Component\DependencyInjection\Definition;
 #[Small]
 class ToolsDefinitionCompilerPassTest extends TestCase
 {
+    /**
+     * Tests that the process method correctly registers tools as services.
+     *
+     * @return void
+     */
     public function test_process_registers_tools_as_services()
     {
         eval('namespace App\\Tool; class SomeTool {}');
@@ -49,6 +54,11 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $compilerPass->process($container);
     }
 
+    /**
+     * Tests that the process method does not register tools that are already defined as services.
+     *
+     * @return void
+     */
     public function test_process_does_not_register_existing_services()
     {
         $container = $this->createMock(ContainerBuilder::class);
@@ -71,6 +81,11 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $compilerPass->process($container);
     }
 
+    /**
+     * Tests that the process method registers the tool repository to the server.
+     *
+     * @return void
+     */
     public function test_process_registers_tool_repository_to_server()
     {
         $container = $this->createMock(ContainerBuilder::class);
