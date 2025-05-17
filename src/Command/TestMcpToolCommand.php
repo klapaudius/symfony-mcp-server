@@ -2,190 +2,218 @@
 
 namespace KLP\KlpMcpServer\Command;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
+use Exception;
+use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
+#[AsCommand(name: 'mcp:test-tool', description: 'Test an MCP tool with simulated inputs')]
 class TestMcpToolCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mcp:test-tool {tool? : The name or class of the tool to test} {--input= : JSON input for the tool} {--list : List all available tools}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Test an MCP tool with simulated inputs';
-
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    public function handle()
+    public function __construct(private readonly ContainerInterface $container)
     {
-        // List all tools if --list option is provided
-        if ($this->option('list')) {
-            return $this->listAllTools();
+        parent::__construct();
+    }
+
+    private InputInterface $input;
+    private SymfonyStyle $io;
+
+    /**
+     * @param mixed $result
+     * @return void
+     */
+    public function displayResult(mixed $result): void
+    {
+        $this->io->success('Tool executed successfully!');
+        $resultText = ['Result:'];
+        if (is_array($result) || is_object($result)) {
+            $resultText[] = json_encode($result, JSON_PRETTY_PRINT);
+        } else {
+            $resultText[] = (string)$result;
         }
+        $this->io->text($resultText);
+    }
 
-        // Get the tool name from argument or prompt for it
-        $toolIdentifier = $this->argument('tool');
-        if (! $toolIdentifier) {
-            $toolIdentifier = $this->askForTool();
-            if (! $toolIdentifier) {
-                return 1;
-            }
-        }
-
-        // Find the tool class
-        $toolClass = $this->findToolClass($toolIdentifier);
-        if (! $toolClass) {
-            $this->error("Tool '{$toolIdentifier}' not found.");
-
-            return 1;
-        }
-
-        // Create tool instance
-        $tool = App::make($toolClass);
-        if (! ($tool instanceof ToolInterface)) {
-            $this->error("The class '{$toolClass}' does not implement ToolInterface.");
-
-            return 1;
-        }
-
-        $this->info("Testing tool: {$tool->getName()} ({$toolClass})");
-        $this->line("Description: {$tool->getDescription()}");
-        $this->newLine();
-
-        // Get input schema
-        $inputSchema = $tool->getInputSchema();
-        $this->line('Input schema:');
-        $this->displaySchema($inputSchema);
-        $this->newLine();
-
-        // Get input data
-        $inputData = $this->getInputData($inputSchema);
-        if ($inputData === null) {
-            return 1;
-        }
-
-        // Execute the tool
-        $this->info('Executing tool with input data:');
-        $this->line(json_encode($inputData, JSON_PRETTY_PRINT));
-        $this->newLine();
-
-        try {
-            $this->info('Tool execution result:');
-            $result = $tool->execute($inputData);
-
-            if (is_array($result) || is_object($result)) {
-                $this->line(json_encode($result, JSON_PRETTY_PRINT));
-            } else {
-                $this->line((string) $result);
-            }
-
-            $this->info('Tool executed successfully!');
-
-            return 0;
-        } catch (\Throwable $e) {
-            $this->error("Error executing tool: {$e->getMessage()}");
-            $this->line('Stack trace:');
-            $this->line($e->getTraceAsString());
-
-            return 1;
-        }
+    protected function configure(): void
+    {
+        $this
+            ->addArgument( "tool", InputArgument::OPTIONAL, "The name or class of the tool to test")
+            ->addOption( "input", '-i', InputOption::VALUE_OPTIONAL, "JSON input for the tool")
+            ->addOption( "list", '-l', InputOption::VALUE_NONE, "List all available tools")
+            ->setDescription('Test an MCP tool with simulated inputs')
+            ->setHelp(<<<EOT
+mcp:test-tool {tool? : The name or class of the tool to test} {--input= : JSON input for the tool} {--list : List all available tools}
+EOT
+);
     }
 
     /**
-     * Find the tool class from a given identifier.
-     *
-     * @param  string  $identifier  Tool name or class
-     * @return string|null Full class name or null if not found
+     * Execute the console command.
      */
-    protected function findToolClass(string $identifier): ?string
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
-        // First check if the identifier is a direct class name
-        if (class_exists($identifier) && $this->isToolClass($identifier)) {
-            return $identifier;
-        }
+        $this->input = $input;
+        $this->io = new SymfonyStyle($input, $output);
+        // List all tools if --list option is provided
+        return $this->input->getOption('list')
+            ? $this->listAllTools()
+            : $this->testTool();
+    }
 
-        // Load all registered tools from config
-        $configuredTools = Config::get('mcp-server.tools', []);
+    private function testTool(): int
+    {
+        try {
+            // Create the tool instance
+            $tool = $this->getToolInstance();
 
-        // Check for exact class match
-        foreach ($configuredTools as $toolClass) {
-            if (Str::endsWith($toolClass, "\\{$identifier}") || $toolClass === $identifier) {
-                return $toolClass;
+            $this->displaySchema($tool);
+
+            // Get input data
+            $inputData = $this->getInputData($tool->getInputSchema());
+            if ($inputData === null) {
+                throw new TestMcpToolCommandException('Invalid input data.');
             }
+
+            // Execute the tool
+            $this->io->text([
+                'Executing tool with input data:',
+                json_encode($inputData, JSON_PRETTY_PRINT),
+            ]);
+            try {
+                $result = $tool->execute($inputData);
+                $this->displayResult($result);
+
+                return command::SUCCESS;
+            } catch (\Throwable $e) {
+                $this->io->error("Error executing tool: {$e->getMessage()}");
+                $this->io->text([
+                    'Stack trace:',
+                    $e->getTraceAsString()
+                ]);
+
+                return Command::FAILURE;
+            }
+        } catch (TestMcpToolCommandException $e) {
+            $this->io->error($e->getMessage());
+
+            return Command::FAILURE;
+        }
+    }
+
+
+    /**
+     * Resolves and retrieves an instance of a tool based on the provided identifier
+     * from the input or user prompt. The method checks for a matching class name,
+     * an exact tool match, or a case-insensitive tool name match from the configured tools.
+     *
+     * @return ToolInterface Returns the tool instance if found.
+     * @throws TestMcpToolCommandException If no tool is specified or if the tool cannot be resolved.
+     */
+    public function getToolInstance(): ToolInterface
+    {
+        // Get the tool name from the argument or prompt for it
+        $identifier = $this->input->getArgument('tool') ?: $this->askForTool();
+        if (! $identifier) {
+            throw new TestMcpToolCommandException('No tool specified.');
         }
 
-        // Check for tool name match (case insensitive)
-        foreach ($configuredTools as $toolClass) {
-            if (class_exists($toolClass)) {
-                $instance = App::make($toolClass);
-                if ($instance instanceof ToolInterface &&
-                    strtolower($instance->getName()) === strtolower($identifier)) {
-                    return $toolClass;
+        $toolInstance = null;
+        // First check if the identifier is a direct class name
+        if (class_exists($identifier)) {
+            $toolInstance = $this->container->get($identifier);
+        }
+
+        if (! $toolInstance ) {
+            // Load all registered tools from config
+            $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
+
+            // Check for the class match
+            foreach ($configuredTools as $toolClass) {
+                $instance = $this->container->get($toolClass);
+                if ( // Check for the exact class match
+                    str_ends_with($toolClass, "\\{$identifier}")
+                    || $toolClass === $identifier
+                    // Check for tool name match (case-insensitive)
+                    || strtolower($instance->getName()) === strtolower($identifier)
+                ) {
+                    $toolInstance = $instance;
+                    break;
                 }
             }
         }
 
-        return null;
+        if ($toolInstance
+            && ! ($toolInstance instanceof ToolInterface)) {
+            $toolClass = get_class($toolInstance);
+            throw new TestMcpToolCommandException("The class '{$toolClass}' does not implement ToolInterface.");
+        }
+
+        return $toolInstance ?: throw new TestMcpToolCommandException("Tool '{$identifier}' not found.");
     }
 
     /**
-     * Check if a class implements ToolInterface.
+     * Displays the schema information for a specific tool.
+     *
+     * @param ToolInterface $tool The tool instance whose schema is to be displayed.
      */
-    protected function isToolClass(string $class): bool
+    public function displaySchema(ToolInterface $tool): void
     {
-        try {
-            return is_subclass_of($class, ToolInterface::class);
-        } catch (\Throwable $e) {
-            return false;
-        }
+        $toolClass = get_class($tool);
+        $this->io->text([
+            "Testing tool: {$tool->getName()} ({$toolClass})",
+            "Description: {$tool->getDescription()}",
+        ]);
+        $this->io->newLine();
+        // Get input schema
+        $this->io->text(array_merge(
+            ['Input schema:'],
+            $this->getSchemaDisplayMessages($tool->getInputSchema())
+        ));
     }
 
     /**
      * Display JSON schema in a readable format.
      */
-    protected function displaySchema(array $schema, string $indent = ''): void
+    protected function getSchemaDisplayMessages(array $schema, string $indent = ''): array
     {
+        $messages = [];
         if (isset($schema['properties']) && is_array($schema['properties'])) {
             foreach ($schema['properties'] as $propName => $propSchema) {
                 $type = $propSchema['type'] ?? 'any';
                 $description = $propSchema['description'] ?? '';
                 $required = in_array($propName, $schema['required'] ?? []) ? '(required)' : '(optional)';
 
-                $this->line("{$indent}- {$propName}: {$type} {$required}");
+                $messages[] = "{$indent}- {$propName}: {$type} {$required}";
                 if ($description) {
-                    $this->line("{$indent}  Description: {$description}");
+                    $messages[] = "{$indent}  Description: {$description}";
                 }
 
                 // If this is an object with nested properties
                 if ($type === 'object' && isset($propSchema['properties'])) {
-                    $this->line("{$indent}  Properties:");
-                    $this->displaySchema($propSchema, $indent.'    ');
+                    $messages[] = "{$indent}  Properties:";
+                    $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema, $indent . '    '));
                 }
 
                 // If this is an array with items
                 if ($type === 'array' && isset($propSchema['items'])) {
                     $itemType = $propSchema['items']['type'] ?? 'any';
-                    $this->line("{$indent}  Items: {$itemType}");
+                    $messages[] = "{$indent}  Items: {$itemType}";
                     if (isset($propSchema['items']['properties'])) {
-                        $this->line("{$indent}  Item Properties:");
-                        $this->displaySchema($propSchema['items'], $indent.'    ');
+                        $messages[] = "{$indent}  Item Properties:";
+                        $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent . '    '));
                     }
                 }
             }
         }
+
+        return $messages;
     }
 
     /**
@@ -194,17 +222,17 @@ class TestMcpToolCommand extends Command
     protected function getInputData(array $schema): ?array
     {
         // If input is provided as an option, use that
-        $inputOption = $this->option('input');
+        $inputOption = $this->input->getOption('input');
         if ($inputOption) {
             try {
                 $decodedInput = json_decode($inputOption, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \Exception(json_last_error_msg());
+                    throw new Exception(json_last_error_msg());
                 }
 
                 return $decodedInput;
             } catch (\Throwable $e) {
-                $this->error("Invalid JSON input: {$e->getMessage()}");
+                $this->io->error("Invalid JSON input: {$e->getMessage()}");
 
                 return null;
             }
@@ -222,58 +250,55 @@ class TestMcpToolCommand extends Command
             $description = $propSchema['description'] ?? '';
             $required = in_array($propName, $schema['required'] ?? []);
 
-            $this->line("Property: {$propName} ({$type})");
-            if ($description) {
-                $this->line("Description: {$description}");
-            }
+            $this->io->text("Property: {$propName} ({$type}) {$description}");
 
             if ($type === 'object') {
-                $this->line('Enter JSON for object (or leave empty to skip):');
-                $jsonInput = $this->ask('JSON');
+                $this->io->text('Enter JSON for object (or leave empty to skip):');
+                $jsonInput = $this->io->ask('JSON');
                 if (! empty($jsonInput)) {
                     try {
                         $input[$propName] = json_decode($jsonInput, true);
                         if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new \Exception(json_last_error_msg());
+                            throw new Exception(json_last_error_msg());
                         }
                     } catch (\Throwable $e) {
-                        $this->error("Invalid JSON: {$e->getMessage()}");
+                        $this->io->error("Invalid JSON: {$e->getMessage()}");
                         $input[$propName] = null;
                     }
                 } elseif ($required) {
-                    $this->warn('Required field skipped. Using empty object.');
+                    $this->io->warning('Required field skipped. Using empty object.');
                     $input[$propName] = [];
                 }
             } elseif ($type === 'array') {
-                $this->line('Enter JSON for array (or leave empty to skip):');
-                $jsonInput = $this->ask('JSON');
+                $this->io->text('Enter JSON for array (or leave empty to skip):');
+                $jsonInput = $this->io->ask('JSON');
                 if (! empty($jsonInput)) {
                     try {
                         $input[$propName] = json_decode($jsonInput, true);
                         if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new \Exception(json_last_error_msg());
+                            throw new Exception(json_last_error_msg());
                         }
                         if (! is_array($input[$propName])) {
-                            throw new \Exception('Not an array');
+                            throw new Exception('Not an array');
                         }
                     } catch (\Throwable $e) {
-                        $this->error("Invalid JSON array: {$e->getMessage()}");
+                        $this->io->error("Invalid JSON array: {$e->getMessage()}");
                         $input[$propName] = [];
                     }
                 } elseif ($required) {
-                    $this->warn('Required field skipped. Using empty array.');
+                    $this->io->warning('Required field skipped. Using empty array.');
                     $input[$propName] = [];
                 }
             } elseif ($type === 'boolean') {
                 $default = $propSchema['default'] ?? false;
-                $input[$propName] = $this->confirm('Value (yes/no)', $default);
+                $input[$propName] = $this->io->confirm('Value (yes/no)', $default);
             } elseif ($type === 'number' || $type === 'integer') {
                 $default = $propSchema['default'] ?? '';
-                $value = $this->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
+                $value = $this->io->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
                 if ($value === '' && $default !== '') {
                     $input[$propName] = $default;
                 } elseif ($value === '' && $required) {
-                    $this->warn('Required field skipped. Using 0.');
+                    $this->io->warning('Required field skipped. Using 0.');
                     $input[$propName] = 0;
                 } elseif ($value !== '') {
                     $input[$propName] = ($type === 'integer') ? (int) $value : (float) $value;
@@ -281,18 +306,16 @@ class TestMcpToolCommand extends Command
             } else {
                 // String or other types
                 $default = $propSchema['default'] ?? '';
-                $value = $this->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
+                $value = $this->io->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
                 if ($value === '' && $default !== '') {
                     $input[$propName] = $default;
                 } elseif ($value === '' && $required) {
-                    $this->warn('Required field skipped. Using empty string.');
+                    $this->io->warning('Required field skipped. Using empty string.');
                     $input[$propName] = '';
                 } elseif ($value !== '') {
                     $input[$propName] = $value;
                 }
             }
-
-            $this->newLine();
         }
 
         return $input;
@@ -303,12 +326,12 @@ class TestMcpToolCommand extends Command
      */
     protected function listAllTools(): int
     {
-        $configuredTools = Config::get('mcp-server.tools', []);
+        $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
 
         if (empty($configuredTools)) {
-            $this->warn('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $tools = [];
@@ -316,26 +339,28 @@ class TestMcpToolCommand extends Command
         foreach ($configuredTools as $toolClass) {
             try {
                 if (class_exists($toolClass)) {
-                    $instance = App::make($toolClass);
+                    $instance = $this->container->get($toolClass);
                     if ($instance instanceof ToolInterface) {
                         $tools[] = [
                             'name' => $instance->getName(),
                             'class' => $toolClass,
-                            'description' => Str::limit($instance->getDescription(), 50),
+                            'description' => substr($instance->getDescription(), 0, 50),
                         ];
                     }
                 }
             } catch (\Throwable $e) {
-                $this->warn("Couldn't load tool class: {$toolClass}");
+                $this->io->warning("Couldn't load tool class: {$toolClass}");
             }
         }
 
-        $this->info('Available MCP Tools:');
-        $this->table(['Name', 'Class', 'Description'], $tools);
+        $this->io->info('Available MCP Tools:');
+        $this->io->table(['Name', 'Class', 'Description'], $tools);
 
-        $this->line("\nTo test a specific tool, run:");
-        $this->line('  php artisan mcp:test-tool [tool_name]');
-        $this->line("  php artisan mcp:test-tool --input='{\"param\":\"value\"}'");
+        $this->io->text([
+            "To test a specific tool, run:",
+            '    php bin/console mcp:test-tool [tool_name]',
+            "    php bin/console mcp:test-tool --input='{\"param\":\"value\"}'"
+        ]);
 
         return 0;
     }
@@ -345,10 +370,10 @@ class TestMcpToolCommand extends Command
      */
     protected function askForTool(): ?string
     {
-        $configuredTools = Config::get('mcp-server.tools', []);
+        $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
 
         if (empty($configuredTools)) {
-            $this->warn('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
 
             return null;
         }
@@ -359,26 +384,26 @@ class TestMcpToolCommand extends Command
         foreach ($configuredTools as $toolClass) {
             try {
                 if (class_exists($toolClass)) {
-                    $instance = App::make($toolClass);
+                    $instance = $this->container->get($toolClass);
                     if ($instance instanceof ToolInterface) {
                         $name = $instance->getName();
                         $choices[] = "{$name} ({$toolClass})";
                         $validTools[] = $toolClass;
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
                 // Skip tools that can't be loaded
             }
         }
 
         if (empty($choices)) {
-            $this->warn('No valid MCP tools found.');
+            $this->io->warning('No valid MCP tools found.');
 
             return null;
         }
 
         $selectedIndex = array_search(
-            $this->choice('Select a tool to test', $choices),
+            $this->io->choice('Select a tool to test', $choices),
             $choices
         );
 
