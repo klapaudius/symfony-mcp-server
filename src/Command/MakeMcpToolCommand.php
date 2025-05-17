@@ -9,9 +9,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelInterface;
 
-#[AsCommand(name: 'make:mcp-tool', description: 'Create a new MCP tool class', aliases: [], hidden: false)]
+#[AsCommand(name: 'make:mcp-tool', description: 'Create a new MCP tool class')]
 class MakeMcpToolCommand extends Command
 {
     protected const TOOLS_DIRECTORY = 'src/MCP/Tools';
@@ -24,7 +24,7 @@ class MakeMcpToolCommand extends Command
      *
      * @return void
      */
-    public function __construct(private Kernel $kernel, private ?Filesystem $files = null)
+    public function __construct(private KernelInterface $kernel, private ?Filesystem $files = null)
     {
         parent::__construct();
         $this->files ??= new Filesystem();
