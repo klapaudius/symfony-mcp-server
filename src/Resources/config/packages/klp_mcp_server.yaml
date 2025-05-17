@@ -14,22 +14,22 @@ klp_mcp_server:
     # MCP Server
     # Specify the MCP path.
     # GET  /{default_path}/sse
-    # POST /{default_path}/message (This endpoint requires `sessionId` from `/sse`)
+    # POST /{default_path}/message (requires `sessionId` from `/sse`)
     default_path: 'mcp'
 
     # Ping mechanism to ensure the clients are still connected
     # This feature is optional but still useful. Disable it only if your
     # clients are not compliant and get periodically disconnected
-    ###############################################################################
-    # WARNING:                                                                    #
-    # if you need to disable this feature, make sure the connection_aborted()     #
-    # behavior is not compromised by your webserver or php configuration,         #
-    # otherwise your application will quickly get down with a lot of zombie       #
-    # processes running.                                                          #
-    # see https://www.php.net/manual/fr/function.connection-aborted.php           #
-    # Create a script to test that your server configuration is ready before      #
-    # sending to production                                                       #
-    ###############################################################################
+    ############################################################################
+    # WARNING:                                                                 #
+    # if you need to disable this feature, make sure the connection_aborted()  #
+    # behavior is not compromised by your webserver or php configuration,      #
+    # otherwise your application will quickly get down with a lot of zombie    #
+    # processes running.                                                       #
+    # see https://www.php.net/manual/fr/function.connection-aborted.php        #
+    # Create a script to test that your server configuration is ready before   #
+    # sending to production                                                    #
+    ############################################################################
     ping:
         enable: true
         interval: 30
