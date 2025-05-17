@@ -22,6 +22,10 @@
             <argument type="service" id="kernel" />
             <tag name="console.command" />
         </service>
+        <service id="klp_mcp_server.command.test" class="KLP\KlpMcpServer\Command\TestMcpToolCommand">
+            <argument type="service" id="service_container" />
+            <tag name="console.command" />
+        </service>
 
         <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.redis" />
         <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
