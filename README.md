@@ -39,7 +39,7 @@ Key benefits:
 
 ## Key Features
 
-- Real-time communication support through Server-Sent Events (SSE) integration
+- Real-time communication support through Server-Sent Events (SSE) integration specified in the MCP 2024-11-05 version (Streamable HTTP from 2025-03-26 version is planned)
 - Implementation of tools and resources compliant with Model Context Protocol specifications
 - Adapter-based design architecture with Pub/Sub messaging pattern (starting with Redis, more adapters planned)
 
