@@ -83,6 +83,8 @@ klp_mcp_server:
 For more detailed explanations, you can open the default configuration file
 [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
 
+3. Optional but highly recommended: Secure your app with OAuth2 Authentication using [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle)
+
 ## Basic Usage
 
 ### Creating and Adding Custom Tools
