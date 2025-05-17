@@ -23,6 +23,9 @@
         "phpstan/phpstan-deprecation-rules": "^1.1||^2.0",
         "phpstan/phpstan-phpunit": "^1.3||^2.0"
     },
+    "suggest": {
+        "klapaudius/oauth-server-bundle": "For a complete OAuth2 Authentication mechanism"
+    },
     "autoload": {
         "psr-4": {
             "KLP\\KlpMcpServer\\": "src/"

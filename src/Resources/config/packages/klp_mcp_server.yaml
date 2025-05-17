@@ -31,14 +31,6 @@ klp_mcp_server:
         enable: true
         interval: 30
 
-    # SSE Route Middleware
-    # Middleware to apply to the SSE route (/{default_path}/sse). Use this to protect
-    # your SSE endpoint with authentication or other middleware as needed.
-    # This will only be applied to the SSE endpoint, not to the message endpoint.
-    middlewares:
-        []
-        # - 'auth:api'
-
     # Server-Sent Events Provider
     # The type of server provider to use. Currently, only 'sse' is supported.
     server_provider: 'sse'

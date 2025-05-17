@@ -19,7 +19,6 @@ class KlpMcpServerExtension extends Extension
         $container->setParameter('klp_mcp_server.server.name', $config['server']['name']);
         $container->setParameter('klp_mcp_server.server.version', $config['server']['version']);
         $container->setParameter('klp_mcp_server.default_path', $config['default_path']);
-        $container->setParameter('klp_mcp_server.middlewares', $config['middlewares']);
         $container->setParameter('klp_mcp_server.ping.enabled', $config['ping']['enabled']);
         $container->setParameter('klp_mcp_server.ping.interval', $config['ping']['interval']);
         $container->setParameter('klp_mcp_server.provider', 'klp_mcp_server.provider.'.$config['server_provider']);

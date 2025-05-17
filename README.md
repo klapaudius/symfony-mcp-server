@@ -42,7 +42,6 @@ Key benefits:
 - Real-time communication support through Server-Sent Events (SSE) integration
 - Implementation of tools and resources compliant with Model Context Protocol specifications
 - Adapter-based design architecture with Pub/Sub messaging pattern (starting with Redis, more adapters planned)
-- Simple routing and middleware configuration
 
 ## Requirements
 
@@ -68,8 +67,6 @@ klp_mcp_server:
     ping:
         enable: true  # Read the warning section in the default configuration file before disable it
         interval: 30
-    middlewares:
-        []
     server_provider: 'sse'
     sse_adapter: 'redis'
     adapters:

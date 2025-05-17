@@ -36,7 +36,6 @@ class KlpMcpServerExtensionTest extends TestCase
                 'enabled' => true,
                 'interval' => 60,
             ],
-            'middlewares' => ['middleware1', 'middleware2'],
             'adapters' => [
                 'redis' => [
                     'prefix' => 'prefix',
@@ -57,7 +56,6 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals('TestServer', $this->container->getParameter('klp_mcp_server.server.name'));
         $this->assertEquals('1.0', $this->container->getParameter('klp_mcp_server.server.version'));
         $this->assertEquals('/default/path', $this->container->getParameter('klp_mcp_server.default_path'));
-        $this->assertEquals(['middleware1', 'middleware2'], $this->container->getParameter('klp_mcp_server.middlewares'));
         $this->assertEquals('klp_mcp_server.provider.sse', $this->container->getParameter('klp_mcp_server.provider'));
         $this->assertEquals('klp_mcp_server.adapter.redis', $this->container->getParameter('klp_mcp_server.adapter'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));

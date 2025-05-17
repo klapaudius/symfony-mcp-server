@@ -55,12 +55,6 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
-                // Middleware Configuration
-            ->arrayNode('middlewares')
-            ->prototype('scalar')
-            ->end()
-            ->end()
-
                 // Server Provider
             ->scalarNode('server_provider')
             ->defaultValue('sse')
