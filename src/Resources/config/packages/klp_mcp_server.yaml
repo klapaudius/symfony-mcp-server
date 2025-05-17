@@ -18,11 +18,18 @@ klp_mcp_server:
     default_path: 'mcp'
 
     # Ping mechanism to ensure the clients are still connected
-    # This feature is optional. Enable it only if your clients are compliant,
-    # otherwise they will be periodically disconnected
+    # This feature is optional but still useful. Disable it only if your clients are not compliant
+    # and get periodically disconnected
+    ################################################################################################
+    # WARNING: if you need to disable this feature, make sure that the connection_aborted()        #
+    # function behavior is not compromised by your web server or php configuration,                #
+    # otherwise your application will quickly get down with a lot of zombie processes running.     #
+    # see https://www.php.net/manual/fr/function.connection-aborted.php                            #
+    # Create a script to test that your server configuration is ready before sending to production #
+    ################################################################################################
     ping:
-        enable: false
-        interval: 60
+        enable: true
+        interval: 30
 
     # SSE Route Middleware
     # Middleware to apply to the SSE route (/{default_path}/sse). Use this to protect

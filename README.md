@@ -66,8 +66,8 @@ klp_mcp_server:
         version: '0.1.0'
     default_path: 'mcp'
     ping:
-        enable: false
-        interval: 60
+        enable: true  # Read the warning section in the default configuration file before disable it
+        interval: 30
     middlewares:
         []
     server_provider: 'sse'
@@ -75,7 +75,7 @@ klp_mcp_server:
     adapters:
         redis:
             prefix: 'mcp_sse_'
-            host: 'localhost'  # change it as needed
+            host: 'localhost'  # Change it as needed
             ttl: 100
     tools:
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
