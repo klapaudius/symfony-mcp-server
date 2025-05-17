@@ -36,7 +36,9 @@ class ToolRepository
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->registerMany($container->getParameter('klp_mcp_server.tools'));
+        if ($tools = $container->getParameter('klp_mcp_server.tools')) {
+            $this->registerMany($tools);
+        }
     }
 
     /**
