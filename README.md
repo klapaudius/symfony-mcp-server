@@ -57,31 +57,32 @@ Key benefits:
    ```
 2. Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
 
-```yaml
-klp_mcp_server:
-    enabled: true
-    server:
-        name: 'Klp MCP Server'
-        version: '0.1.0'
-    default_path: 'mcp'
-    ping:
-        enable: true  # Read the warning section in the default configuration file before disable it
-        interval: 30
-    server_provider: 'sse'
-    sse_adapter: 'redis'
-    adapters:
-        redis:
-            prefix: 'mcp_sse_'
-            host: 'localhost'  # Change it as needed
-            ttl: 100
-    tools:
-        - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
-        - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
-    prompts: []
-    resources: []
-```
-For more detailed explanations, you can open the default configuration file
+    ```yaml
+    klp_mcp_server:
+        enabled: true
+        server:
+            name: 'Klp MCP Server'
+            version: '0.1.0'
+        default_path: 'mcp'
+        ping:
+            enable: true  # Read the warning section in the default configuration file before disable it
+            interval: 30
+        server_provider: 'sse'
+        sse_adapter: 'redis'
+        adapters:
+            redis:
+                prefix: 'mcp_sse_'
+                host: 'localhost'  # Change it as needed
+                ttl: 100
+        tools:
+            - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
+        prompts: []
+        resources: []
+    ```
+    For more detailed explanations, you can open the default configuration file
 [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
+
 
 3. Optional but highly recommended: Secure your app with OAuth2 Authentication using [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle)
 
