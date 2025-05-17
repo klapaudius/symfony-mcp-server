@@ -88,7 +88,8 @@ Key benefits:
 - **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
 - **Request Submission Endpoint**: `POST /{default_path}/messages`
 
-3. Optional but highly recommended: Secure your app with OAuth2 Authentication using [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle)
+## Strongly Recommended
+Enhance your application's security by implementing OAuth2 Authentication. You can use the [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle) or any other compatible OAuth2 solution.
 
 ## Basic Usage
 
