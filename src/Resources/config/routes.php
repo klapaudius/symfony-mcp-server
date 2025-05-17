@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
  * @return void
  */
 return function (RoutingConfigurator $routes) {
-    $defaultPath = "%klp_mcp_server.default_path%";
+    $defaultPath = '%klp_mcp_server.default_path%';
 
     $routes->add('sse_route', "/$defaultPath/sse")
         ->controller([SseController::class, 'handle'])

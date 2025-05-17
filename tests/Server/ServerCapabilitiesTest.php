@@ -16,7 +16,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_initialize_message_without_tools(): void
     {
-        $serverCapabilities = new ServerCapabilities();
+        $serverCapabilities = new ServerCapabilities;
         $initializeMessage = $serverCapabilities->toInitializeMessage();
 
         $this->assertArrayHasKey('prompts', $initializeMessage);
@@ -36,7 +36,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_initialize_message_with_tools_no_config(): void
     {
-        $serverCapabilities = (new ServerCapabilities())->withTools();
+        $serverCapabilities = (new ServerCapabilities)->withTools();
         $initializeMessage = $serverCapabilities->toInitializeMessage();
 
         $this->assertArrayHasKey('prompts', $initializeMessage);
@@ -57,7 +57,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_initialize_message_with_tools_and_config(): void
     {
-        $serverCapabilities = (new ServerCapabilities())->withTools(['testConfig' => 'value']);
+        $serverCapabilities = (new ServerCapabilities)->withTools(['testConfig' => 'value']);
         $initializeMessage = $serverCapabilities->toInitializeMessage();
 
         $this->assertArrayHasKey('prompts', $initializeMessage);
@@ -78,7 +78,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_array_without_tools(): void
     {
-        $serverCapabilities = new ServerCapabilities();
+        $serverCapabilities = new ServerCapabilities;
         $arrayOutput = $serverCapabilities->toArray();
 
         $this->assertArrayHasKey('prompts', $arrayOutput);
@@ -95,7 +95,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_array_with_tools_no_config(): void
     {
-        $serverCapabilities = (new ServerCapabilities())->withTools();
+        $serverCapabilities = (new ServerCapabilities)->withTools();
         $arrayOutput = $serverCapabilities->toArray();
 
         $this->assertArrayHasKey('prompts', $arrayOutput);
@@ -113,7 +113,7 @@ class ServerCapabilitiesTest extends TestCase
      */
     public function test_to_array_with_tools_and_config(): void
     {
-        $serverCapabilities = (new ServerCapabilities())->withTools(['exampleConfig' => 'value']);
+        $serverCapabilities = (new ServerCapabilities)->withTools(['exampleConfig' => 'value']);
         $arrayOutput = $serverCapabilities->toArray();
 
         $this->assertArrayHasKey('prompts', $arrayOutput);

@@ -15,7 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 class MessageControllerTest extends TestCase
 {
     private MCPServerInterface|MockObject $mockServer;
+
     private LoggerInterface|MockObject|null $mockLogger;
+
     private MessageController $controller;
 
     protected function setUp(): void
@@ -35,7 +37,7 @@ class MessageControllerTest extends TestCase
         $this->mockLogger
             ->expects($this->once())
             ->method('debug')
-            ->with($this->stringContains('Received message for clientId:' . $sessionId), ['message' => $messageData]);
+            ->with($this->stringContains('Received message for clientId:'.$sessionId), ['message' => $messageData]);
 
         $this->mockServer
             ->expects($this->once())
@@ -59,7 +61,7 @@ class MessageControllerTest extends TestCase
         $this->mockLogger
             ->expects($this->once())
             ->method('debug')
-            ->with($this->stringContains('Received message for clientId:' . $sessionId), ['message' => $messageData]);
+            ->with($this->stringContains('Received message for clientId:'.$sessionId), ['message' => $messageData]);
 
         $this->mockServer
             ->expects($this->once())

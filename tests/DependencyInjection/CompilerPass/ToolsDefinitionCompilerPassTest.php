@@ -30,7 +30,8 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('has')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
-                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations()-1]);
+                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(false, false);
@@ -38,12 +39,13 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $container->expects($matcher2 = $this->exactly(count($invocations)))
             ->method('setDefinition')
             ->with($this->callback(function (...$args) use ($invocations, $matcher2) {
-                $this->assertEquals($args[0], $invocations[$matcher2->numberOfInvocations()-1]);
+                $this->assertEquals($args[0], $invocations[$matcher2->numberOfInvocations() - 1]);
                 $this->assertInstanceOf(Definition::class, $args[1]);
+
                 return true;
             }));
 
-        $compilerPass = new ToolsDefinitionCompilerPass();
+        $compilerPass = new ToolsDefinitionCompilerPass;
         $compilerPass->process($container);
     }
 
@@ -65,7 +67,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $container->expects($this->never())
             ->method('setDefinition');
 
-        $compilerPass = new ToolsDefinitionCompilerPass();
+        $compilerPass = new ToolsDefinitionCompilerPass;
         $compilerPass->process($container);
     }
 
@@ -88,7 +90,8 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getDefinition')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
-                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations()-1]);
+                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls($serverDefinition, $toolRepositoryDefinition);
@@ -97,7 +100,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             ->method('addMethodCall')
             ->with('registerToolRepository', [$toolRepositoryDefinition]);
 
-        $compilerPass = new ToolsDefinitionCompilerPass();
+        $compilerPass = new ToolsDefinitionCompilerPass;
         $compilerPass->process($container);
     }
 }

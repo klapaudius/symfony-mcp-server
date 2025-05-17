@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 class ToolsCallHandlerTest extends TestCase
 {
     private ToolRepository $toolRepository;
+
     private ToolsCallHandler $toolsCallHandler;
 
     protected function setUp(): void
@@ -66,13 +67,13 @@ class ToolsCallHandlerTest extends TestCase
             ->with('HelloWorldTool')
             ->willReturn(new HelloWorldTool);
 
-        $result = $this->toolsCallHandler->execute('tools/call', 4, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);;
+        $result = $this->toolsCallHandler->execute('tools/call', 4, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);
 
         $this->assertEquals(
             [
                 'content' => [
-                    ['type' => 'text', 'text' => 'Hello, HelloWorld `Success Message` developer.']
-                ]
+                    ['type' => 'text', 'text' => 'Hello, HelloWorld `Success Message` developer.'],
+                ],
             ],
             $result
         );
@@ -85,11 +86,11 @@ class ToolsCallHandlerTest extends TestCase
             ->with('HelloWorldTool')
             ->willReturn(new HelloWorldTool);
 
-        $result = $this->toolsCallHandler->execute('tools/execute', 5, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);;;
+        $result = $this->toolsCallHandler->execute('tools/execute', 5, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);
 
         $this->assertEquals(
             [
-                'result' => "Hello, HelloWorld `Success Message` developer."
+                'result' => 'Hello, HelloWorld `Success Message` developer.',
             ],
             $result
         );

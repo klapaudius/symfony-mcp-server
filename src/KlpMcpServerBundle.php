@@ -43,6 +43,6 @@ class KlpMcpServerBundle extends Bundle
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
-        $container->addCompilerPass(new ToolsDefinitionCompilerPass());
+        $container->addCompilerPass(new ToolsDefinitionCompilerPass);
     }
 }

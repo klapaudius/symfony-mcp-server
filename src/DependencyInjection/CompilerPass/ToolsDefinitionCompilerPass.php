@@ -18,7 +18,7 @@ final class ToolsDefinitionCompilerPass implements CompilerPassInterface
         $tools = $container->getparameter('klp_mcp_server.tools');
         // Register each tool as a service in the container if not already defined
         foreach ($tools as $toolClass) {
-            if (!$container->has($toolClass) && class_exists($toolClass)) {
+            if (! $container->has($toolClass) && class_exists($toolClass)) {
                 $definition = new Definition($toolClass);
                 $definition->setAutowired(true);
                 $definition->setPublic(true);

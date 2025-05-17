@@ -55,16 +55,15 @@ final class SseTransport implements SseTransportInterface
      */
     protected int $lastPingTimestamp = 0;
 
-
     /**
      * Initializes the class with the default path, adapter, logger, and ping settings.
      *
-     * @param string $defaultPath The default path for resources.
-     * @param SseAdapterInterface|null $adapter Optional adapter for message persistence and retrieval (e.g., Redis).
-     *                                          Enables simulation of request/response patterns over SSE.
-     * @param LoggerInterface|null $logger The logger instance (optional).
-     * @param bool $pingEnabled Flag to enable or disable ping functionality.
-     * @param int $pingInterval The interval, in secondes, at which ping messages are sent to maintain the connection.
+     * @param  string  $defaultPath  The default path for resources.
+     * @param  SseAdapterInterface|null  $adapter  Optional adapter for message persistence and retrieval (e.g., Redis).
+     *                                             Enables simulation of request/response patterns over SSE.
+     * @param  LoggerInterface|null  $logger  The logger instance (optional).
+     * @param  bool  $pingEnabled  Flag to enable or disable ping functionality.
+     * @param  int  $pingInterval  The interval, in secondes, at which ping messages are sent to maintain the connection.
      */
     public function __construct(
         private readonly string $defaultPath,
@@ -72,8 +71,7 @@ final class SseTransport implements SseTransportInterface
         private readonly ?LoggerInterface $logger = null,
         private bool $pingEnabled = false,
         private int $pingInterval = 10
-    ) {
-    }
+    ) {}
 
     /**
      * Starts the SSE transport connection.
@@ -224,7 +222,7 @@ final class SseTransport implements SseTransportInterface
         $pingTest = true;
         if ($this->pingEnabled) {
             $pingTest = $this->checkPing();
-            if (!$pingTest) {
+            if (! $pingTest) {
                 $this->logger?->info('SSE Transport::checkPing: pingTest failed');
             }
         }
@@ -347,7 +345,6 @@ final class SseTransport implements SseTransportInterface
     }
 
     /**
-     * @return bool
      * @throws SseAdapterException
      */
     private function checkPing(): bool
@@ -360,6 +357,7 @@ final class SseTransport implements SseTransportInterface
                 return false;
             }
         }
+
         return time() - $this->getLastPongResponseTimestamp() < $this->pingInterval * 1.8;
     }
 
