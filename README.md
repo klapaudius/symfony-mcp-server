@@ -183,6 +183,7 @@ The default Redis adapter can be configured as follows:
 
 ```yaml
 klp_mcp_server:
+    # ...
     sse_adapter: 'redis'
     adapters:
         redis:
