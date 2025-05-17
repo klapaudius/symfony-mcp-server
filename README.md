@@ -83,6 +83,10 @@ Key benefits:
     For more detailed explanations, you can open the default configuration file
 [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
 
+**Upon completing this setup, your project will include two new API endpoints:**
+
+- **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
+- **Request Submission Endpoint**: `POST /{default_path}/messages`
 
 3. Optional but highly recommended: Secure your app with OAuth2 Authentication using [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle)
 

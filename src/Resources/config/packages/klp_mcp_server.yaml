@@ -14,7 +14,7 @@ klp_mcp_server:
     # MCP Server
     # Specify the MCP path.
     # GET  /{default_path}/sse
-    # POST /{default_path}/message (requires `sessionId` from `/sse`)
+    # POST /{default_path}/messages (requires `sessionId` from `/sse`)
     default_path: 'mcp'
 
     # Ping mechanism to ensure the clients are still connected
