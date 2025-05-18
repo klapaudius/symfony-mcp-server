@@ -175,7 +175,7 @@ The SSE URL follows the pattern: `http://[your-web-server]/[default_path]/sse` w
 
 The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system:
 
-1. **Publisher (Server)**: When clients send requests to the `/message` endpoint, the server processes these requests and publishes responses through the configured adapter.
+1. **Publisher (Server)**: When clients send requests to the `/messages` endpoint, the server processes these requests and publishes responses through the configured adapter.
 
 2. **Message Broker (Adapter)**: The adapter (e.g., Redis) maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
 
