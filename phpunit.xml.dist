@@ -27,6 +27,9 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
+        <exclude>
+            <file>src/Resources/config/routes.php</file>
+        </exclude>
     </source>
     <coverage>
         <report>

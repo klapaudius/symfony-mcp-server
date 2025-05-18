@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
+use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -12,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
+#[Small]
 class ToolRepositoryTest extends TestCase
 {
     private ContainerInterface|MockObject $container;
@@ -45,6 +47,48 @@ class ToolRepositoryTest extends TestCase
         $this->assertCount(2, $tools);
         $this->assertSame($tool1, $tools['tool1']);
         $this->assertSame($tool2, $tools['tool2']);
+    }
+
+    /**
+     * Tests the registration of multiple valid tool instances in the tool repository.
+     *
+     * Validates that the tool repository correctly registers multiple tool instances
+     * and ensures that the tools can be retrieved and matched against their original instances.
+     */
+    public function test_register_many_is_called_on_constructor(): void
+    {
+        $tool1 = $this->createMock(ToolInterface::class);
+        $tool2 = $this->createMock(ToolInterface::class);
+
+        $tool1->method('getName')->willReturn('tool1');
+        $tool2->method('getName')->willReturn('tool2');
+        $invocations = [ 'tool1', 'tool2' ];
+        $this->container
+            ->expects($matcher = $this->exactly(count($invocations)))
+            ->method('get')
+            ->with($this->callback(function ($toolClass) use ($invocations, $matcher) {
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $toolClass);
+                return true;
+            }))
+            ->willReturnOnConsecutiveCalls(
+                $tool1,
+                $tool2
+            );
+        $this->container
+            ->expects($this->once())
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([ 'tool1', 'tool2' ]);
+
+        $toolRepository = new ToolRepository($this->container);
+
+        $tools = $toolRepository->getTools();
+
+        $this->assertCount(2, $tools);
+        $this->assertSame($tool1, $tools['tool1']);
+        $this->assertSame($tool2, $tools['tool2']);
+        $this->assertSame($tool1, $toolRepository->getTool('tool1'));
+
     }
 
     /**

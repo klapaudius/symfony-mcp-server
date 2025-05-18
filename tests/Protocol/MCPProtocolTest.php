@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Protocol;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
+use KLP\KlpMcpServer\Transports\SseTransportInterface;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -13,13 +14,13 @@ use PHPUnit\Framework\TestCase;
 #[Small]
 class MCPProtocolTest extends TestCase
 {
-    private TransportInterface|MockObject $mockTransport;
+    private SseTransportInterface|MockObject $mockTransport;
 
     private MCPProtocol $mcpProtocol;
 
     protected function setUp(): void
     {
-        $this->mockTransport = $this->createMock(TransportInterface::class);
+        $this->mockTransport = $this->createMock(SseTransportInterface::class);
         $this->mcpProtocol = new MCPProtocol($this->mockTransport);
     }
 
@@ -283,6 +284,19 @@ class MCPProtocolTest extends TestCase
 
                 return true;
             }));
+
+        $this->mcpProtocol->handleMessage($clientId, $noMethodMessage);
+    }
+
+    public function test_handle_message_handles_ping_request(): void
+    {
+        $clientId = 'client_1';
+        // response to a ping request from client
+        $noMethodMessage = ['jsonrpc' => '2.0', 'id' => 1, 'result' => []];
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
 
         $this->mcpProtocol->handleMessage($clientId, $noMethodMessage);
     }
