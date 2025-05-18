@@ -67,9 +67,9 @@ klp_mcp_server:
     # Prompts List
     # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/prompts
-#    prompts: []
+    # prompts: []
 
     # Resources List
     # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/resources
-#    resources: []
+    # resources: []
