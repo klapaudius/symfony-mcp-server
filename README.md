@@ -81,6 +81,14 @@ Key benefits:
     For more detailed explanations, you can open the default configuration file
 [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
 
+3. Add routes in your `config/routes.yaml`
+
+```yaml
+klp_mcp_server:
+    resource: '@KlpMcpServerBundle/Resources/config/routes.php'
+    type: php
+```
+
 **Upon completing this setup, your project will include two new API endpoints:**
 
 - **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
