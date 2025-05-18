@@ -89,7 +89,7 @@ klp_mcp_server:
     type: php
 ```
 
-**Upon completing this setup, your project will include two new API endpoints:**
+**You're all done!** Upon completing this setup, your project will include two new API endpoints:
 
 - **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
 - **Request Submission Endpoint**: `POST /{default_path}/messages`
