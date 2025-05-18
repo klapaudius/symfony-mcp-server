@@ -68,13 +68,13 @@ EOT
     private function testTool(): int
     {
         try {
-            // Create the tool instance
+            // Create the tool instance and display its schema
             $tool = $this->getToolInstance();
-
             $this->displaySchema($tool);
 
             // Get input data
-            $inputData = $this->getInputData($tool->getInputSchema());
+            $inputData = $this->getInputDataFromOption()
+                ?? $this->askForInputData($tool->getInputSchema());
             if ($inputData === null) {
                 throw new TestMcpToolCommandException('Invalid input data.');
             }
@@ -177,7 +177,14 @@ EOT
     }
 
     /**
-     * Display JSON schema in a readable format.
+     * Generates a list of formatted display messages based on the provided schema.
+     * The method processes the schema's properties recursively, handling nested objects
+     * and arrays to construct a readable representation of the schema details.
+     *
+     * @param array  $schema  The schema definition to be parsed.
+     * @param string $indent  The indentation string used for structuring nested properties.
+     *
+     * @return array Returns an array of formatted strings representing the schema details.
      */
     protected function getSchemaDisplayMessages(array $schema, string $indent = ''): array
     {
@@ -214,10 +221,7 @@ EOT
         return $messages;
     }
 
-    /**
-     * Get input data from user or from the provided option.
-     */
-    protected function getInputData(array $schema): ?array
+    public function getInputDataFromOption(): ?array
     {
         // If input is provided as an option, use that
         $inputOption = $this->input->getOption('input');
@@ -225,18 +229,23 @@ EOT
             try {
                 $decodedInput = json_decode($inputOption, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception(json_last_error_msg());
+                    throw new TestMcpToolCommandException(json_last_error_msg());
                 }
 
                 return $decodedInput;
             } catch (\Throwable $e) {
                 $this->io->error("Invalid JSON input: {$e->getMessage()}");
-
-                return null;
             }
         }
 
-        // Otherwise, interactively build the input
+        return null;
+    }
+
+    /**
+     * Get input data from user.
+     */
+    public function askForInputData(array $schema): ?array
+    {
         $input = [];
 
         if (! isset($schema['properties']) || ! is_array($schema['properties'])) {
@@ -250,14 +259,18 @@ EOT
 
             $this->io->text("Property: {$propName} ({$type}) {$description}");
 
-            if ($type === 'object') {
+            if (in_array($type, ['object', 'array'])) {
                 $this->io->text('Enter JSON for object (or leave empty to skip):');
                 $jsonInput = $this->io->ask('JSON');
                 if (! empty($jsonInput)) {
                     try {
                         $input[$propName] = json_decode($jsonInput, true);
                         if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new Exception(json_last_error_msg());
+                            throw new TestMcpToolCommandException(json_last_error_msg());
+                        }
+                        if ($type === 'array'
+                            && ! is_array($input[$propName])) {
+                            throw new TestMcpToolCommandException('Not an array');
                         }
                     } catch (\Throwable $e) {
                         $this->io->error("Invalid JSON: {$e->getMessage()}");
@@ -267,38 +280,18 @@ EOT
                     $this->io->warning('Required field skipped. Using empty object.');
                     $input[$propName] = [];
                 }
-            } elseif ($type === 'array') {
-                $this->io->text('Enter JSON for array (or leave empty to skip):');
-                $jsonInput = $this->io->ask('JSON');
-                if (! empty($jsonInput)) {
-                    try {
-                        $input[$propName] = json_decode($jsonInput, true);
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new Exception(json_last_error_msg());
-                        }
-                        if (! is_array($input[$propName])) {
-                            throw new Exception('Not an array');
-                        }
-                    } catch (\Throwable $e) {
-                        $this->io->error("Invalid JSON array: {$e->getMessage()}");
-                        $input[$propName] = [];
-                    }
-                } elseif ($required) {
-                    $this->io->warning('Required field skipped. Using empty array.');
-                    $input[$propName] = [];
-                }
             } elseif ($type === 'boolean') {
                 $default = $propSchema['default'] ?? false;
                 $input[$propName] = $this->io->confirm('Value (yes/no)', $default);
-            } elseif ($type === 'number' || $type === 'integer') {
+            } elseif (in_array($type, ['number','integer'])) {
                 $default = $propSchema['default'] ?? '';
                 $value = $this->io->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
                 if ($value === '' && $default !== '') {
                     $input[$propName] = $default;
-                } elseif ($value === '' && $required) {
+                } elseif (! is_numeric($value) && $required) {
                     $this->io->warning('Required field skipped. Using 0.');
                     $input[$propName] = 0;
-                } elseif ($value !== '') {
+                } elseif (is_numeric($value)) {
                     $input[$propName] = ($type === 'integer') ? (int) $value : (float) $value;
                 }
             } else {
@@ -322,7 +315,7 @@ EOT
     /**
      * List all available tools.
      */
-    protected function listAllTools(): int
+    public function listAllTools(): int
     {
         $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
 
@@ -360,7 +353,7 @@ EOT
             "    php bin/console mcp:test-tool --input='{\"param\":\"value\"}'",
         ]);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

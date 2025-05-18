@@ -5,10 +5,13 @@ namespace KLP\KlpMcpServer\Tests\Command;
 use KLP\KlpMcpServer\Command\TestMcpToolCommand;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
+use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -334,5 +337,380 @@ class TestMcpToolCommandTest extends TestCase
         $this->ioMock->expects($this->once())->method('newLine');
 
         $this->command->displaySchema($toolMock);
+    }
+
+    /**
+     * Tests that valid JSON input from the --input option is correctly parsed and returned as an array.
+     */
+    public function test_get_input_data_from_option_valid_json_returns_array(): void
+    {
+        $validJson = '{"key": "value", "number": 42}';
+
+        $this->inputMock
+            ->method('getOption')
+            ->with('input')
+            ->willReturn($validJson);
+
+        $result = $this->invokePrivateMethod('getInputDataFromOption');
+
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('key', $result);
+        $this->assertEquals('value', $result['key']);
+        $this->assertArrayHasKey('number', $result);
+        $this->assertEquals(42, $result['number']);
+    }
+
+    /**
+     * Tests that invalid JSON input from the --input option displays an error message.
+     */
+    public function test_get_input_data_from_option_invalid_json_throws_error(): void
+    {
+        $invalidJson = '{"key": "value"';
+
+        $this->inputMock
+            ->method('getOption')
+            ->with('input')
+            ->willReturn($invalidJson);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('error')
+            ->with('Invalid JSON input: Syntax error');
+
+        $result = $this->invokePrivateMethod('getInputDataFromOption');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests that when the --input option is not provided, the method returns null.
+     */
+    public function test_get_input_data_from_option_empty_input_option_returns_null(): void
+    {
+        $this->inputMock
+            ->method('getOption')
+            ->with('input')
+            ->willReturn(null);
+
+        $result = $this->invokePrivateMethod('getInputDataFromOption');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Helper method to invoke private methods on the command class.
+     */
+    private function invokePrivateMethod(string $methodName, array $args = []): mixed
+    {
+        $reflection = new \ReflectionMethod(TestMcpToolCommand::class, $methodName);
+
+        return $reflection->invokeArgs($this->command, $args);
+    }
+
+    /**
+     * Tests that when no tools are configured, a warning is displayed.
+     */
+    public function test_list_all_tools_when_no_tools_are_configured_displays_warning(): void
+    {
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([]);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+
+        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+    }
+
+    /**
+     * Tests that when valid tools are present, they are displayed in a table.
+     */
+    public function test_list_all_tools_when_valid_tools_present_displays_table(): void
+    {
+        $tools = [HelloWorldTool::class, VersionCheckTool::class];
+        $toolMocks = [
+            ['name' => 'Tool1', 'class' => HelloWorldTool::class, 'description' => 'This is tool 1'],
+            ['name' => 'Tool2', 'class' => VersionCheckTool::class, 'description' => 'This is tool 2'],
+        ];
+
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn($tools);
+
+        $this->containerMock
+            ->method('get')
+            ->willReturnMap([
+                [HelloWorldTool::class, $this->createConfiguredMock(ToolInterface::class, ['getName' => 'Tool1', 'getDescription' => 'This is tool 1'])],
+                [VersionCheckTool::class, $this->createConfiguredMock(ToolInterface::class, ['getName' => 'Tool2', 'getDescription' => 'This is tool 2'])],
+            ]);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('table')
+            ->with(['Name', 'Class', 'Description'], $toolMocks);
+
+        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+    }
+
+    /**
+     * Tests that when a tool class cannot be loaded, it is gracefully handled.
+     */
+    public function test_list_all_tools_handles_tool_loading_exceptions_gracefully(): void
+    {
+        $tools = [HelloWorldTool::class];
+
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn($tools);
+
+        $this->containerMock
+            ->method('get')
+            ->will($this->throwException(new \RuntimeException("Tool not loadable.")));
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with("Couldn't load tool class: " . HelloWorldTool::class);;
+
+        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+    }
+
+    /**
+     * Tests that askForInputData processes a schema with a simple string property.
+     */
+    public function test_ask_for_input_data_processes_simple_string(): void
+    {
+        $schema = [
+            'properties' => [
+                'name' => [
+                    'type' => 'string',
+                    'description' => 'Enter your name',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('Test User');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['name' => 'Test User'], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles a required property skipped by the user.
+     */
+    public function test_ask_for_input_data_handles_required_property_skipped(): void
+    {
+        $schema = [
+            'properties' => [
+                'name' => [
+                    'type' => 'string',
+                    'description' => 'Enter your name',
+                ],
+            ],
+            'required' => ['name'],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('Required field skipped. Using empty string.');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['name' => ''], $result);
+    }
+
+    /**
+     * Tests that askForInputData processes a schema with an array type property.
+     */
+    public function test_ask_for_input_data_processes_array_property(): void
+    {
+        $schema = [
+            'properties' => [
+                'tags' => [
+                    'type' => 'array',
+                    'description' => 'Enter tags',
+                    'items' => ['type' => 'string'],
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('["tag1", "tag2"]');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['tags' => ['tag1', 'tag2']], $result);
+    }
+
+    /**
+     * Tests that askForInputData processes a property of type object with valid JSON input.
+     */
+    public function test_ask_for_input_data_processes_object_property_valid_json(): void
+    {
+        $schema = [
+            'properties' => [
+                'metadata' => [
+                    'type' => 'object',
+                    'description' => 'Enter metadata',
+                    'properties' => [
+                        'key' => ['type' => 'string']
+                    ],
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('{"key": "value"}');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['metadata' => ['key' => 'value']], $result);
+    }
+
+    /**
+     * Tests that askForInputData processes a property of type object with valid JSON input.
+     */
+    public function test_ask_for_input_data_processes_object_property_missing_required(): void
+    {
+        $schema = [
+            'properties' => [
+                'metadata' => [
+                    'type' => 'object',
+                    'description' => 'Enter metadata',
+                    'properties' => [
+                        'key' => ['type' => 'string']
+                    ],
+                ],
+            ],
+            'required' => ['metadata'],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn(null);
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['metadata' => []], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles invalid JSON for object property.
+     */
+    public function test_ask_for_input_data_handles_invalid_json_for_object(): void
+    {
+        $schema = [
+            'properties' => [
+                'metadata' => [
+                    'type' => 'object',
+                    'description' => 'Enter metadata',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('{invalid json}');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('error')
+            ->with('Invalid JSON: Syntax error');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['metadata' => null], $result);
+    }
+
+    public function test_ask_for_input_data_handles_empty_schema(): void
+    {
+        $schema = [];
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles invalid JSON for object property.
+     */
+    public function test_ask_for_input_data_processes_boolean_property(): void
+    {
+        $schema = [
+            'properties' => [
+                'confirmation' => [
+                    'type' => 'boolean',
+                    'description' => 'Are you sure?',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('confirm')
+            ->with('Value (yes/no)', false)
+            ->willReturn(true);
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['confirmation' => true], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles invalid JSON for object property.
+     */
+    public function test_ask_for_input_data_processes_integer_property(): void
+    {
+        $schema = [
+            'properties' => [
+                'age' => [
+                    'type' => 'integer',
+                    'description' => 'How old are you?',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value', false)
+            ->willReturn(20);
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['age' => 20], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles invalid JSON for object property.
+     */
+    public function test_ask_for_input_data_handle_alpha_for_integer(): void
+    {
+        $schema = [
+            'properties' => [
+                'age' => [
+                    'type' => 'integer',
+                    'description' => 'How old are you?',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value', false)
+            ->willReturn('twenty');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals([], $result);
     }
 }
