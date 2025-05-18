@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ToolRepositoryTest extends TestCase
 {
     private ContainerInterface|MockObject $container;
+
     private ToolRepository $toolRepository;
 
     protected function setUp(): void

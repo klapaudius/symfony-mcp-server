@@ -17,6 +17,7 @@ class MakeMcpToolCommand extends Command
     protected const TOOLS_DIRECTORY = 'src/MCP/Tools';
 
     private SymfonyStyle $io;
+
     private InputInterface $input;
 
     /**
@@ -27,14 +28,13 @@ class MakeMcpToolCommand extends Command
     public function __construct(private KernelInterface $kernel, private ?Filesystem $files = null)
     {
         parent::__construct();
-        $this->files ??= new Filesystem();
+        $this->files ??= new Filesystem;
     }
-
 
     protected function configure(): void
     {
         $this
-            ->addArgument( "name",
+            ->addArgument('name',
                 InputArgument::OPTIONAL,
                 "The class name of the tool to create.\n".
                 "If not provided, you will be prompted to enter the class name.\n".
@@ -44,8 +44,6 @@ class MakeMcpToolCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -189,9 +187,9 @@ class MakeMcpToolCommand extends Command
      */
     protected function registerToolInConfig(string $toolClassName): bool
     {
-        $configPath = $this->kernel->getProjectDir() . '/config/packages/klp_mcp_server.yaml';
+        $configPath = $this->kernel->getProjectDir().'/config/packages/klp_mcp_server.yaml';
 
-        if (!$this->files->exists($configPath)) {
+        if (! $this->files->exists($configPath)) {
             $this->io->error("Config file not found: {$configPath}");
 
             return false;
@@ -237,7 +235,7 @@ class MakeMcpToolCommand extends Command
     /**
      * Converts a given string or array to kebab-case format.
      *
-     * @param string $preg_replace Input data that can be an array, a string, or null to transform into kebab-case.
+     * @param  string  $preg_replace  Input data that can be an array, a string, or null to transform into kebab-case.
      * @return string Returns the transformed string in kebab-case format, or null if input is null.
      */
     private function kebab(string $preg_replace): string
@@ -248,7 +246,7 @@ class MakeMcpToolCommand extends Command
     /**
      * Converts a given string to StudlyCase format.
      *
-     * @param string $name Input string to be transformed into StudlyCase, or null.
+     * @param  string  $name  Input string to be transformed into StudlyCase, or null.
      * @return string Returns the transformed string in StudlyCase format, or null if input is null.
      */
     private function studly(string $name): string

@@ -18,9 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TestMcpToolCommandTest extends TestCase
 {
     private TestMcpToolCommand $command;
+
     private ContainerInterface|MockObject $containerMock;
+
     private InputInterface|MockObject $inputMock;
+
     private OutputInterface|MockObject $outputMock;
+
     private SymfonyStyle|MockObject $ioMock;
 
     protected function setUp(): void
@@ -111,7 +115,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_get_tool_instance_invalid_tool_class_throws_exception(): void
     {
-        $invalidTool = new \stdClass();
+        $invalidTool = new \stdClass;
 
         $this->inputMock
             ->method('getArgument')
@@ -157,8 +161,10 @@ class TestMcpToolCommandTest extends TestCase
                 if (in_array($class, $configuredTools)) {
                     $toolMock = $this->createMock(ToolInterface::class);
                     $toolMock->method('getName')->willReturn('Valid Tool');
+
                     return $toolMock;
                 }
+
                 return null;
             });
 
@@ -202,14 +208,14 @@ class TestMcpToolCommandTest extends TestCase
 
         $invocations = [
             [
-                'Testing tool: SimpleTool (' . get_class($toolMock) . ')',
+                'Testing tool: SimpleTool ('.get_class($toolMock).')',
                 'Description: A simple tool.',
             ],
             [
                 'Input schema:',
                 '- param1: string (required)',
                 '  Description: A simple string parameter.',
-            ]
+            ],
         ];
         $this->ioMock
             ->expects($matcher = $this->exactly(count($invocations)))
@@ -217,6 +223,7 @@ class TestMcpToolCommandTest extends TestCase
             ->with(
                 $this->callback(function ($text) use ($invocations, $matcher) {
                     $this->assertEquals($text, $invocations[$matcher->numberOfInvocations() - 1]);
+
                     return true;
                 })
             );
@@ -254,7 +261,7 @@ class TestMcpToolCommandTest extends TestCase
 
         $invocations = [
             [
-                'Testing tool: NestedTool (' . get_class($toolMock) . ')',
+                'Testing tool: NestedTool ('.get_class($toolMock).')',
                 'Description: A tool with nested schema.',
             ],
             [
@@ -264,7 +271,7 @@ class TestMcpToolCommandTest extends TestCase
                 '  Properties:',
                 '    - subParam: integer (required)',
                 '      Description: An integer inside the object.',
-            ]
+            ],
         ];
         $this->ioMock
             ->expects($matcher = $this->exactly(count($invocations)))
@@ -272,6 +279,7 @@ class TestMcpToolCommandTest extends TestCase
             ->with(
                 $this->callback(function ($text) use ($invocations, $matcher) {
                     $this->assertEquals($text, $invocations[$matcher->numberOfInvocations() - 1]);
+
                     return true;
                 })
             );
@@ -304,7 +312,7 @@ class TestMcpToolCommandTest extends TestCase
 
         $invocations = [
             [
-                'Testing tool: ArrayTool (' . get_class($toolMock) . ')',
+                'Testing tool: ArrayTool ('.get_class($toolMock).')',
                 'Description: A tool with array schema.',
             ],
             [
@@ -312,13 +320,14 @@ class TestMcpToolCommandTest extends TestCase
                 '- arrayParam: array (optional)',
                 '  Description: An array of strings.',
                 '  Items: string',
-            ]
+            ],
         ];
         $this->ioMock
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('text')
             ->with($this->callback(function ($text) use ($invocations, $matcher) {
                 $this->assertEquals($text, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 

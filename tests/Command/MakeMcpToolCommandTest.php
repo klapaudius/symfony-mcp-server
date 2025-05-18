@@ -18,8 +18,11 @@ klp_mcp_server:
     tools:
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
 YAML;
+
     private Kernel|MockObject $kernel;
+
     private Filesystem|MockObject $filesystem;
+
     private MakeMcpToolCommand $command;
 
     protected function setUp(): void
@@ -36,7 +39,7 @@ YAML;
     {
         $toolName = '1TestTool';
         $configPath = '/fake-path/config/packages/klp_mcp_server.yaml';
-        $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
+        $toolPath = '/fake-path/src/MCP/Tools/'.$toolName.'.php';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
         $invocations = [
@@ -48,6 +51,7 @@ YAML;
             ->method('exists')
             ->with($this->callback(function ($path) use ($invocations, $matcher) {
                 $this->assertEquals($path, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -64,6 +68,7 @@ YAML;
             ->method('dumpFile')
             ->with($this->callback(function ($path) use ($invocations, $matcher) {
                 $this->assertEquals($path, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 
@@ -85,7 +90,7 @@ YAML;
     public function test_execute_fails_when_tool_already_exists(): void
     {
         $toolName = 'ExistingTool';
-        $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
+        $toolPath = '/fake-path/src/MCP/Tools/'.$toolName.'.php';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
         $this->filesystem->method('exists')->with($toolPath)->willReturn(true);
@@ -102,7 +107,7 @@ YAML;
     public function test_execute_prompts_for_tool_name_if_not_provided(): void
     {
         $toolName = 'GeneratedTool';
-        $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
+        $toolPath = '/fake-path/src/MCP/Tools/'.$toolName.'.php';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
         $this->filesystem->method('exists')->willReturn(false);
@@ -125,7 +130,7 @@ YAML;
     public function test_execute_does_not_register_tool_automatically(): void
     {
         $toolName = 'UnregisteredTool';
-        $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . '.php';
+        $toolPath = '/fake-path/src/MCP/Tools/'.$toolName.'.php';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
         $this->filesystem->method('exists')->willReturn(false);
@@ -140,7 +145,7 @@ YAML;
         $commandTester->execute(['name' => $toolName]);
 
         $this->assertStringContainsString("Don't forget to register your tool in", $commandTester->getDisplay());
-        $this->assertStringContainsString("config/package/klp-mcp-server.yaml:", $commandTester->getDisplay());
+        $this->assertStringContainsString('config/package/klp-mcp-server.yaml:', $commandTester->getDisplay());
     }
 
     /**
@@ -149,7 +154,7 @@ YAML;
     public function test_register_tool_fails_when_config_file_does_not_exist(): void
     {
         $toolName = 'TestToolConfig';
-        $toolPath = '/fake-path/src/MCP/Tools/' . $toolName . 'Tool.php';
+        $toolPath = '/fake-path/src/MCP/Tools/'.$toolName.'Tool.php';
         $configPath = '/fake-path/config/packages/klp_mcp_server.yaml';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
@@ -162,6 +167,7 @@ YAML;
             ->method('exists')
             ->with($this->callback(function ($path) use ($invocations, $matcher) {
                 $this->assertEquals($path, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(

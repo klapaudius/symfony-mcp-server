@@ -46,7 +46,7 @@ class PingHandlerTest extends TestCase
     /**
      * Tests that isHandle returns true when the method is "ping".
      */
-    public function test_isHandle_returns_true_for_ping(): void
+    public function test_is_handle_returns_true_for_ping(): void
     {
         $method = 'ping';
 
@@ -59,7 +59,7 @@ class PingHandlerTest extends TestCase
     /**
      * Tests that isHandle returns false when the method is not "ping".
      */
-    public function test_isHandle_returns_false_for_other_method(): void
+    public function test_is_handle_returns_false_for_other_method(): void
     {
         $method = 'other/method';
 

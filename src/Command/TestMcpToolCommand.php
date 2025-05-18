@@ -23,12 +23,9 @@ class TestMcpToolCommand extends Command
     }
 
     private InputInterface $input;
+
     private SymfonyStyle $io;
 
-    /**
-     * @param mixed $result
-     * @return void
-     */
     public function displayResult(mixed $result): void
     {
         $this->io->success('Tool executed successfully!');
@@ -36,7 +33,7 @@ class TestMcpToolCommand extends Command
         if (is_array($result) || is_object($result)) {
             $resultText[] = json_encode($result, JSON_PRETTY_PRINT);
         } else {
-            $resultText[] = (string)$result;
+            $resultText[] = (string) $result;
         }
         $this->io->text($resultText);
     }
@@ -44,14 +41,14 @@ class TestMcpToolCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument( "tool", InputArgument::OPTIONAL, "The name or class of the tool to test")
-            ->addOption( "input", '-i', InputOption::VALUE_OPTIONAL, "JSON input for the tool")
-            ->addOption( "list", '-l', InputOption::VALUE_NONE, "List all available tools")
+            ->addArgument('tool', InputArgument::OPTIONAL, 'The name or class of the tool to test')
+            ->addOption('input', '-i', InputOption::VALUE_OPTIONAL, 'JSON input for the tool')
+            ->addOption('list', '-l', InputOption::VALUE_NONE, 'List all available tools')
             ->setDescription('Test an MCP tool with simulated inputs')
-            ->setHelp(<<<EOT
+            ->setHelp(<<<'EOT'
 mcp:test-tool {tool? : The name or class of the tool to test} {--input= : JSON input for the tool} {--list : List all available tools}
 EOT
-);
+            );
     }
 
     /**
@@ -61,6 +58,7 @@ EOT
     {
         $this->input = $input;
         $this->io = new SymfonyStyle($input, $output);
+
         // List all tools if --list option is provided
         return $this->input->getOption('list')
             ? $this->listAllTools()
@@ -95,7 +93,7 @@ EOT
                 $this->io->error("Error executing tool: {$e->getMessage()}");
                 $this->io->text([
                     'Stack trace:',
-                    $e->getTraceAsString()
+                    $e->getTraceAsString(),
                 ]);
 
                 return Command::FAILURE;
@@ -107,13 +105,13 @@ EOT
         }
     }
 
-
     /**
      * Resolves and retrieves an instance of a tool based on the provided identifier
      * from the input or user prompt. The method checks for a matching class name,
      * an exact tool match, or a case-insensitive tool name match from the configured tools.
      *
      * @return ToolInterface Returns the tool instance if found.
+     *
      * @throws TestMcpToolCommandException If no tool is specified or if the tool cannot be resolved.
      */
     public function getToolInstance(): ToolInterface
@@ -130,7 +128,7 @@ EOT
             $toolInstance = $this->container->get($identifier);
         }
 
-        if (! $toolInstance ) {
+        if (! $toolInstance) {
             // Load all registered tools from config
             $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
 
@@ -161,7 +159,7 @@ EOT
     /**
      * Displays the schema information for a specific tool.
      *
-     * @param ToolInterface $tool The tool instance whose schema is to be displayed.
+     * @param  ToolInterface  $tool  The tool instance whose schema is to be displayed.
      */
     public function displaySchema(ToolInterface $tool): void
     {
@@ -198,7 +196,7 @@ EOT
                 // If this is an object with nested properties
                 if ($type === 'object' && isset($propSchema['properties'])) {
                     $messages[] = "{$indent}  Properties:";
-                    $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema, $indent . '    '));
+                    $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema, $indent.'    '));
                 }
 
                 // If this is an array with items
@@ -207,7 +205,7 @@ EOT
                     $messages[] = "{$indent}  Items: {$itemType}";
                     if (isset($propSchema['items']['properties'])) {
                         $messages[] = "{$indent}  Item Properties:";
-                        $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent . '    '));
+                        $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent.'    '));
                     }
                 }
             }
@@ -357,9 +355,9 @@ EOT
         $this->io->table(['Name', 'Class', 'Description'], $tools);
 
         $this->io->text([
-            "To test a specific tool, run:",
+            'To test a specific tool, run:',
             '    php bin/console mcp:test-tool [tool_name]',
-            "    php bin/console mcp:test-tool --input='{\"param\":\"value\"}'"
+            "    php bin/console mcp:test-tool --input='{\"param\":\"value\"}'",
         ]);
 
         return 0;

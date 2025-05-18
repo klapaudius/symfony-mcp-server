@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 class ToolsListHandlerTest extends TestCase
 {
     private ToolRepository $toolRepository;
+
     private ToolsListHandler $toolsListHandler;
 
     protected function setUp(): void

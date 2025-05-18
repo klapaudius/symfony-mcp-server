@@ -20,7 +20,7 @@ class InitializeDataTest extends TestCase
                 'prompts' => ['prompt1', 'prompt2'],
                 'tools' => ['tool1'],
                 'resources' => ['resource1', 'resource2'],
-            ]
+            ],
         ];
 
         $initializeData = InitializeData::fromArray($data);
@@ -56,7 +56,7 @@ class InitializeDataTest extends TestCase
                 'prompts' => ['prompt1'],
                 'tools' => ['tool1'],
                 'resources' => ['resource1'],
-            ]
+            ],
         ];
 
         $initializeData = InitializeData::fromArray($data);

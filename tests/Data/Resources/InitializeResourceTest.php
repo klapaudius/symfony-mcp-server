@@ -29,7 +29,7 @@ class InitializeResourceTest extends TestCase
         $data = [
             'name' => 'TestServer',
             'version' => '2.1',
-            'capabilities' => ['feature_1', 'feature_2']
+            'capabilities' => ['feature_1', 'feature_2'],
         ];
         $result = InitializeResource::fromArray($data);
 
@@ -47,7 +47,7 @@ class InitializeResourceTest extends TestCase
     {
         $data = [
             'version' => '2.0',
-            'capabilities' => ['feature_1']
+            'capabilities' => ['feature_1'],
         ];
         $result = InitializeResource::fromArray($data);
 
@@ -65,7 +65,7 @@ class InitializeResourceTest extends TestCase
     {
         $data = [
             'name' => 'Server A',
-            'capabilities' => []
+            'capabilities' => [],
         ];
         $result = InitializeResource::fromArray($data);
 
@@ -106,7 +106,7 @@ class InitializeResourceTest extends TestCase
             'serverInfo' => [
                 'name' => 'Server A',
                 'version' => '2.5',
-            ]
+            ],
         ];
 
         $this->assertSame($expected, $resource->toArray());
@@ -124,7 +124,7 @@ class InitializeResourceTest extends TestCase
             'serverInfo' => [
                 'name' => 'unknown',
                 'version' => '1.0',
-            ]
+            ],
         ];
 
         $this->assertSame($expected, $resource->toArray());
@@ -142,7 +142,7 @@ class InitializeResourceTest extends TestCase
             'serverInfo' => [
                 'name' => 'Server B',
                 'version' => '3.0',
-            ]
+            ],
         ];
 
         $this->assertSame($expected, $resource->toArray());

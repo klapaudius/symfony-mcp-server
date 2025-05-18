@@ -2,4 +2,4 @@
 
 namespace KLP\KlpMcpServer\Exceptions;
 
-class TestMcpToolCommandException extends \Exception{}
+class TestMcpToolCommandException extends \Exception {}
