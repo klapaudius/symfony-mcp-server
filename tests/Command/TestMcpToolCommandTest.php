@@ -10,7 +10,7 @@ use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use stdClass;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -38,7 +38,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->ioMock = $this->createMock(SymfonyStyle::class);
 
         $this->command = new TestMcpToolCommand($this->containerMock);
-        $this->command->setApplication($this->createMock(\Symfony\Component\Console\Application::class));
+        $this->command->setApplication($this->createMock(Application::class));
         $this->injectPrivateProperty($this->command, 'input', $this->inputMock);
         $this->injectPrivateProperty($this->command, 'io', $this->ioMock);
     }
@@ -46,7 +46,7 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that an exception is thrown when no tool is provided
      */
-    public function test_get_tool_instance_no_tool_provided_throws_exception(): void
+    public function test_get_tool_instance_no_tool_provided_and_no_tool_configured_throws_exception(): void
     {
         $this->inputMock
             ->method('getArgument')
@@ -55,6 +55,32 @@ class TestMcpToolCommandTest extends TestCase
 
         $this->expectException(TestMcpToolCommandException::class);
         $this->expectExceptionMessage('No tool specified.');
+
+        $this->invokeGetToolInstanceMethod();
+    }
+
+    /**
+     * Tests that an exception is thrown when no tool is provided
+     */
+    public function test_get_tool_instance_no_tool_provided_ask_choice_from_configured_tools(): void
+    {
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([HelloWorldTool::class]);
+        $this->containerMock
+            ->method('get')
+            ->with(HelloWorldTool::class)
+            ->willReturn(new HelloWorldTool);
+        $this->inputMock
+            ->method('getArgument')
+            ->with('tool')
+            ->willReturn(null);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('choice')
+            ->with('Select a tool to test', ['hello-world ('.HelloWorldTool::class.')']);
 
         $this->invokeGetToolInstanceMethod();
     }
@@ -412,6 +438,12 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_list_all_tools_when_no_tools_are_configured_displays_warning(): void
     {
+        $this->inputMock
+            ->expects($this->once())
+            ->method('getOption')
+            ->with('list')
+            ->willReturn('list');
+
         $this->containerMock
             ->method('getParameter')
             ->with('klp_mcp_server.tools')
@@ -422,7 +454,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('warning')
             ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
 
-        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));;
     }
 
     /**
@@ -430,6 +462,11 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_list_all_tools_when_valid_tools_present_displays_table(): void
     {
+        $this->inputMock
+            ->expects($this->once())
+            ->method('getOption')
+            ->with('list')
+            ->willReturn('list');
         $tools = [HelloWorldTool::class, VersionCheckTool::class];
         $toolMocks = [
             ['name' => 'Tool1', 'class' => HelloWorldTool::class, 'description' => 'This is tool 1'],
@@ -453,7 +490,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('table')
             ->with(['Name', 'Class', 'Description'], $toolMocks);
 
-        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
 
     /**
@@ -461,6 +498,11 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_list_all_tools_handles_tool_loading_exceptions_gracefully(): void
     {
+        $this->inputMock
+            ->expects($this->once())
+            ->method('getOption')
+            ->with('list')
+            ->willReturn('list');
         $tools = [HelloWorldTool::class];
 
         $this->containerMock
@@ -477,7 +519,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('warning')
             ->with("Couldn't load tool class: " . HelloWorldTool::class);;
 
-        $this->assertEquals(Command::SUCCESS, $this->command->listAllTools());
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
 
     /**
@@ -712,5 +754,33 @@ class TestMcpToolCommandTest extends TestCase
         $result = $this->command->askForInputData($schema);
 
         $this->assertEquals([], $result);
+    }
+
+    /**
+     * Tests that askForInputData handles invalid JSON for object property.
+     */
+    public function test_ask_for_input_data_handle_alpha_for_required_integer(): void
+    {
+        $schema = [
+            'properties' => [
+                'age' => [
+                    'type' => 'integer',
+                    'description' => 'How old are you?',
+                ],
+            ],
+            'required' => ['age'],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value', false)
+            ->willReturn('twenty');
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('Required field skipped. Using 0.');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['age' => 0], $result);
     }
 }

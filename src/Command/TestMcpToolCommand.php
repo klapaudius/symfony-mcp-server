@@ -56,8 +56,8 @@ EOT
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->input = $input;
-        $this->io = new SymfonyStyle($input, $output);
+        $this->input ??= $input;
+        $this->io ??= new SymfonyStyle($input, $output);
 
         // List all tools if --list option is provided
         return $this->input->getOption('list')
@@ -283,7 +283,7 @@ EOT
     /**
      * List all available tools.
      */
-    public function listAllTools(): int
+    private function listAllTools(): int
     {
         $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
 
