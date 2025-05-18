@@ -1,4 +1,4 @@
-<h1 align="center">Symfony MCP Server (work in progress)</h1>
+<h1 align="center">Symfony MCP Server</h1>
 
 <p align="center">
   A powerful Symfony package to build a Model Context Protocol Server seamlessly
