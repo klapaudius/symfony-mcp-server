@@ -61,8 +61,8 @@ Key benefits:
     klp_mcp_server:
         enabled: true
         server:
-            name: 'Klp MCP Server'
-            version: '0.1.0'
+            name: 'My MCP Server'
+            version: '1.0.0'
         default_path: 'mcp'
         ping:
             enable: true  # Read the warning section in the default configuration file before disable it
@@ -77,8 +77,6 @@ Key benefits:
         tools:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
-        prompts: []
-        resources: []
     ```
     For more detailed explanations, you can open the default configuration file
 [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
@@ -196,6 +194,36 @@ klp_mcp_server:
             host: 'localhost'   # Change it as needed
             ttl: 100            # Message TTL in seconds
 ```
+
+## Roadmap
+### Version 0.8.0 (Current)
+
+- **Initial Release:**
+Basic implementation of the Model Context Protocol (MCP) server using Server-Sent Events (SSE).
+- **Core Features:**
+  - Real-time communication support through SSE.
+  - Basic tool implementation compliant with MCP specifications.
+  - Redis adapter for Pub/Sub messaging pattern.
+- **Documentation:** Basic setup and usage instructions.
+### Version 0.9.0 (Next)
+
+- **Core Features:**
+  - **Refactoring:** Refactor `TestMcpToolCommand` to reduce technical debt and improve code maintainability.
+  - **Testing Enhancements:** Enhance test coverage to achieve an acceptable and robust ratio, ensuring reliability and stability.
+- **Documentation:**
+  - **Examples and Use Cases:** Include additional examples and use cases to illustrate practical applications and best practices.
+
+### Version 1.0.0
+- **Core Features:**
+  - Basic resources implementation compliant with MCP specification.
+  - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
+- **Additional Adaptaters:**
+  - Support for more Pub/Sub adapters (e.g., RabbitMQ).
+- **Documentation:**
+  - Expanded documentation with more detailed examples and use cases.
+  - Tutorials and best practices for implementation.
+  - Establish guidelines for contributing.
+
 
 ## Credits
 - Boris AUBE and [all contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)

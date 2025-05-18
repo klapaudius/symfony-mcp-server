@@ -65,9 +65,11 @@ klp_mcp_server:
         - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
 
     # Prompts List
+    # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/prompts
-    prompts: []
+#    prompts: []
 
     # Resources List
+    # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/resources
-    resources: []
+#    resources: []

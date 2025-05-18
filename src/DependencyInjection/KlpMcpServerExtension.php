@@ -27,7 +27,7 @@ class KlpMcpServerExtension extends Extension
         $container->setParameter('klp_mcp_server.adapters.redis.host', $config['adapters']['redis']['host'] ?? 'default');
         $container->setParameter('klp_mcp_server.adapters.redis.ttl', $config['adapters']['redis']['ttl'] ?? 100);
         $container->setParameter('klp_mcp_server.tools', $config['tools']);
-        $container->setParameter('klp_mcp_server.prompts', $config['prompts']);
-        $container->setParameter('klp_mcp_server.resources', $config['resources']);
+//        $container->setParameter('klp_mcp_server.prompts', $config['prompts']);
+//        $container->setParameter('klp_mcp_server.resources', $config['resources']);
     }
 }

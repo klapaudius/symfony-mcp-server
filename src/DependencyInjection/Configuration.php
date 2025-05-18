@@ -103,17 +103,17 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
-                // Prompts
-            ->arrayNode('prompts')
-            ->prototype('scalar')
-            ->end()
-            ->end()
+                // Prompts Comming Next
+//            ->arrayNode('prompts')
+//            ->prototype('scalar')
+//            ->end()
+//            ->end()
 
-                // Resources
-            ->arrayNode('resources')
-            ->prototype('scalar')
-            ->end()
-            ->end()
+                // Resources Comming Next
+//            ->arrayNode('resources')
+//            ->prototype('scalar')
+//            ->end()
+//            ->end()
             ->end();
 
         return $treeBuilder;
