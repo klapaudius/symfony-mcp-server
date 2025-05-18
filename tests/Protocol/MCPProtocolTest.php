@@ -6,7 +6,6 @@ use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
-use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -385,5 +384,21 @@ class MCPProtocolTest extends TestCase
             }));
 
         $this->mcpProtocol->handleMessage($clientId, $validNotificationMessage);
+    }
+
+    /**
+     * Test that requestMessage invokes processMessage on the transport
+     */
+    public function test_request_message_invokes_transport_process_message(): void
+    {
+        $clientId = 'test_client';
+        $message = ['key' => 'value'];
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('processMessage')
+            ->with($this->equalTo($clientId), $this->equalTo($message));
+
+        $this->mcpProtocol->requestMessage($clientId, $message);
     }
 }

@@ -149,8 +149,6 @@ final class MCPProtocol implements MCPProtocolInterface
             throw new JsonRpcErrorException(message: 'Invalid Request: Message format not recognized', code: JsonRpcErrorCode::INVALID_REQUEST, data: $message);
         } catch (JsonRpcErrorException $e) {
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
-        } catch (Exception $e) {
-            throw $e;
         }
     }
 
