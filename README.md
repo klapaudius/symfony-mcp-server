@@ -50,12 +50,7 @@ Key benefits:
 
 ## Installation
 
-1. Install the package via Composer:
-
-   ```bash
-   composer require klapaudius/symfony-mcp-server
-   ```
-2. Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
+1. Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
 
     ```yaml
     klp_mcp_server:
@@ -65,7 +60,7 @@ Key benefits:
             version: '1.0.0'
         default_path: 'mcp'
         ping:
-            enable: true  # Read the warning section in the default configuration file before disable it
+            enabled: true  # Read the warning section in the default configuration file before disable it
             interval: 30
         server_provider: 'sse'
         sse_adapter: 'redis'
@@ -78,8 +73,14 @@ Key benefits:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
     ```
-    For more detailed explanations, you can open the default configuration file
-[from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
+   For more detailed explanations, you can open the default configuration file
+   [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
+
+2. Install the package via Composer:
+
+   ```bash
+   composer require klapaudius/symfony-mcp-server
+   ```
 
 3. Add routes in your `config/routes.yaml`
 
