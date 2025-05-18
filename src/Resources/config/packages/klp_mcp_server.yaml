@@ -8,7 +8,7 @@ klp_mcp_server:
     # Configuration for the MCPServer instance. These values are used when
     # registering the MCPServer as a singleton in the service container.
     server:
-        name: 'Klp MCP Server'
+        name: 'My MCP Server'
         version: '0.1.0'
 
     # MCP Server
@@ -41,13 +41,13 @@ klp_mcp_server:
     # SSE Adapters Configuration
     # Configuration for the different SSE adapters available in the MCP server.
     # Each adapter has its own configuration options.
-    # Adapters function as a pub/sub message broker between clients and the server.
-    # When a client sends a message to the server endpoint, the server processes it
-    # and publishes a response through the adapter. SSE connections subscribe to
-    # these messages and deliver them to the client in real-time.
-    # The Redis adapter uses Redis lists as message queues, with each client having
-    # its own queue identified by a unique client ID. This enables efficient and
-    # scalable real-time communication in distributed environments.
+    # Adapters function as a pub/sub message broker between clients and the
+    # server. When a client sends a message to the server endpoint, the server
+    # processes it and publishes a response through the adapter. SSE connections
+    # subscribe to these messages and deliver them to the client in real-time.
+    # The Redis adapter uses Redis lists as message queues, with each client
+    # having its own queue identified by a unique client ID. This enables
+    # efficient and scalable real-time communication in distributed environments
     sse_adapter: 'redis'
     adapters:
         redis:
