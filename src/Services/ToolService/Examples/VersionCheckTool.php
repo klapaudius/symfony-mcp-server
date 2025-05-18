@@ -15,7 +15,7 @@ final class VersionCheckTool implements ToolInterface
 
     public function getDescription(): string
     {
-        return 'Check the current Laravel version.';
+        return 'Check the current Symfony version.';
     }
 
     public function getInputSchema(): array
