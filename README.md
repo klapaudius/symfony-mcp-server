@@ -224,7 +224,6 @@ klp_mcp_server:
   - Tutorials and best practices for implementation.
   - Establish guidelines for contributing.
 
-
 ## Credits
 - Boris AUBE and [all contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)
 - Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)
