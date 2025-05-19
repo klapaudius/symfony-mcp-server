@@ -1,3 +1,4 @@
+---
 klp_mcp_server:
     # MCP Server Activation
     # Enable or disable the MCP server functionality. When disabled, no routes
@@ -73,3 +74,4 @@ klp_mcp_server:
     # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/resources
     # resources: []
+---
