@@ -213,6 +213,7 @@ class TestMcpToolCommandTest extends TestCase
     private function injectPrivateProperty(object $object, string $propertyName, mixed $value): void
     {
         $reflection = new \ReflectionProperty($object, $propertyName);
+        $reflection->setAccessible(true);
         $reflection->setValue($object, $value);
     }
 
@@ -455,6 +456,66 @@ class TestMcpToolCommandTest extends TestCase
             ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
 
         $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
+    }
+
+    /**
+     * Tests that when valid input is provided, the tool is executed, and the result is displayed.
+     */
+    public function test_test_tool_valid_input_process_tool(): void
+    {
+        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock->method('getInputSchema')->willReturn([]);
+        $toolMock->method('execute')->with([])->willReturn(['success' => true]);
+
+        $this->containerMock
+            ->method('get')
+            ->willReturn($toolMock);
+
+        $this->containerMock
+            ->method('getParameter')
+            ->willReturn([HelloWorldTool::class]);
+
+        $this->inputMock
+            ->method('getArgument')
+            ->with('tool')
+            ->willReturn(HelloWorldTool::class);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('success')
+            ->with('Tool executed successfully!');
+
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
+    }
+
+    /**
+     * Tests that when the tool execution fails, the error message and stack trace are displayed.
+     */
+    public function test_test_tool_execution_failure_handles_error(): void
+    {
+        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock->method('getInputSchema')->willReturn([]);
+        $toolMock->method('execute')->willThrowException(new \RuntimeException('Execution error.'));
+
+        $this->containerMock
+            ->method('get')
+            ->willReturn($toolMock);
+
+        $this->containerMock
+            ->method('getParameter')
+            ->willReturn([HelloWorldTool::class]);
+
+        $this->inputMock
+            ->method('getArgument')
+            ->with('tool')
+            ->willReturn(HelloWorldTool::class);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Error executing tool'));
+
+        $this->assertEquals(Command::FAILURE, $this->command->execute($this->inputMock, $this->outputMock));
     }
 
     /**
