@@ -204,6 +204,7 @@ klp_mcp_server:
 ```
 
 ## Roadmap
+### 🔗 [View the v0.8.0 Release Notes](https://github.com/klapaudius/symfony-mcp-server/discussions/7#)
 ### Version 0.9.0 (Current)
 
 - **Core Features:**
