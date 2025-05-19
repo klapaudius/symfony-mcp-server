@@ -187,7 +187,7 @@ EOT
     protected function getSchemaDisplayMessages(array $schema, string $indent = ''): array
     {
         $messages = [];
-        if (isset($schema['properties']) && is_array($schema['properties'])) {
+        if (is_array($schema['properties'] ?? null)) {
             foreach ($schema['properties'] as $propName => $propSchema) {
                 $type = $propSchema['type'] ?? 'any';
                 $description = $propSchema['description'] ?? '';
@@ -204,17 +204,22 @@ EOT
 
                 // If this is an array with items
                 if ($type === 'array' && isset($propSchema['items'])) {
-                    $itemType = $propSchema['items']['type'] ?? 'any';
-                    $messages[] = "{$indent}  Items: {$itemType}";
-                    if (isset($propSchema['items']['properties'])) {
-                        $messages[] = "{$indent}  Item Properties:";
-                        $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent.'    '));
-                    }
+                    $this->getArraySchemaDisplay($propSchema, $indent, $messages);
                 }
             }
         }
 
         return $messages;
+    }
+
+    private function getArraySchemaDisplay(mixed $propSchema, string $indent, array &$messages): void
+    {
+        $itemType = $propSchema['items']['type'] ?? 'any';
+        $messages[] = "{$indent}  Items: {$itemType}";
+        if (isset($propSchema['items']['properties'])) {
+            $messages[] = "{$indent}  Item Properties:";
+            $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent . '    '));
+        }
     }
 
     public function getInputDataFromOption(): ?array
