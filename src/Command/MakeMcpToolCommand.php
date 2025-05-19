@@ -190,16 +190,15 @@ class MakeMcpToolCommand extends Command
         $indentation = null;
 
         // Look for the first tool entry to determine indentation
-        if (preg_match('/tools:.*\n(\s+)-\s/s', $content, $matches)) {
-            if (isset($matches[1])) {
-                // Count the number of spaces before the first tool entry
-                $indentation = strlen($matches[1]);
-            }
+        if (preg_match('/tools:.*\n(\s+)-\s/s', $content, $matches)
+            && isset($matches[1])) {
+            // Count the number of spaces before the first tool entry
+            $indentation = strlen($matches[1]);
         }
-        if (! $indentation && preg_match('/([[:blank:]]+)tools:.*\[\]/s', $content, $matches)) {
-            if (isset($matches[1])) {
-                $indentation = strlen($matches[1])*2;
-            }
+        if (! $indentation
+            && preg_match('/([[:blank:]]+)tools:/s', $content, $matches)
+            && isset($matches[1])) {
+            $indentation = strlen($matches[1])*2;
         }
 
         return $indentation ?? 8;
