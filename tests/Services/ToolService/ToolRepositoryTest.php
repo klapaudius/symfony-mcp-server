@@ -62,12 +62,13 @@ class ToolRepositoryTest extends TestCase
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
-        $invocations = [ 'tool1', 'tool2' ];
+        $invocations = ['tool1', 'tool2'];
         $this->container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('get')
             ->with($this->callback(function ($toolClass) use ($invocations, $matcher) {
                 $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $toolClass);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -78,7 +79,7 @@ class ToolRepositoryTest extends TestCase
             ->expects($this->once())
             ->method('getParameter')
             ->with('klp_mcp_server.tools')
-            ->willReturn([ 'tool1', 'tool2' ]);
+            ->willReturn(['tool1', 'tool2']);
 
         $toolRepository = new ToolRepository($this->container);
 

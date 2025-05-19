@@ -454,7 +454,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('warning')
             ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
 
-        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));;
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
 
     /**
@@ -512,12 +512,12 @@ class TestMcpToolCommandTest extends TestCase
 
         $this->containerMock
             ->method('get')
-            ->will($this->throwException(new \RuntimeException("Tool not loadable.")));
+            ->will($this->throwException(new \RuntimeException('Tool not loadable.')));
 
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with("Couldn't load tool class: " . HelloWorldTool::class);;
+            ->with("Couldn't load tool class: ".HelloWorldTool::class);
 
         $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
@@ -609,7 +609,7 @@ class TestMcpToolCommandTest extends TestCase
                     'type' => 'object',
                     'description' => 'Enter metadata',
                     'properties' => [
-                        'key' => ['type' => 'string']
+                        'key' => ['type' => 'string'],
                     ],
                 ],
             ],
@@ -635,7 +635,7 @@ class TestMcpToolCommandTest extends TestCase
                     'type' => 'object',
                     'description' => 'Enter metadata',
                     'properties' => [
-                        'key' => ['type' => 'string']
+                        'key' => ['type' => 'string'],
                     ],
                 ],
             ],

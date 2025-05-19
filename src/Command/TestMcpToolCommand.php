@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Command;
 
-use Exception;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -181,9 +180,8 @@ EOT
      * The method processes the schema's properties recursively, handling nested objects
      * and arrays to construct a readable representation of the schema details.
      *
-     * @param array  $schema  The schema definition to be parsed.
-     * @param string $indent  The indentation string used for structuring nested properties.
-     *
+     * @param  array  $schema  The schema definition to be parsed.
+     * @param  string  $indent  The indentation string used for structuring nested properties.
      * @return array Returns an array of formatted strings representing the schema details.
      */
     protected function getSchemaDisplayMessages(array $schema, string $indent = ''): array
@@ -262,7 +260,7 @@ EOT
             } elseif ($type === 'boolean') {
                 $default = $propSchema['default'] ?? false;
                 $input[$propName] = $this->io->confirm('Value (yes/no)', $default);
-            } elseif (in_array($type, ['number','integer'])) {
+            } elseif (in_array($type, ['number', 'integer'])) {
                 $default = $propSchema['default'] ?? '';
                 $input[$propName] = $this->askForNumericInput($default, $type, $required);
             } else {
@@ -373,24 +371,23 @@ EOT
      * Prompts the user to input JSON data for an object, validates the JSON, and optionally checks for a specific type.
      * Provides error handling for invalid JSON and supports required and optional inputs.
      *
-     * @param array $input The input data array, initially empty or pre-filled.
-     * @param mixed $type The expected type of the JSON input; used for validation.
-     * @param bool $required Indicates whether the input is mandatory. If true and no input is provided, an empty array is returned.
-     *
+     * @param  array  $input  The input data array, initially empty or pre-filled.
+     * @param  mixed  $type  The expected type of the JSON input; used for validation.
+     * @param  bool  $required  Indicates whether the input is mandatory. If true and no input is provided, an empty array is returned.
      * @return array|null Returns the decoded JSON as an associative array, or null if input is invalid or not required and skipped.
      */
     private function askForJsonInput(array $input, mixed $type, bool $required): ?array
     {
         $this->io->text('Enter JSON for object (or leave empty to skip):');
         $jsonInput = $this->io->ask('JSON');
-        if (!empty($jsonInput)) {
+        if (! empty($jsonInput)) {
             try {
                 $input = json_decode($jsonInput, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new TestMcpToolCommandException(json_last_error_msg());
                 }
                 if ($type === 'array'
-                    && !is_array($input)) {
+                    && ! is_array($input)) {
                     throw new TestMcpToolCommandException('Not an array');
                 }
             } catch (\Throwable $e) {
@@ -420,7 +417,8 @@ EOT
         return $input ?? null;
     }
 
-    private function askForStandardInput(mixed $default, bool $required) {
+    private function askForStandardInput(mixed $default, bool $required)
+    {
         $value = $this->io->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
         if ($value === '' && $default !== '') {
             $input = $default;

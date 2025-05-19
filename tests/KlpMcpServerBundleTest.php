@@ -17,7 +17,7 @@ class KlpMcpServerBundleTest extends TestCase
      */
     public function test_build_adds_compiler_pass()
     {
-        $bundle = new KlpMcpServerBundle();
+        $bundle = new KlpMcpServerBundle;
         $containerBuilder = $this->createMock(ContainerBuilder::class);
 
         $containerBuilder
