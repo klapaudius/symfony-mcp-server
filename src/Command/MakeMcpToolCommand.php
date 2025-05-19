@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Command;
 
+use KLP\KlpMcpServer\Exceptions\MakeMcpToolCommandException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -212,50 +213,44 @@ class MakeMcpToolCommand extends Command
      */
     protected function registerToolInConfig(string $toolClassName): bool
     {
-        $configPath = $this->kernel->getProjectDir().'/config/packages/klp_mcp_server.yaml';
-
-        if (! $this->files->exists($configPath)) {
-            $this->io->error("Config file not found: {$configPath}");
-
-            return false;
-        }
-
-        $content = $this->files->readFile($configPath);
-
-        // Find the tools array in the config file
-        if (! preg_match('/(tools:\s*(\s*-\s*[[:alnum:]\\\\]*|\[\]))/s', $content, $matches)) {
-            $this->io->error('Could not locate tools array in config file.');
-
-            return false;
-        }
-
-        $toolsArrayContent = $matches[1];
-
-        // Detect the indentation level used in the YAML file
-        $indentation = $this->detectYamlIndentation($content);
-        $indentStr = str_repeat(' ', $indentation);
-        $fullEntry = "\n{$indentStr}- {$toolClassName}";
-
-        // Check if the tool is already registered
-        if (str_contains($toolsArrayContent, $toolClassName)) {
-            $this->io->info('Tool is already registered in config file.');
-
-            return true;
-        }
-
-        // Add the new tool to the tools array
-        $newToolsArrayContent = $toolsArrayContent.$fullEntry;
-        $newContent = str_replace($toolsArrayContent, $newToolsArrayContent, $content);
-        $newContent = str_replace('tools: []', 'tools:', $newContent);
-
-        // Write the updated content back to the config file
         try {
-            $this->files->dumpFile($configPath, $newContent);
-            $this->io->info('Tool registered successfully in config/packages/klp_mcp_server.yml');
+            $configPath = $this->kernel->getProjectDir().'/config/packages/klp_mcp_server.yaml';
+
+            if (! $this->files->exists($configPath)) {
+                throw new MakeMcpToolCommandException("Config file not found: {$configPath}");
+            }
+
+            $content = $this->files->readFile($configPath);
+
+            // Find the tools array in the config file
+            if (! preg_match('/(tools:\s*(\s*-\s*[[:alnum:]\\\\]*|\[\]))/s', $content, $matches)) {
+                throw new MakeMcpToolCommandException('Could not locate tools array in config file.');
+            }
+
+            $toolsArrayContent = $matches[1];
+
+            // Detect the indentation level used in the YAML file
+            $indentation = $this->detectYamlIndentation($content);
+            $indentStr = str_repeat(' ', $indentation);
+            $fullEntry = "\n{$indentStr}- {$toolClassName}";
+
+            // Check if the tool is already registered
+            if (str_contains($toolsArrayContent, $toolClassName)) {
+                $this->io->info('Tool is already registered in config file.');
+            } else {
+                // Add the new tool to the tools array
+                $newToolsArrayContent = $toolsArrayContent . $fullEntry;
+                $newContent = str_replace($toolsArrayContent, $newToolsArrayContent, $content);
+                $newContent = str_replace('tools: []', 'tools:', $newContent);
+
+                // Write the updated content back to the config file
+                $this->files->dumpFile($configPath, $newContent);
+                $this->io->info('Tool registered successfully in config/packages/klp_mcp_server.yml');
+            }
 
             return true;
-        } catch (\Throwable) {
-            $this->io->error('Failed to update config file. Please manually register the tool.');
+        } catch (\Throwable $e) {
+            $this->io->error("Failed to update config file: {$e->getMessage()}");
 
             return false;
         }
