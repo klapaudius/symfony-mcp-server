@@ -204,25 +204,16 @@ klp_mcp_server:
 ```
 
 ## Roadmap
-### Version 0.8.0 (Current)
-
-- **Initial Release:**
-Basic implementation of the Model Context Protocol (MCP) server using Server-Sent Events (SSE).
-- **Core Features:**
-  - Real-time communication support through SSE.
-  - Basic tool implementation compliant with MCP specifications.
-  - Redis adapter for Pub/Sub messaging pattern.
-- **Documentation:** Basic setup and usage instructions.
-### Version 0.9.0 (Next)
+### Version 0.9.0 (Current)
 
 - **Core Features:**
+  - **New Adapter**: Symfony Cache adpater for Pub/Sub messaging pattern.
   - **Refactoring:** Refactor `TestMcpToolCommand` to reduce technical debt and improve code maintainability.
   - **Testing Enhancements:** Enhance test coverage to achieve an acceptable and robust ratio, ensuring reliability and stability.
-  - **New Adapter**: Symfony Cache adpater for Pub/Sub messaging pattern
 - **Documentation:**
   - **Examples and Use Cases:** Include additional examples and use cases to illustrate practical applications and best practices.
 
-### Version 1.0.0
+### Version 1.0.0 (Next)
 - **Core Features:**
   - Basic resources implementation compliant with MCP specification.
   - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
