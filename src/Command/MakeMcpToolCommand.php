@@ -180,12 +180,6 @@ class MakeMcpToolCommand extends Command
     }
 
     /**
-     * Register the tool in the MCP server configuration file.
-     *
-     * @param  string  $toolClassName  Fully qualified class name of the tool
-     * @return bool Whether registration was successful
-     */
-    /**
      * Detect indentation level for YAML tools entries.
      *
      * This function analyzes the existing YAML structure to determine how many
@@ -211,6 +205,12 @@ class MakeMcpToolCommand extends Command
         return $indentation ?? 8;
     }
 
+    /**
+     * Register the tool in the MCP server configuration file.
+     *
+     * @param  string  $toolClassName  Fully qualified class name of the tool
+     * @return bool Whether registration was successful
+     */
     protected function registerToolInConfig(string $toolClassName): bool
     {
         $configPath = $this->kernel->getProjectDir().'/config/packages/klp_mcp_server.yaml';
