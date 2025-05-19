@@ -49,8 +49,13 @@ klp_mcp_server:
     # The Redis adapter uses Redis lists as message queues, with each client
     # having its own queue identified by a unique client ID. This enables
     # efficient and scalable real-time communication in distributed environments
-    sse_adapter: 'redis'
+    # If a Redis server is not an option, the 'cache' adapter can be utilized
+    # as an alternative
+    sse_adapter: 'redis'        # Or 'cache'
     adapters:
+        cache:
+            prefix: 'mcp_sse_'  # Prefix for cache item keys
+            ttl: 100            # Message TTL in seconds
         redis:
             prefix: 'mcp_sse_'  # Prefix for Redis keys
             host: 'localhost'   # Change it as needed

@@ -7,10 +7,10 @@
 <p align="center">
 <a href="https://github.com/klapaudius/symfony-mcp-server/actions"><img src="https://github.com/klapaudius/symfony-mcp-server/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1" alt="Coverage"/></a>
+<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/l/klapaudius/symfony-mcp-server" alt="License"></a>
 
-[//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
 [//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/v/klapaudius/symfony-mcp-server" alt="Latest Stable Version"></a>)
-[//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/l/klapaudius/symfony-mcp-server" alt="License"></a>)
+[//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
 </p>
 
 ## Overview
@@ -41,7 +41,7 @@ Key benefits:
 
 - Real-time communication support through Server-Sent Events (SSE) integration specified in the MCP 2024-11-05 version (Streamable HTTP from 2025-03-26 version is planned)
 - Implementation of tools and resources compliant with Model Context Protocol specifications
-- Adapter-based design architecture with Pub/Sub messaging pattern (starting with Redis, more adapters planned)
+- Adapter-based design architecture with Pub/Sub messaging pattern
 
 ## Requirements
 
@@ -63,11 +63,10 @@ Key benefits:
             enabled: true  # Read the warning section in the default configuration file before disable it
             interval: 30
         server_provider: 'sse'
-        sse_adapter: 'redis'
+        sse_adapter: 'cache'
         adapters:
-            redis:
+            cache:
                 prefix: 'mcp_sse_'
-                host: 'localhost'  # Change it as needed
                 ttl: 100
         tools:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
@@ -138,7 +137,7 @@ php bin/console mcp:test-tool MyCustomTool
 php bin/console mcp:test-tool --list
 
 # Test with specific JSON input
-php bin/console mcp:test-tool MyCustomTool --input='{"param":"value"}'
+php bin/console mcp:test-tool MyCustomTool --input='{"param1":"value"}'
 ```
 
 This helps you rapidly develop and debug tools by:
@@ -177,7 +176,7 @@ The package implements a publish/subscribe (pub/sub) messaging pattern through i
 
 1. **Publisher (Server)**: When clients send requests to the `/messages` endpoint, the server processes these requests and publishes responses through the configured adapter.
 
-2. **Message Broker (Adapter)**: The adapter (e.g., Redis) maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
+2. **Message Broker (Adapter)**: The adapter maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
 
 3. **Subscriber (SSE Connection)**: Long-lived SSE connections subscribe to messages for their respective clients and deliver them in real-time.
 
@@ -188,9 +187,9 @@ This architecture enables:
 - Efficient handling of multiple concurrent client connections
 - Potential for distributed server deployments
 
-### Redis Adapter Configuration
+### Redis Adapter Configuration (Optional)
 
-The default Redis adapter can be configured as follows:
+A Redis adapter can be configured as follows:
 
 
 ```yaml
@@ -219,6 +218,7 @@ Basic implementation of the Model Context Protocol (MCP) server using Server-Sen
 - **Core Features:**
   - **Refactoring:** Refactor `TestMcpToolCommand` to reduce technical debt and improve code maintainability.
   - **Testing Enhancements:** Enhance test coverage to achieve an acceptable and robust ratio, ensuring reliability and stability.
+  - **New Adapter**: Symfony Cache adpater for Pub/Sub messaging pattern
 - **Documentation:**
   - **Examples and Use Cases:** Include additional examples and use cases to illustrate practical applications and best practices.
 

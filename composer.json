@@ -8,8 +8,8 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
-        "ext-redis": "*",
         "psr/log": "^3.0",
+        "symfony/cache": "^7.2",
         "symfony/config": "~7.0",
         "symfony/console": "~7.0",
         "symfony/dependency-injection": "~7.0",
@@ -24,6 +24,7 @@
         "phpstan/phpstan-phpunit": "^1.3||^2.0"
     },
     "suggest": {
+        "ext-redis": "To enable redis SSE Adapter",
         "klapaudius/oauth-server-bundle": "For a complete OAuth2 Authentication mechanism"
     },
     "autoload": {

@@ -36,15 +36,19 @@ class KlpMcpServerExtensionTest extends TestCase
                 'enabled' => true,
                 'interval' => 60,
             ],
+            'server_provider' => 'sse',
+            'sse_adapter' => 'redis',
             'adapters' => [
                 'redis' => [
                     'prefix' => 'prefix',
                     'host' => 'localhost',
                     'ttl' => 100,
                 ],
+                'cache' => [
+                    'prefix' => 'prefix2',
+                    'ttl' => 200,
+                ],
             ],
-            'server_provider' => 'sse',
-            'sse_adapter' => 'redis',
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
             //            'prompts' => ['prompt1', 'prompt2'],
             //            'resources' => ['resource1', 'resource2'],
@@ -56,8 +60,15 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals('TestServer', $this->container->getParameter('klp_mcp_server.server.name'));
         $this->assertEquals('1.0', $this->container->getParameter('klp_mcp_server.server.version'));
         $this->assertEquals('/default/path', $this->container->getParameter('klp_mcp_server.default_path'));
+        $this->assertTrue($this->container->getParameter('klp_mcp_server.ping.enabled'));
+        $this->assertEquals(60, $this->container->getParameter('klp_mcp_server.ping.interval'));
         $this->assertEquals('klp_mcp_server.provider.sse', $this->container->getParameter('klp_mcp_server.provider'));
-        $this->assertEquals('klp_mcp_server.adapter.redis', $this->container->getParameter('klp_mcp_server.adapter'));
+        $this->assertEquals('redis', $this->container->getParameter('klp_mcp_server.sse_adapter'));
+        $this->assertEquals('prefix', $this->container->getParameter('klp_mcp_server.adapters.redis.prefix'));
+        $this->assertEquals('localhost', $this->container->getParameter('klp_mcp_server.adapters.redis.host'));
+        $this->assertEquals(100, $this->container->getParameter('klp_mcp_server.adapters.redis.ttl'));
+        $this->assertEquals('prefix2', $this->container->getParameter('klp_mcp_server.adapters.cache.prefix'));
+        $this->assertEquals(200, $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
         //        $this->assertEquals(['prompt1', 'prompt2'], $this->container->getParameter('klp_mcp_server.prompts'));
         //        $this->assertEquals(['resource1', 'resource2'], $this->container->getParameter('klp_mcp_server.resources'));

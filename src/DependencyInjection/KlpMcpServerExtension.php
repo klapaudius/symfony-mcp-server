@@ -22,10 +22,12 @@ class KlpMcpServerExtension extends Extension
         $container->setParameter('klp_mcp_server.ping.enabled', $config['ping']['enabled']);
         $container->setParameter('klp_mcp_server.ping.interval', $config['ping']['interval']);
         $container->setParameter('klp_mcp_server.provider', 'klp_mcp_server.provider.'.$config['server_provider']);
-        $container->setParameter('klp_mcp_server.adapter', 'klp_mcp_server.adapter.'.$config['sse_adapter']);
+        $container->setParameter('klp_mcp_server.sse_adapter', $config['sse_adapter']);
         $container->setParameter('klp_mcp_server.adapters.redis.prefix', $config['adapters']['redis']['prefix'] ?? 'mcp_sse');
         $container->setParameter('klp_mcp_server.adapters.redis.host', $config['adapters']['redis']['host'] ?? 'default');
         $container->setParameter('klp_mcp_server.adapters.redis.ttl', $config['adapters']['redis']['ttl'] ?? 100);
+        $container->setParameter('klp_mcp_server.adapters.cache.prefix', $config['adapters']['cache']['prefix'] ?? 'mcp_sse');
+        $container->setParameter('klp_mcp_server.adapters.cache.ttl', $config['adapters']['cache']['ttl'] ?? 100);
         $container->setParameter('klp_mcp_server.tools', $config['tools']);
     }
 }

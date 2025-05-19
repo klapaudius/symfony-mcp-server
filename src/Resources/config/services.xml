@@ -27,18 +27,17 @@
             <tag name="console.command" />
         </service>
 
-        <service id="klp_mcp_server.adapter.default" alias="klp_mcp_server.adapter.redis" />
-        <service id="klp_mcp_server.adapter.redis" class="KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter">
-            <argument type="collection">
-                <argument key="prefix">%klp_mcp_server.adapters.redis.prefix%</argument>
-                <argument key="host">%klp_mcp_server.adapters.redis.host%</argument>
-                <argument key="ttl">%klp_mcp_server.adapters.redis.ttl%</argument>
-            </argument>
-            <argument type="service" id="logger" on-invalid="null" />
+        <service id="klp_mcp_server.adapter.factory" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory">
+            <argument type="service" id="service_container" />
         </service>
+
+        <service id="klp_mcp_server.adapter" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface">
+            <factory service="klp_mcp_server.adapter.factory" method="create" />
+        </service>
+
         <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
             <argument type="string">%klp_mcp_server.default_path%</argument>
-            <argument type="service" id="klp_mcp_server.adapter.redis" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.adapter" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
             <argument type="binary">%klp_mcp_server.ping.enabled%</argument>
             <argument type="string">%klp_mcp_server.ping.interval%</argument>

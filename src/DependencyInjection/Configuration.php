@@ -11,7 +11,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('klp_mcp_server');
         $rootNode = $treeBuilder->getRootNode();
-        $supportedAdapters = ['redis'];
+        $supportedAdapters = ['cache', 'redis'];
         $supportedAdaptersServices = array_map(function ($item) {
             return $item;
         }, $supportedAdapters);
@@ -67,7 +67,7 @@ class Configuration implements ConfigurationInterface
 
                 // SSE Adapter
             ->scalarNode('sse_adapter')
-            ->defaultValue('redis')
+            ->defaultValue('cache')
             ->cannotBeEmpty()
             ->validate()
             ->ifNotInArray($supportedAdaptersServices)
@@ -77,7 +77,7 @@ class Configuration implements ConfigurationInterface
 
                 // Adapters for SSE
             ->arrayNode('adapters')
-            ->useAttributeAsKey('name') // Allows keys like "in_memory" and "redis"
+            ->useAttributeAsKey('name') // Allows keys like "cache" and "redis"
             ->arrayPrototype()
             ->children()
             ->scalarNode('prefix')
