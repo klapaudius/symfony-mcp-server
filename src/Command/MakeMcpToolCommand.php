@@ -185,6 +185,32 @@ class MakeMcpToolCommand extends Command
      * @param  string  $toolClassName  Fully qualified class name of the tool
      * @return bool Whether registration was successful
      */
+    /**
+     * Detect indentation level for YAML tools entries.
+     *
+     * This function analyzes the existing YAML structure to determine how many
+     * spaces are used for indentation in the tools array.
+     */
+    protected function detectYamlIndentation(string $content): int
+    {
+        $indentation = null;
+
+        // Look for the first tool entry to determine indentation
+        if (preg_match('/tools:.*\n(\s+)-\s/s', $content, $matches)) {
+            if (isset($matches[1])) {
+                // Count the number of spaces before the first tool entry
+                $indentation = strlen($matches[1]);
+            }
+        }
+        if (! $indentation && preg_match('/([[:blank:]]+)tools:.*\[\]/s', $content, $matches)) {
+            if (isset($matches[1])) {
+                $indentation = strlen($matches[1])*2;
+            }
+        }
+
+        return $indentation ?? 8;
+    }
+
     protected function registerToolInConfig(string $toolClassName): bool
     {
         $configPath = $this->kernel->getProjectDir().'/config/packages/klp_mcp_server.yaml';
@@ -205,7 +231,11 @@ class MakeMcpToolCommand extends Command
         }
 
         $toolsArrayContent = $matches[1];
-        $fullEntry = "\n        - {$toolClassName}";
+
+        // Detect the indentation level used in the YAML file
+        $indentation = $this->detectYamlIndentation($content);
+        $indentStr = str_repeat(' ', $indentation);
+        $fullEntry = "\n{$indentStr}- {$toolClassName}";
 
         // Check if the tool is already registered
         if (str_contains($toolsArrayContent, $toolClassName)) {

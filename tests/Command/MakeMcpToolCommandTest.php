@@ -186,4 +186,87 @@ YAML;
 
         $this->assertStringContainsString("Config file not found: {$configPath}", $commandTester->getDisplay());
     }
+
+
+    /**
+     * Tests that the YAML indentation detection correctly identifies a 4-space indentation level
+     * from the provided YAML content with existing tools defined.
+     */
+    public function test_detectYamlIndentation_with_4_space_indentation_and_existing_tools(): void
+    {
+        $content = <<<YAML
+klp_mcp_server:
+    tools:
+        - FirstTool
+        - SecondTool
+YAML;
+
+        $reflection = new \ReflectionClass($this->command);
+        $method = $reflection->getMethod('detectYamlIndentation');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->command, $content);
+
+        $this->assertEquals(8, $result);
+    }
+
+    /**
+     * Tests that the YAML indentation detection correctly identifies a 4-space indentation level
+     * from the provided YAML content with existing tools defined.
+     */
+    public function test_detectYamlIndentation_with_2_space_indentation_and_existing_tools(): void
+    {
+        $content = <<<YAML
+klp_mcp_server:
+  tools:
+    - FirstTool
+    - SecondTool
+YAML;
+
+        $reflection = new \ReflectionClass($this->command);
+        $method = $reflection->getMethod('detectYamlIndentation');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->command, $content);
+
+        $this->assertEquals(4, $result);
+    }
+
+    /**
+     * Tests that detectYamlIndentation returns default indentation when no tools key is found
+     */
+    public function test_detectYamlIndentation_with_4_space_indentation_and_no_existing_tools(): void
+    {
+        $content = <<<YAML
+klp_mcp_server:
+    tools: []
+YAML;
+
+        $reflection = new \ReflectionClass($this->command);
+        $method = $reflection->getMethod('detectYamlIndentation');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->command, $content);
+
+        $this->assertEquals(8, $result);
+    }
+
+    /**
+     * Tests that detectYamlIndentation returns default indentation when no tools key is found
+     */
+    public function test_detectYamlIndentation_with_2_space_indentation_and_no_existing_tools(): void
+    {
+        $content = <<<YAML
+klp_mcp_server:
+  tools: []
+YAML;
+
+        $reflection = new \ReflectionClass($this->command);
+        $method = $reflection->getMethod('detectYamlIndentation');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->command, $content);
+
+        $this->assertEquals(4, $result);
+    }
 }
