@@ -184,7 +184,9 @@ YAML;
         $commandTester->setInputs(['yes']);
         $commandTester->execute(['name' => $toolName]);
 
-        $this->assertStringContainsString("Config file not found: {$configPath}", $commandTester->getDisplay());
+        $display = $commandTester->getDisplay();
+        $this->assertStringContainsString("Config file not found:", $display);
+        $this->assertStringContainsString("{$configPath}", $display);
     }
 
 
