@@ -500,4 +500,4 @@ final class VersionCheckTool implements ToolInterface
 
 MCP Tools provide a powerful way to extend the capabilities of LLMs by giving them access to your application's functionality. By following this guide, you can create well-designed, secure, and effective tools that enhance the capabilities of LLM clients interacting with your Symfony application.
 
-For more information about the Model Context Protocol, visit the [official MCP documentation](https://modelcontextprotocol.ai/) or explore the [MCP specification](https://github.com/modelcontextprotocol/specification).
+For more information about the Model Context Protocol, visit the [official MCP documentation](https://modelcontextprotocol.io/) or explore the [MCP specification](https://github.com/modelcontextprotocol/specification).
