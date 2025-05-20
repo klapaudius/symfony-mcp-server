@@ -21,7 +21,7 @@ class SseAdapterFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        if (!class_exists(Redis::class)) {
+        if (! class_exists(Redis::class)) {
             eval(<<<'PHPUNIT_EVAL'
                 class Redis {
                     const OPT_PREFIX = 2;
@@ -45,7 +45,7 @@ class SseAdapterFactoryTest extends TestCase
         $this->redisMock = $this->createMock(Redis::class);
     }
 
-    public function testCreateReturnsRedisAdapterWhenConfigIsRedis(): void
+    public function test_create_returns_redis_adapter_when_config_is_redis(): void
     {
         $container = $this->createMock(ContainerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
@@ -54,12 +54,13 @@ class SseAdapterFactoryTest extends TestCase
             'klp_mcp_server.sse_adapter',
             'klp_mcp_server.adapters.redis.prefix',
             'klp_mcp_server.adapters.redis.host',
-            'klp_mcp_server.adapters.redis.ttl'
+            'klp_mcp_server.adapters.redis.ttl',
         ];
         $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls('redis', 'prefix', 'localhost', 3600);
@@ -75,7 +76,7 @@ class SseAdapterFactoryTest extends TestCase
         $this->assertInstanceOf(RedisAdapter::class, $adapter);
     }
 
-    public function testCreateReturnsCachePoolAdapterWhenConfigIsCache(): void
+    public function test_create_returns_cache_pool_adapter_when_config_is_cache(): void
     {
         $container = $this->createMock(ContainerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
@@ -90,6 +91,7 @@ class SseAdapterFactoryTest extends TestCase
             ->method('getParameter')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls('cache', 'prefix', 600);
@@ -105,7 +107,7 @@ class SseAdapterFactoryTest extends TestCase
         $this->assertInstanceOf(CachePoolAdapter::class, $adapter);
     }
 
-    public function testCreateThrowsExceptionForInvalidAdapter(): void
+    public function test_create_throws_exception_for_invalid_adapter(): void
     {
         $container = $this->createMock(ContainerInterface::class);
 

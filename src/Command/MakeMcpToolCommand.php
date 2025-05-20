@@ -199,7 +199,7 @@ class MakeMcpToolCommand extends Command
         if (! $indentation
             && preg_match('/([[:blank:]]+)tools:/s', $content, $matches)
             && isset($matches[1])) {
-            $indentation = strlen($matches[1])*2;
+            $indentation = strlen($matches[1]) * 2;
         }
 
         return $indentation ?? 8;
@@ -239,7 +239,7 @@ class MakeMcpToolCommand extends Command
                 $this->io->info('Tool is already registered in config file.');
             } else {
                 // Add the new tool to the tools array
-                $newToolsArrayContent = $toolsArrayContent . $fullEntry;
+                $newToolsArrayContent = $toolsArrayContent.$fullEntry;
                 $newContent = str_replace($toolsArrayContent, $newToolsArrayContent, $content);
                 $newContent = str_replace('tools: []', 'tools:', $newContent);
 

@@ -14,8 +14,11 @@ use Psr\Log\LoggerInterface;
 class CachePoolAdapterTest extends TestCase
 {
     private CachePoolAdapter $adapter;
+
     private CacheItemPoolInterface $cacheMock;
+
     private LoggerInterface $loggerMock;
+
     private CacheItemInterface $cacheItemMock;
 
     protected function setUp(): void

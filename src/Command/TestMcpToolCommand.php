@@ -218,7 +218,7 @@ EOT
         $messages[] = "{$indent}  Items: {$itemType}";
         if (isset($propSchema['items']['properties'])) {
             $messages[] = "{$indent}  Item Properties:";
-            $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent . '    '));
+            $messages = array_merge($messages, $this->getSchemaDisplayMessages($propSchema['items'], $indent.'    '));
         }
     }
 

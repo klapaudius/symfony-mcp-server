@@ -18,6 +18,7 @@ class SseAdapterFactory
      * Creates and retrieves an instance of SseAdapterInterface.
      *
      * @return SseAdapterInterface Returns an instance of SseAdapterInterface if the retrieved adapter is valid.
+     *
      * @throws SseAdapterException Throws an exception if the retrieved adapter is not a valid instance of SseAdapterInterface.
      */
     public function create(): SseAdapterInterface
@@ -32,9 +33,9 @@ class SseAdapterFactory
     private function createCachePoolAdapter(): CachePoolAdapter
     {
         return new CachePoolAdapter([
-                'prefix' => $this->container->getParameter('klp_mcp_server.adapters.cache.prefix'),
-                'ttl' => $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'),
-            ],
+            'prefix' => $this->container->getParameter('klp_mcp_server.adapters.cache.prefix'),
+            'ttl' => $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'),
+        ],
             $this->container->get('cache.app'),
             $this->logger
         );

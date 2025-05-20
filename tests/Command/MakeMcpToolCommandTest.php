@@ -185,18 +185,17 @@ YAML;
         $commandTester->execute(['name' => $toolName]);
 
         $display = $commandTester->getDisplay();
-        $this->assertStringContainsString("Config file not found:", $display);
+        $this->assertStringContainsString('Config file not found:', $display);
         $this->assertStringContainsString("{$configPath}", $display);
     }
-
 
     /**
      * Tests that the YAML indentation detection correctly identifies a 4-space indentation level
      * from the provided YAML content with existing tools defined.
      */
-    public function test_detectYamlIndentation_with_4_space_indentation_and_existing_tools(): void
+    public function test_detect_yaml_indentation_with_4_space_indentation_and_existing_tools(): void
     {
-        $content = <<<YAML
+        $content = <<<'YAML'
 klp_mcp_server:
     tools:
         - FirstTool
@@ -216,9 +215,9 @@ YAML;
      * Tests that the YAML indentation detection correctly identifies a 4-space indentation level
      * from the provided YAML content with existing tools defined.
      */
-    public function test_detectYamlIndentation_with_2_space_indentation_and_existing_tools(): void
+    public function test_detect_yaml_indentation_with_2_space_indentation_and_existing_tools(): void
     {
-        $content = <<<YAML
+        $content = <<<'YAML'
 klp_mcp_server:
   tools:
     - FirstTool
@@ -237,9 +236,9 @@ YAML;
     /**
      * Tests that detectYamlIndentation returns default indentation when no tools key is found
      */
-    public function test_detectYamlIndentation_with_4_space_indentation_and_no_existing_tools(): void
+    public function test_detect_yaml_indentation_with_4_space_indentation_and_no_existing_tools(): void
     {
-        $content = <<<YAML
+        $content = <<<'YAML'
 klp_mcp_server:
     tools: []
 YAML;
@@ -256,9 +255,9 @@ YAML;
     /**
      * Tests that detectYamlIndentation returns default indentation when no tools key is found
      */
-    public function test_detectYamlIndentation_with_2_space_indentation_and_no_existing_tools(): void
+    public function test_detect_yaml_indentation_with_2_space_indentation_and_no_existing_tools(): void
     {
-        $content = <<<YAML
+        $content = <<<'YAML'
 klp_mcp_server:
   tools: []
 YAML;

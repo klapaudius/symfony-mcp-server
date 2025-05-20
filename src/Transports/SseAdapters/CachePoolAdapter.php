@@ -41,15 +41,16 @@ class CachePoolAdapter implements SseAdapterInterface
     {
         return "$this->keyPrefix|client|$clientId";
     }
+
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function pushMessage(string $clientId, string $message): void
     {
         try {
             $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId));
 
-            $messages = $cacheItem->isHit() ? $cacheItem->get() : [] ;
+            $messages = $cacheItem->isHit() ? $cacheItem->get() : [];
             $messages[] = $message;
             $cacheItem->set($messages);
             $cacheItem->expiresAfter($this->messageTtl);
@@ -60,7 +61,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function removeAllMessages(string $clientId): void
     {
@@ -72,7 +73,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function receiveMessages(string $clientId): array
     {
@@ -80,7 +81,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function popMessage(string $clientId): ?string
     {
@@ -101,7 +102,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function hasMessages(string $clientId): bool
     {
@@ -109,7 +110,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getMessageCount(string $clientId): int
     {
@@ -117,7 +118,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function storeLastPongResponseTimestamp(string $clientId, ?int $timestamp = null): void
     {
@@ -128,7 +129,7 @@ class CachePoolAdapter implements SseAdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
