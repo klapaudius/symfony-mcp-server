@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use stdClass;
 use Symfony\Component\HttpKernel\Kernel;
@@ -27,9 +28,9 @@ final class VersionCheckTool implements ToolInterface
         ];
     }
 
-    public function getAnnotations(): array
+    public function getAnnotations(): ToolAnnotation
     {
-        return [];
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): string

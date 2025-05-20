@@ -2,6 +2,8 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService;
 
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+
 interface ToolInterface
 {
     /**
@@ -15,7 +17,7 @@ interface ToolInterface
 
     public function getInputSchema(): array;
 
-    public function getAnnotations(): array;
+    public function getAnnotations(): ToolAnnotation;
 
     public function execute(array $arguments): mixed;
 }

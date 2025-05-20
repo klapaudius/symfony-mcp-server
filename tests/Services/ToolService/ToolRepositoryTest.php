@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 
 use InvalidArgumentException;
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
@@ -235,7 +236,7 @@ class ToolRepositoryTest extends TestCase
         $tool->method('getName')->willReturn('toolWithAnnotations');
         $tool->method('getDescription')->willReturn('Tool with annotations');
         $tool->method('getInputSchema')->willReturn(['type' => 'object']);
-        $tool->method('getAnnotations')->willReturn(['tag' => 'example', 'version' => '1.0']);
+        $tool->method('getAnnotations')->willReturn(new ToolAnnotation);
 
         $this->toolRepository->register($tool);
 
@@ -245,6 +246,12 @@ class ToolRepositoryTest extends TestCase
         $this->assertSame('toolWithAnnotations', $schemas[0]['name']);
         $this->assertSame('Tool with annotations', $schemas[0]['description']);
         $this->assertSame(['type' => 'object'], $schemas[0]['inputSchema']);
-        $this->assertSame(['tag' => 'example', 'version' => '1.0'], $schemas[0]['annotations']);
+        $this->assertSame([
+            'title' => '-',
+            'readOnlyHint' => false,
+            'destructiveHint' => true,
+            'idempotentHint' => false,
+            'openWorldHint' => true
+        ], $schemas[0]['annotations']);
     }
 }

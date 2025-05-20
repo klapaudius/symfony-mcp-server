@@ -147,6 +147,8 @@ This helps you rapidly develop and debug tools by:
 - Displaying formatted results or detailed error information
 - Supporting complex input types including objects and arrays
 
+**For deep diving into tools creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
+
 ### Visualizing MCP Tools with Inspector
 
 You can also use the Model Context Protocol Inspector to visualize and test your MCP tools:

@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 
 class HelloWorldTool implements ToolInterface
@@ -30,9 +31,9 @@ class HelloWorldTool implements ToolInterface
         ];
     }
 
-    public function getAnnotations(): array
+    public function getAnnotations(): ToolAnnotation
     {
-        return [];
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): string

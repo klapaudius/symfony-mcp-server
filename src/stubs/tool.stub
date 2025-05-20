@@ -2,6 +2,7 @@
 
 namespace {{ namespace }};
 
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 
 class {{ className }} implements ToolInterface
@@ -49,11 +50,11 @@ class {{ className }} implements ToolInterface
     /**
      * Get the tool annotations.
      *
-     * @return array
+     * @return ToolAnnotation
      */
-    public function getAnnotations(): array
+    public function getAnnotations(): ToolAnnotation
     {
-        return [];
+        return new ToolAnnotation;
     }
 
     /**

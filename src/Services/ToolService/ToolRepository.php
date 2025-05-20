@@ -124,14 +124,12 @@ class ToolRepository
                     'required' => [],
                 ];
             }
-            if (! empty($tool->getAnnotations())) {
-                $injectArray['annotations'] = $tool->getAnnotations();
-            }
 
             $schemas[] = [
                 'name' => $tool->getName(),
                 'description' => $tool->getDescription(),
                 'inputSchema' => $tool->getInputSchema(),
+                'annotations' => $tool->getAnnotations()->toArray(),
                 ...$injectArray,
             ];
         }
