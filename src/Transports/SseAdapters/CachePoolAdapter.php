@@ -77,7 +77,12 @@ class CachePoolAdapter implements SseAdapterInterface
      */
     public function receiveMessages(string $clientId): array
     {
-        return $this->cache->getItem($this->generateQueueKey($clientId))->get() ?? [];
+        $messages = [];
+        while ($message = $this->popMessage($clientId)) {
+            $messages[] = $message;
+        }
+
+        return $messages;
     }
 
     /**

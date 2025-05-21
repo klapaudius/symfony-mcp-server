@@ -192,8 +192,29 @@ class CachePoolAdapterTest extends TestCase
             ->willReturn($this->cacheItemMock);
 
         $this->cacheItemMock
+            ->expects($this->exactly(3))
             ->method('get')
-            ->willReturn($messages);
+            ->willReturnOnConsecutiveCalls(
+                ['Message 1', 'Message 2'],
+                ['Message 2'],
+                []
+            );
+        $invocations = [
+            ['Message 2'],
+            [],
+            []
+        ];
+        $this->cacheItemMock
+            ->expects($matcher = $this->exactly(count($invocations)))
+            ->method('set')
+            ->with($this->callback(function ($value) use ($invocations, $matcher) {
+                $this->assertEquals($value, $invocations[$matcher->numberOfInvocations()-1]);
+                return true;
+            }));
+        $this->cacheMock
+            ->expects($this->exactly(count($invocations)))
+            ->method('save')
+            ->with($this->cacheItemMock);
 
         $result = $this->adapter->receiveMessages($clientId);
 
