@@ -5,7 +5,7 @@ namespace KLP\KlpMcpServer\Services\ToolService\Annotation;
 class ToolAnnotation
 {
     /**
-     * @var string  A human-readable title for the tool, useful for UI display
+     * @var string A human-readable title for the tool, useful for UI display
      */
     private string $title;
 
@@ -35,8 +35,7 @@ class ToolAnnotation
         ?bool $destructiveHint = null,
         ?bool $idempotentHint = null,
         ?bool $openWorldHint = null
-    )
-    {
+    ) {
         $this->title = $title ?? '-';
         $this->readOnlyHint = $readOnlyHint ?? false;
         $this->destructiveHint = $destructiveHint ?? true;

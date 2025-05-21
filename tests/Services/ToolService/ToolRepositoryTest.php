@@ -251,7 +251,7 @@ class ToolRepositoryTest extends TestCase
             'readOnlyHint' => false,
             'destructiveHint' => true,
             'idempotentHint' => false,
-            'openWorldHint' => true
+            'openWorldHint' => true,
         ], $schemas[0]['annotations']);
     }
 }
