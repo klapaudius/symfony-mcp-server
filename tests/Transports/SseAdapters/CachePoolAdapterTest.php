@@ -202,13 +202,14 @@ class CachePoolAdapterTest extends TestCase
         $invocations = [
             ['Message 2'],
             [],
-            []
+            [],
         ];
         $this->cacheItemMock
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('set')
             ->with($this->callback(function ($value) use ($invocations, $matcher) {
-                $this->assertEquals($value, $invocations[$matcher->numberOfInvocations()-1]);
+                $this->assertEquals($value, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
         $this->cacheMock
