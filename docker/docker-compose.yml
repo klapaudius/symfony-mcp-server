@@ -1,0 +1,45 @@
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - '${NGINX_EXPOSED_PORT}:80'
+    networks:
+      mcp_net:
+        ipv4_address: ${NGINX_IP}
+
+    volumes:
+      - ..:/var/www
+      - ./webserver/default.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - php-fpm
+
+  php-fpm:
+    build:
+      context: ./php-fpm
+      dockerfile: Dockerfile
+    networks:
+      mcp_net:
+        ipv4_address: ${PHP_IP}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    links:
+      - redis
+    volumes:
+      - ..:/var/www
+
+  redis:
+    image: "redis:alpine"
+    command: redis-server
+    volumes:
+      - ./redis/data:/var/lib/redis
+    networks:
+      mcp_net:
+        ipv4_address: ${REDIS_IP}
+
+networks:
+  mcp_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${NETWORK_SUBNET}

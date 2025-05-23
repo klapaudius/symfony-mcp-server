@@ -94,6 +94,12 @@ klp_mcp_server:
 - **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
 - **Request Submission Endpoint**: `POST /{default_path}/messages`
 
+### Docker Setup (Optional)
+
+The project includes a Docker setup that can be used for development. The Docker setup includes Nginx, PHP-FPM with Redis extension, and Redis server.
+
+For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](docs/guidelines.md#docker-setup).
+
 ## Strongly Recommended
 Enhance your application's security by implementing OAuth2 Authentication. You can use the [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle) or any other compatible OAuth2 solution.
 
@@ -160,7 +166,7 @@ npx @modelcontextprotocol/inspector node build/index.js
 This will typically open a web interface at `localhost:6274`. To test your MCP server:
 
 1. **Warning**: `symfony server:start` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
-   
+
      - Nginx + PHP-FPM
      - Apache + PHP-FPM
      - Custom Docker setup
@@ -168,7 +174,7 @@ This will typically open a web interface at `localhost:6274`. To test your MCP s
 2. In the Inspector interface, enter your Symfony server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
 3. Connect and explore available tools visually
 
-The SSE URL follows the pattern: `http://[your-web-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
+The SSE URL follows the pattern: `http(s)://[your-web-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
 
 ## Advanced Features
 
