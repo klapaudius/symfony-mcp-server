@@ -206,26 +206,14 @@ klp_mcp_server:
 ```
 
 ## Roadmap
-### 🔗 [View the v0.8.0 Release Notes](https://github.com/klapaudius/symfony-mcp-server/discussions/7#)
-### Version 0.9.0 (Current)
+We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.
 
 - **Core Features:**
-  - **New Adapter**: Symfony Cache adpater for Pub/Sub messaging pattern.
-  - **Refactoring:** Refactor `TestMcpToolCommand` to reduce technical debt and improve code maintainability.
-  - **Testing Enhancements:** Enhance test coverage to achieve an acceptable and robust ratio, ensuring reliability and stability.
-- **Documentation:**
-  - **Examples and Use Cases:** Include additional examples and use cases to illustrate practical applications and best practices.
-
-### Version 1.0.0 (Next)
-- **Core Features:**
-  - Basic resources implementation compliant with MCP specification.
+  - Resources implementation compliant with MCP specification.
+  - Prompts implementation compliant with MCP specification.
   - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
 - **Additional Adaptaters:**
   - Support for more Pub/Sub adapters (e.g., RabbitMQ).
-- **Documentation:**
-  - Expanded documentation with more detailed examples and use cases.
-  - Tutorials and best practices for implementation.
-  - Establish guidelines for contributing.
 
 ## Credits
 - Boris AUBE and [all contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)
