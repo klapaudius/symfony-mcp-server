@@ -76,7 +76,7 @@ klp_mcp_server:
     # prompts: []
 
     # Resources List
-    # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/resources
-    # resources: []
+    resources:
+       - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
 ---

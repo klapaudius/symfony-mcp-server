@@ -29,5 +29,8 @@ class KlpMcpServerExtension extends Extension
         $container->setParameter('klp_mcp_server.adapters.cache.prefix', $config['adapters']['cache']['prefix'] ?? 'mcp_sse');
         $container->setParameter('klp_mcp_server.adapters.cache.ttl', $config['adapters']['cache']['ttl'] ?? 100);
         $container->setParameter('klp_mcp_server.tools', $config['tools']);
+
+        // Set parameters for resources
+        $container->setParameter('klp_mcp_server.resources', $config['resources'] ?? []);
     }
 }

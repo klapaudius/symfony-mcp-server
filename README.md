@@ -211,6 +211,17 @@ klp_mcp_server:
             ttl: 100            # Message TTL in seconds
 ```
 
+## Resources
+
+### Configuration
+
+```yaml
+klp_mcp_server:
+    # ...
+    resources:
+        - App\Resources\MyCustomResource
+```
+
 ## Roadmap
 We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.
 

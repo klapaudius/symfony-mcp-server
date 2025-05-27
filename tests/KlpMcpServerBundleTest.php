@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Tests;
 
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ResourcesDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use KLP\KlpMcpServer\KlpMcpServerBundle;
 use PHPUnit\Framework\TestCase;
@@ -20,10 +21,17 @@ class KlpMcpServerBundleTest extends TestCase
         $bundle = new KlpMcpServerBundle;
         $containerBuilder = $this->createMock(ContainerBuilder::class);
 
+        $invocations = [
+            ToolsDefinitionCompilerPass::class,
+            ResourcesDefinitionCompilerPass::class,
+        ];
         $containerBuilder
-            ->expects($this->once())
+            ->expects($matcher = $this->exactly(2))
             ->method('addCompilerPass')
-            ->with($this->isInstanceOf(ToolsDefinitionCompilerPass::class));
+            ->with($this->callback(function ($argument) use ($invocations, $matcher) {
+                $this->assertInstanceOf($invocations[$matcher->numberOfInvocations()-1], $argument);
+                return true;
+            }));
 
         $bundle->build($containerBuilder);
     }

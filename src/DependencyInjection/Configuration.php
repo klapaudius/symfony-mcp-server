@@ -114,6 +114,15 @@ class Configuration implements ConfigurationInterface
 //            ->prototype('scalar')
 //            ->end()
 //            ->end()
+                // Resources
+            ->arrayNode('resources')
+            ->prototype('scalar')
+            ->validate()
+            ->ifTrue(static fn ($v) => ! class_exists($v))
+            ->thenInvalid('The resource "%s" must be a valid fully qualified class name.')
+            ->end()
+            ->end()
+            ->end()
             ->end();
 
         return $treeBuilder;

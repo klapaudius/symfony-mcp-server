@@ -11,8 +11,11 @@ use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\Request\InitializeHandler;
+use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
+use KLP\KlpMcpServer\Server\Request\ResourcesReadHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -120,6 +123,14 @@ final class MCPServer implements MCPServerInterface
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
         $this->registerRequestHandler(new ToolsCallHandler($toolRepository));
         $this->capabilities = (new ServerCapabilities)->withTools($toolRepository->getToolSchemas());
+
+        return $this;
+    }
+
+    public function registerResourceRepository(ResourceRepository $resourceRepository): self
+    {
+        $this->registerRequestHandler(new ResourcesListHandler($resourceRepository));
+        $this->registerRequestHandler(new ResourcesReadHandler($resourceRepository));
 
         return $this;
     }
