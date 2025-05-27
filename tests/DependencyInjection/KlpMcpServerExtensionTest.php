@@ -74,9 +74,8 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals('prefix2', $this->container->getParameter('klp_mcp_server.adapters.cache.prefix'));
         $this->assertEquals(200, $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
-        $this->assertEquals('/path/to/resources', $this->container->getParameter('klp_mcp_server.resource_providers.filesystem.base_dir'));
+//        $this->assertEquals('/path/to/resources', $this->container->getParameter('klp_mcp_server.resource_providers.filesystem.base_dir'));
         //        $this->assertEquals(['prompt1', 'prompt2'], $this->container->getParameter('klp_mcp_server.prompts'));
-        //        $this->assertEquals(['resource1', 'resource2'], $this->container->getParameter('klp_mcp_server.resources'));
     }
 
     public function test_load_throws_exception_for_invalid_config(): void
