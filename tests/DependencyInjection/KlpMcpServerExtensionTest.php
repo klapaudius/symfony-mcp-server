@@ -50,10 +50,10 @@ class KlpMcpServerExtensionTest extends TestCase
                 ],
             ],
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
-            'resource_providers' => ['filesystem' => [
-                'type' => 'filesystem',
-                'base_dir' => '/path/to/resources',
-            ]],
+//            'resource_providers' => ['filesystem' => [
+//                'type' => 'filesystem',
+//                'base_dir' => '/path/to/resources',
+//            ]],
             //            'prompts' => ['prompt1', 'prompt2'],
             //            'resources' => ['resource1', 'resource2'],
         ];
