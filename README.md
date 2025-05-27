@@ -222,6 +222,19 @@ klp_mcp_server:
         - App\Resources\MyCustomResource
 ```
 
+### Usage
+
+### Creating Custom Resource
+
+```php
+use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
+
+class MyCustomResource implements ResourceInterface
+{
+    // Tool implementation
+}
+```
+
 ## Roadmap
 We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.
 

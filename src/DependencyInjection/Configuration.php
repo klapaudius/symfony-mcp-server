@@ -109,11 +109,6 @@ class Configuration implements ConfigurationInterface
 //            ->end()
 //            ->end()
 
-                // Resources Comming Next
-//            ->arrayNode('resources')
-//            ->prototype('scalar')
-//            ->end()
-//            ->end()
                 // Resources
             ->arrayNode('resources')
             ->prototype('scalar')
