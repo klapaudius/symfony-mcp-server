@@ -78,5 +78,5 @@ klp_mcp_server:
     # Resources List
     # https://modelcontextprotocol.io/docs/concepts/resources
     resources:
-       - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
 ---

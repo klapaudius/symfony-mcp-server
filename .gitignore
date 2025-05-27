@@ -30,3 +30,4 @@ phpstan.neon
 testbench.yaml
 /coverage
 /phpunit.coverage.xml
+/docker/.env
