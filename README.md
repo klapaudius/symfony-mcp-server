@@ -231,7 +231,7 @@ use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 
 class MyCustomResource implements ResourceInterface
 {
-    // Tool implementation
+    // Resource implementation
 }
 ```
 
