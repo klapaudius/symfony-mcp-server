@@ -219,7 +219,6 @@ klp_mcp_server:
 klp_mcp_server:
     # ...
     resources:
-        - App\Resources\MyCustomResource
         - App\MCP\Resources\MyCustomResource
 ```
 
