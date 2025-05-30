@@ -4,7 +4,7 @@ namespace KLP\KlpMcpServer\Services\ResourceService;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 
-interface ResourceInterface
+interface ResourceInterface extends ResourceDescriptorInterface
 {
     /**
      * Get the URI of the resource
@@ -12,27 +12,6 @@ interface ResourceInterface
      * @return string The URI of the resource.
      */
     public function getUri(): string;
-
-    /**
-     * Retrieves the name.
-     *
-     * @return string The name.
-     */
-    public function getName(): string;
-
-    /**
-     * Retrieve the description of the resource
-     *
-     * @return string The description of the resource.
-     */
-    public function getDescription(): string;
-
-    /**
-     * Retrieve the MIME type of the resource
-     *
-     * @return string The MIME type of the resource.
-     */
-    public function getMimeType(): string;
 
     /**
      * Retrieves the data as a string.

@@ -19,10 +19,20 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
         $container = $this->createMock(ContainerBuilder::class);
         $resources = ['App\Resource\ResourceA', 'App\Resource\ResourceB'];
 
-        $container->expects($this->once())
+        $invocations = [
+            'klp_mcp_server.resources',
+            'klp_mcp_server.resources_templates'
+        ];
+        $container->expects($matcher = $this->exactly(2))
             ->method('getParameter')
-            ->with('klp_mcp_server.resources')
-            ->willReturn($resources);
+            ->with($this->callback(function ($argument) use ($invocations, $matcher) {
+                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+                return true;
+            }))
+            ->willReturnOnConsecutiveCalls(
+                $resources,
+                []
+            );
 
         $invocations = [
             'App\Resource\ResourceA',
@@ -52,10 +62,20 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
         $container = $this->createMock(ContainerBuilder::class);
         $resources = ['App\Resource\ExistingResource'];
 
-        $container->expects($this->once())
+        $invocations = [
+            'klp_mcp_server.resources',
+            'klp_mcp_server.resources_templates'
+        ];
+        $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
-            ->with('klp_mcp_server.resources')
-            ->willReturn($resources);
+            ->with($this->callback(function ($argument) use ($invocations, $matcher) {
+                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+                return true;
+            }))
+            ->willReturnOnConsecutiveCalls(
+                $resources,
+                []
+            );
 
         $container->expects($this->once())
             ->method('has')
@@ -75,9 +95,16 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
         $serverDefinition = $this->createMock(Definition::class);
         $resourceRepositoryDefinition = $this->createMock(Definition::class);
 
-        $container->expects($this->any())
+        $invocations = [
+            'klp_mcp_server.resources',
+            'klp_mcp_server.resources_templates'
+        ];
+        $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
-            ->with('klp_mcp_server.resources')
+            ->with($this->callback(function ($argument) use ($invocations, $matcher) {
+                $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+                return true;
+            }))
             ->willReturn([]);
 
         $invocations = [

@@ -4,7 +4,6 @@ namespace KLP\KlpMcpServer\Services\ResourceService;
 
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
 /**
@@ -23,11 +22,11 @@ class ResourceRepository
     protected array $resources = [];
 
     /**
-     * Holds the registered resource providers, keyed by their name.
+     * Holds the registered resources templates instances, keyed by their name.
      *
-     * @var array<string, ResourceProviderInterface>
+     * @var array<string, ResourceTemplateInterface>
      */
-    protected array $providers = [];
+    protected array $resourceTemplates = [];
 
     /**
      * The Symfony container.
@@ -44,6 +43,9 @@ class ResourceRepository
         $this->container = $container;
         if ($resources = $container->getParameter('klp_mcp_server.resources')) {
             $this->registerMany($resources);
+        }
+        if ($resourceTemplateConfigs = $container->getParameter('klp_mcp_server.resources_templates')) {
+            $this->registerManyResourceTemplates($resourceTemplateConfigs);
         }
     }
 
@@ -72,7 +74,6 @@ class ResourceRepository
      * @return $this The current ResourceRepository instance for method chaining.
      *
      * @throws InvalidArgumentException If the provided $resource is not a string or ResourceInterface, or if the resolved object does not implement ResourceInterface.
-     * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */
     public function register(string|ResourceInterface $resource): self
@@ -86,6 +87,48 @@ class ResourceRepository
         }
 
         $this->resources[$resource->getUri()] = $resource;
+
+        return $this;
+    }
+
+    /**
+     * Registers multiple resource providers at once.
+     *
+     * @param  array<string|ResourceTemplateInterface>  $providers  An array of provider class strings or ResourceProviderInterface instances.
+     * @return $this The current ResourceRepository instance for method chaining.
+     *
+     * @throws InvalidArgumentException If a provider does not implement ResourceProviderInterface.
+     */
+    public function registerManyResourceTemplates(array $providers): self
+    {
+        foreach ($providers as $provider) {
+            $this->registerResourceTemplate($provider);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Registers a single resource provider.
+     * If a class string is provided, it resolves the provider from the container.
+     *
+     * @param  string|ResourceTemplateInterface  $resourceTemplate  The resource template class string or a ResourceTemplateInterface instance.
+     * @return $this The current ResourceRepository instance for method chaining.
+     *
+     * @throws InvalidArgumentException If the provided $provider is not a string or ResourceProviderInterface, or if the resolved object does not implement ResourceProviderInterface.
+     * @throws ServiceNotFoundException
+     */
+    public function registerResourceTemplate(string|ResourceTemplateInterface $resourceTemplate): self
+    {
+        if (is_string($resourceTemplate)) {
+            $resourceTemplate = $this->container->get($resourceTemplate);
+        }
+
+        if (! $resourceTemplate instanceof ResourceTemplateInterface) {
+            throw new InvalidArgumentException('ResourceTemplate must implement the '.ResourceTemplateInterface::class);
+        }
+
+        $this->resourceTemplates[$resourceTemplate->getUriTemplate()] = $resourceTemplate;
 
         return $this;
     }
@@ -113,9 +156,9 @@ class ResourceRepository
             return $this->resources[$uri];
         }
 
-        // Try to load the resource from a provider
-        foreach ($this->providers as $provider) {
-            $resource = $provider->getResource($uri);
+        // Try to load the resource from a resource template
+        foreach ($this->resourceTemplates as $resourceTemplate) {
+            $resource = $resourceTemplate->getResource($uri);
             if ($resource) {
                 $this->resources[$uri] = $resource;
                 return $resource;
@@ -141,6 +184,27 @@ class ResourceRepository
                 'name' => $resource->getName(),
                 'description' => $resource->getDescription(),
                 'mimeType' => $resource->getMimeType()
+            ];
+        }
+
+        return $schemas;
+    }
+
+    /**
+     * Generates an array of schemas for all registered resource templates, suitable for the MCP capabilities response.
+     *
+     * @return array<int, array{uriTemplate: string, name: string, description: string, mimeType: string}> An array of resource template schemas.
+     */
+    public function getResourceTemplateSchemas(): array
+    {
+        $schemas = [];
+
+        foreach ($this->resourceTemplates as $resourceTemplate) {
+            $schemas[] = [
+                'uriTemplate' => $resourceTemplate->getUriTemplate(),
+                'name' => $resourceTemplate->getName(),
+                'description' => $resourceTemplate->getDescription(),
+                'mimeType' => $resourceTemplate->getMimeType()
             ];
         }
 

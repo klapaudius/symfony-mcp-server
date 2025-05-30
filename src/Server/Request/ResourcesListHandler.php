@@ -16,13 +16,19 @@ class ResourcesListHandler implements RequestHandler
 
     public function isHandle(string $method): bool
     {
-        return $method === 'resources/list';
+        return in_array($method,['resources/list', 'resources/templates/list']);
     }
 
     public function execute(string $method, string|int $messageId, ?array $params = null): array
     {
-        return [
-            'resources' => $this->resourceRepository->getResourceSchemas(),
-        ];
+        if ($method === 'resources/templates/list') {
+            return [
+                'resourceTemplates' => $this->resourceRepository->getResourceTemplateSchemas(),
+            ];
+        } else {
+            return [
+                'resources' => $this->resourceRepository->getResourceSchemas(),
+            ];
+        }
     }
 }

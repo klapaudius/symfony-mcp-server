@@ -7,7 +7,7 @@ use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
 use stdClass;
 use Symfony\Component\HttpKernel\Kernel;
 
-final class VersionCheckTool implements ToolInterface
+class VersionCheckTool implements ToolInterface
 {
     public function getName(): string
     {

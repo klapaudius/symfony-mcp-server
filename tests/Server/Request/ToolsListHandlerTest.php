@@ -3,10 +3,12 @@
 namespace KLP\KlpMcpServer\Tests\Server\Request;
 
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
-use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
+use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
+use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
+#[Small]
 class ToolsListHandlerTest extends TestCase
 {
     private ToolRepository $toolRepository;
@@ -24,7 +26,7 @@ class ToolsListHandlerTest extends TestCase
      */
     public function test_execute_returns_tool_schemas(): void
     {
-        $expectedSchemas = (new HelloWorldTool)->getInputSchema();
+        $expectedSchemas = (new VersionCheckTool)->getInputSchema();
 
         $this->toolRepository
             ->expects($this->once())

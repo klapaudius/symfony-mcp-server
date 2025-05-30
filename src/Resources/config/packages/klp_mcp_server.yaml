@@ -79,4 +79,7 @@ klp_mcp_server:
     # https://modelcontextprotocol.io/docs/concepts/resources
     resources:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+
+    resources_templates:
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
 ---

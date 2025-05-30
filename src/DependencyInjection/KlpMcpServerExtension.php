@@ -32,5 +32,7 @@ class KlpMcpServerExtension extends Extension
 
         // Set parameters for resources
         $container->setParameter('klp_mcp_server.resources', $config['resources'] ?? []);
+        // Set parameters for resource templates
+        $container->setParameter('klp_mcp_server.resources_templates', $config['resources_templates'] ?? []);
     }
 }

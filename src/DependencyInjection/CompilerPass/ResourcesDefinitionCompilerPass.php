@@ -27,6 +27,18 @@ final class ResourcesDefinitionCompilerPass implements CompilerPassInterface
             }
         }
 
+        $resourceTemplates = $container->getparameter('klp_mcp_server.resources_templates');
+        // Register each resource as a service in the container if not already defined
+        foreach ($resourceTemplates as $resourceTemplateClass) {
+            if (! $container->has($resourceTemplateClass) && class_exists($resourceTemplateClass)) {
+                $definition = new Definition($resourceTemplateClass);
+                $definition->setAutowired(true);
+                $definition->setPublic(true);
+                $definition->addTag('klp_mcp_server.resource_template');
+                $container->setDefinition($resourceTemplateClass, $definition);
+            }
+        }
+
         $server = $container->getDefinition('klp_mcp_server.server');
         $resourceRepository = $container->getDefinition('klp_mcp_server.resource_repository');
         $server->addMethodCall('registerResourceRepository', [$resourceRepository]);

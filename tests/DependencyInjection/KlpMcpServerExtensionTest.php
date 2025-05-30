@@ -3,6 +3,8 @@
 namespace KLP\KlpMcpServer\Tests\DependencyInjection;
 
 use KLP\KlpMcpServer\DependencyInjection\KlpMcpServerExtension;
+use KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource;
+use KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use PHPUnit\Framework\Attributes\Small;
@@ -23,6 +25,12 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->container = new ContainerBuilder;
     }
 
+
+    /**
+     * Tests that all parameters are correctly set when loading a valid configuration.
+     *
+     * @return void
+     */
     public function test_load_sets_all_parameters_correctly(): void
     {
         $configs = [
@@ -50,12 +58,9 @@ class KlpMcpServerExtensionTest extends TestCase
                 ],
             ],
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
-//            'resource_providers' => ['filesystem' => [
-//                'type' => 'filesystem',
-//                'base_dir' => '/path/to/resources',
-//            ]],
+            'resources' => [HelloWorldResource::class],
+            'resources_templates' => [McpDocumentationResource::class],
             //            'prompts' => ['prompt1', 'prompt2'],
-            //            'resources' => ['resource1', 'resource2'],
         ];
 
         $this->extension->load([$configs], $this->container);
@@ -74,10 +79,16 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals('prefix2', $this->container->getParameter('klp_mcp_server.adapters.cache.prefix'));
         $this->assertEquals(200, $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
-//        $this->assertEquals('/path/to/resources', $this->container->getParameter('klp_mcp_server.resource_providers.filesystem.base_dir'));
+        $this->assertEquals([HelloWorldResource::class], $this->container->getParameter('klp_mcp_server.resources'));
+        $this->assertEquals([McpDocumentationResource::class], $this->container->getParameter('klp_mcp_server.resources_templates'));
         //        $this->assertEquals(['prompt1', 'prompt2'], $this->container->getParameter('klp_mcp_server.prompts'));
     }
 
+    /**
+     * Tests that an exception is thrown when an invalid configuration is provided.
+     *
+     * @return void
+     */
     public function test_load_throws_exception_for_invalid_config(): void
     {
         $this->expectException(InvalidConfigurationException::class);

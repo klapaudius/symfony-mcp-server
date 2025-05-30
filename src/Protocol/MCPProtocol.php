@@ -219,19 +219,13 @@ final class MCPProtocol implements MCPProtocolInterface
      * Pushes a message to a specified client.
      *
      * @param  string  $clientId  The unique identifier of the client to push the message to.
-     * @param  array|JsonRpcResultResource|JsonRpcErrorResource  $message  The message to be pushed to the client, either as an array or an instance of JsonRpcResultResource/JsonRpcErrorResource.
+     * @param  JsonRpcResultResource|JsonRpcErrorResource  $message  The message to be pushed to the client, either an instance of JsonRpcResultResource or JsonRpcErrorResource.
      *
      * @throws Exception If transport is unable to push the message to client
      */
-    private function pushMessage(string $clientId, array|JsonRpcResultResource|JsonRpcErrorResource $message): void
+    private function pushMessage(string $clientId, JsonRpcResultResource|JsonRpcErrorResource $message): void
     {
-        if ($message instanceof JsonRpcResultResource || $message instanceof JsonRpcErrorResource) {
-            $this->transport->pushMessage(clientId: $clientId, message: $message->toResponse());
-
-            return;
-        }
-
-        $this->transport->pushMessage(clientId: $clientId, message: $message);
+        $this->transport->pushMessage(clientId: $clientId, message: $message->toResponse());
     }
 
     /**
