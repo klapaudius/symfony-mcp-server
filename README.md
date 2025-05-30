@@ -98,7 +98,7 @@ klp_mcp_server:
 
 The project includes a Docker setup that can be used for development. The Docker setup includes Nginx, PHP-FPM with Redis extension, and Redis server.
 
-For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](docs/guidelines.md#docker-setup).
+For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](docs/development_guidelines.md#docker-setup).
 
 ## Strongly Recommended
 Enhance your application's security by implementing OAuth2 Authentication. You can use the [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle) or any other compatible OAuth2 solution.
