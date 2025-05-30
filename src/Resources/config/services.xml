@@ -61,6 +61,11 @@
         <service id="klp_mcp_server.capabilities" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
             <argument type="service" id="service_container" on-invalid="null" />
         </service>
+
+        <!-- Resource services -->
+        <service id="klp_mcp_server.resource_repository" class="KLP\KlpMcpServer\Services\ResourceService\ResourceRepository">
+            <argument type="service" id="service_container" on-invalid="null" />
+        </service>
     </services>
 
 </container>

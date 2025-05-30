@@ -98,7 +98,7 @@ klp_mcp_server:
 
 The project includes a Docker setup that can be used for development. The Docker setup includes Nginx, PHP-FPM with Redis extension, and Redis server.
 
-For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](docs/guidelines.md#docker-setup).
+For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](docs/development_guidelines.md#docker-setup).
 
 ## Strongly Recommended
 Enhance your application's security by implementing OAuth2 Authentication. You can use the [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle) or any other compatible OAuth2 solution.
@@ -211,11 +211,73 @@ klp_mcp_server:
             ttl: 100            # Message TTL in seconds
 ```
 
+## Resources
+
+The package provides a flexible resource management system that allows you to store and retrieve resources from different providers (file system, database, etc.).
+
+### Configuration
+
+Configure resources in your `config/packages/klp_mcp_server.yaml` file:
+
+```yaml
+klp_mcp_server:
+    # ...
+    resources:
+        - App\MCP\Resources\MyCustomResource
+    resources_templates:
+        - App\MCP\Resources\MyCustomResourceTemplate
+```
+
+### Usage
+
+### Creating Custom Resource
+
+```php
+use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
+
+class MyCustomResource implements ResourceInterface
+{
+    // Resource implementation
+}
+```
+Then register your resource in the configuration:
+
+```yaml
+klp_mcp_server:
+    # ...
+    resources:
+      - App\MCP\Resources\MyCustomResource
+```
+
+### Creating Custom Resource Template
+
+You can create custom resource templates by implementing the `ResourceTemplateInterface`:
+
+```php
+use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
+
+class MyCustomResourceTemplate implements ResourceTemplateInterface
+{
+    // Implement the required methods
+}
+```
+
+Then register your resource template in the configuration:
+
+```yaml
+klp_mcp_server:
+    # ...
+    resources_templates:
+      - App\MCP\Resources\MyCustomResourceTemplate
+```
+
+**For deep diving into resources' management, please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**
+
 ## Roadmap
 We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.
 
 - **Core Features:**
-  - Resources implementation compliant with MCP specification.
+  - ✅ Resources implementation compliant with MCP specification.
   - Prompts implementation compliant with MCP specification.
   - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
 - **Additional Adaptaters:**

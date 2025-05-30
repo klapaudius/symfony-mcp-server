@@ -6,10 +6,13 @@ use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
+use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
+use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
+#[Small]
 class ToolsCallHandlerTest extends TestCase
 {
     private ToolRepository $toolRepository;
@@ -45,19 +48,19 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_throws_exception_for_invalid_arguments(): void
     {
-        $toolMock = $this->createMock(HelloWorldTool::class);
+        $toolMock = $this->createMock(VersionCheckTool::class);
         $toolMock->method('getInputSchema')->willReturn(['type' => 'object']);
 
         $this->toolRepository
             ->method('getTool')
-            ->with('HelloWorldTool')
+            ->with('VersionCheckTool')
             ->willReturn($toolMock);
 
         $this->expectException(ToolParamsValidatorException::class);
 
         ToolParamsValidator::validate(['type' => 'object'], ['invalid' => 'data']);
 
-        $this->toolsCallHandler->execute('tools/execute', 3, ['name' => 'HelloWorldTool', 'arguments' => ['invalid' => 'data']]);
+        $this->toolsCallHandler->execute('tools/execute', 3, ['name' => 'VersionCheckTool', 'arguments' => ['invalid' => 'data']]);
     }
 
     public function test_execute_returns_content_for_tools_call(): void
