@@ -27,9 +27,7 @@ class KlpMcpServerExtensionTest extends TestCase
 
 
     /**
-     * Tests that all parameters are correctly set when loading a valid configuration.
-     *
-     * @return void
+     * Tests that all parameters are correctly set when loading a valid configuration
      */
     public function test_load_sets_all_parameters_correctly(): void
     {
@@ -85,9 +83,7 @@ class KlpMcpServerExtensionTest extends TestCase
     }
 
     /**
-     * Tests that an exception is thrown when an invalid configuration is provided.
-     *
-     * @return void
+     * Tests that an exception is thrown when an invalid configuration is provided
      */
     public function test_load_throws_exception_for_invalid_config(): void
     {

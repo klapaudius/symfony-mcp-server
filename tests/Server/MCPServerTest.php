@@ -22,6 +22,9 @@ use ReflectionClass;
 #[Small]
 class MCPServerTest extends TestCase
 {
+    /**
+     * Tests that tool repository registration correctly registers the required handlers
+     */
     public function test_register_tool_repository(): void
     {
         // Arrange
@@ -51,6 +54,9 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock protocol are automatically verified.
     }
 
+    /**
+     * Tests that registerToolRepository method returns the server instance for method chaining
+     */
     public function test_register_tool_repository_returns_instance(): void
     {
         // Arrange
@@ -69,6 +75,9 @@ class MCPServerTest extends TestCase
         $this->assertSame($instance, $result);
     }
 
+    /**
+     * Tests that request handler registration delegates to the protocol implementation
+     */
     public function test_register_request_handler(): void
     {
         // Arrange
@@ -88,6 +97,9 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified
     }
 
+    /**
+     * Tests that the create method properly instantiates a server with basic configuration
+     */
     public function test_create(): void
     {
         // Arrange
@@ -104,6 +116,9 @@ class MCPServerTest extends TestCase
         $this->assertSame(['name' => $name, 'version' => $version], $this->getPrivateProperty($server, 'serverInfo'));
     }
 
+    /**
+     * Tests that the create method properly instantiates a server with custom capabilities
+     */
     public function test_create_with_capabilities(): void
     {
         // Arrange
@@ -130,6 +145,9 @@ class MCPServerTest extends TestCase
         return $prop->getValue($object);
     }
 
+    /**
+     * Tests that connect method calls the protocol's connect method
+     */
     public function test_connect(): void
     {
         // Arrange
@@ -148,6 +166,9 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
+    /**
+     * Tests that disconnect method calls the protocol's disconnect method
+     */
     public function test_disconnect(): void
     {
         // Arrange
@@ -166,6 +187,9 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
+    /**
+     * Tests that notification handler registration delegates to the protocol implementation
+     */
     public function test_register_notification_handler(): void
     {
         // Arrange
@@ -186,6 +210,9 @@ class MCPServerTest extends TestCase
         // Assert: Expectations set on the mock objects are automatically verified.
     }
 
+    /**
+     * Tests that request message is properly forwarded to the protocol implementation
+     */
     public function test_request_message(): void
     {
         // Arrange
@@ -209,7 +236,7 @@ class MCPServerTest extends TestCase
 
     /**
      * Tests that the initialize method correctly sets the client capabilities,
-     * assigns the protocol version, and marks the server as initialized.
+     * assigns the protocol version, and marks the server as initialized
      */
     public function test_initialize_sets_capabilities_and_marks_initialized(): void
     {
@@ -236,7 +263,7 @@ class MCPServerTest extends TestCase
 
     /**
      * Tests that the initialize method throws an exception if the server
-     * has already been initialized.
+     * has already been initialized
      */
     public function test_initialize_throws_when_already_initialized(): void
     {
@@ -265,7 +292,7 @@ class MCPServerTest extends TestCase
 
     /**
      * Tests that the initialize method returns a correctly constructed
-     * InitializeResource object with expected values.
+     * InitializeResource object with expected values
      */
     public function test_initialize_returns_correct_resource(): void
     {
