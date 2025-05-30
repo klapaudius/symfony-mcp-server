@@ -12,6 +12,7 @@ use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServer;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
+use KLP\KlpMcpServer\Server\ServerCapabilities;
 use KLP\KlpMcpServer\Server\ServerCapabilitiesInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
@@ -41,6 +42,7 @@ class MCPServerTest extends TestCase
 
         $server = new ReflectionClass(MCPServer::class);
         $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
 
         // Act
@@ -57,6 +59,7 @@ class MCPServerTest extends TestCase
 
         $server = new ReflectionClass(MCPServer::class);
         $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
 
         // Act

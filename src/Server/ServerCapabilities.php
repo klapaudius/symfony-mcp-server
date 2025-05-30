@@ -21,12 +21,26 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
     private bool $supportsTools = false;
 
     /**
+     * Indicates whether the server supports the MCP resources feature.
+     * If true, the server can register and expose resources to the client.
+     *
+     * @see https://modelcontextprotocol.io/docs/concepts/resources
+     */
+    private bool $supportsResources = false;
+
+    /**
      * Optional configuration specific to the tools capability.
      * This structure can be defined by the specific server implementation
      * to provide further details about the supported tools, if needed.
      * If null and tools are supported, it might default to an empty object during serialization.
      */
     private ?array $toolsConfig = null;
+
+    /**
+     * Optional configuration specific to the resources capability.
+     * This structure can be defined by the specific server implementation
+     */
+    private ?array $resourcesConfig = null;
 
     /**
      * Enables the tools capability for the server instance.
@@ -47,6 +61,24 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
     }
 
     /**
+     * Enables the tools capability for the server instance.
+     * Allows specifying optional configuration details for the tools feature.
+     *
+     * @param  array|null  $config  Optional configuration data specific to the tools capability.
+     *                              Defaults to an empty array if not provided.
+     * @return self Returns the instance for method chaining.
+     *
+     * @see https://modelcontextprotocol.io/docs/concepts/tools
+     */
+    public function withResources(?array $config = []): self
+    {
+        $this->supportsResources = true;
+        $this->resourcesConfig = $config;
+
+        return $this;
+    }
+
+    /**
      * Converts the server capabilities configuration into an array format suitable for JSON serialization.
      * Only includes capabilities that are actively enabled.
      *
@@ -57,7 +89,7 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
     {
         $capabilities = [
             'prompts' => new stdClass,
-            'resources' => new stdClass,
+            'resources' => $this->supportsResources ? $this->resourcesConfig : new stdClass,
         ];
 
         if ($this->supportsTools) {
@@ -82,6 +114,9 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
         ];
         if ($this->supportsTools) {
             $capabilities['tools']->listChanged = true;
+        }
+        if ($this->supportsResources) {
+            $capabilities['resources']->listChanged = true;
         }
 
         return $capabilities;

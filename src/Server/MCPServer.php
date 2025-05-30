@@ -122,7 +122,7 @@ final class MCPServer implements MCPServerInterface
     {
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
         $this->registerRequestHandler(new ToolsCallHandler($toolRepository));
-        $this->capabilities = (new ServerCapabilities)->withTools($toolRepository->getToolSchemas());
+        $this->capabilities->withTools($toolRepository->getToolSchemas());
 
         return $this;
     }
@@ -131,6 +131,7 @@ final class MCPServer implements MCPServerInterface
     {
         $this->registerRequestHandler(new ResourcesListHandler($resourceRepository));
         $this->registerRequestHandler(new ResourcesReadHandler($resourceRepository));
+        $this->capabilities->withResources($resourceRepository->getResourceSchemas());
 
         return $this;
     }
