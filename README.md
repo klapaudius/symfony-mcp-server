@@ -240,6 +240,14 @@ class MyCustomResource implements ResourceInterface
     // Resource implementation
 }
 ```
+Then register your resource in the configuration:
+
+```yaml
+klp_mcp_server:
+    # ...
+    resources:
+      - App\MCP\Resources\MyCustomResource
+```
 
 ### Creating Custom Resource Template
 
@@ -262,6 +270,8 @@ klp_mcp_server:
     resources_templates:
       - App\MCP\Resources\MyCustomResourceTemplate
 ```
+
+**For deep diving into resources' management, please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**
 
 ## Roadmap
 We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.

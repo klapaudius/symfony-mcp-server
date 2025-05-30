@@ -32,7 +32,7 @@ class McpDocumentationResource implements ResourceTemplateInterface
     public function getDescription(): string
     {
         $finder = new Finder;
-        $finder->files()->in($this->baseDir);
+        $finder->files()->in($this->baseDir)->name('*.md');
 
         $filenames = [];
         foreach ($finder as $file) {
