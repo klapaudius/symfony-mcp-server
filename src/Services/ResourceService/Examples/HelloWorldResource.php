@@ -2,10 +2,7 @@
 
 namespace KLP\KlpMcpServer\Services\ResourceService\Examples;
 
-use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
-use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 class HelloWorldResource implements ResourceInterface
 {
