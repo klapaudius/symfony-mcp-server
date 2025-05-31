@@ -62,7 +62,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_uri_template(): void
     {
-        $this->assertSame("file:/docs/{filename}.md", $this->resource->getUriTemplate());
+        $this->assertSame("file://klp/docs/{filename}.md", $this->resource->getUriTemplate());
     }
 
     /**
@@ -97,7 +97,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_resource(): void
     {
-        $uri = "file:/docs/test1.md";
+        $uri = "file://klp/docs/test1.md";
         $resource = $this->resource->getResource($uri);
 
         $this->assertInstanceOf(ResourceInterface::class, $resource);
@@ -124,9 +124,9 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_resource_exists(): void
     {
-        $this->assertTrue($this->resource->resourceExists("file:/docs/test1.md"));
-        $this->assertTrue($this->resource->resourceExists("file:/docs/test2.md"));
-        $this->assertFalse($this->resource->resourceExists("file:/docs/nonexistent.md"));
+        $this->assertTrue($this->resource->resourceExists("file://klp/docs/test1.md"));
+        $this->assertTrue($this->resource->resourceExists("file://klp/docs/test2.md"));
+        $this->assertFalse($this->resource->resourceExists("file://klp/docs/nonexistent.md"));
         $this->assertFalse($this->resource->resourceExists("invalid-uri"));
     }
 
@@ -140,8 +140,8 @@ class McpDocumentationResourceTest extends TestCase
         $method = $reflectionClass->getMethod('getFilenameFromUri');
         $method->setAccessible(true);
 
-        $this->assertSame("test1", $method->invoke($this->resource, "file:/docs/test1.md"));
-        $this->assertSame("test2", $method->invoke($this->resource, "file:/docs/test2.md"));
+        $this->assertSame("test1", $method->invoke($this->resource, "file://klp/docs/test1.md"));
+        $this->assertSame("test2", $method->invoke($this->resource, "file://klp/docs/test2.md"));
         $this->assertNull($method->invoke($this->resource, "invalid-uri"));
     }
 
