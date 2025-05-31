@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Definition;
  */
 final class ResourcesDefinitionCompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $resources = $container->getparameter('klp_mcp_server.resources');
         // Register each resource as a service in the container if not already defined

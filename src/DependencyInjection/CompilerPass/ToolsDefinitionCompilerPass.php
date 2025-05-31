@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Definition;
  */
 final class ToolsDefinitionCompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $tools = $container->getparameter('klp_mcp_server.tools');
         // Register each tool as a service in the container if not already defined
