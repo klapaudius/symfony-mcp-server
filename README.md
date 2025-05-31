@@ -71,6 +71,10 @@ Key benefits:
         tools:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
+        resources:
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+        resources_templates:
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
     ```
    For more detailed explanations, you can open the default configuration file
    [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
@@ -278,8 +282,8 @@ We are committed to actively pursuing the following key initiatives to enhance t
 
 - **Core Features:**
   - ✅ Resources implementation compliant with MCP specification.
-  - Prompts implementation compliant with MCP specification.
   - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
+  - Prompts implementation compliant with MCP specification.
 - **Additional Adaptaters:**
   - Support for more Pub/Sub adapters (e.g., RabbitMQ).
 
