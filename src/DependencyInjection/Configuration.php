@@ -70,7 +70,7 @@ class Configuration implements ConfigurationInterface
 
                 // Server Provider
             ->scalarNode('server_provider')
-            ->setDeprecated('klapaudius/symfony-mcp-server', '1.2', 'The "server_provider" node is deprecated. Please use "server_providers" instead.')
+            ->setDeprecated('klapaudius/symfony-mcp-server', '1.2', 'The "server_provider" option is deprecated since version 1.2 and will be removed in 2.0. Use "server_providers" instead.')
             ->end()
 
                 // SSE Adapter
