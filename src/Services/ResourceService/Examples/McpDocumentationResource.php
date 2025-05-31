@@ -21,7 +21,7 @@ class McpDocumentationResource implements ResourceTemplateInterface
 
     public function getUriTemplate(): string
     {
-        return 'file:/docs/{filename}.md';
+        return 'file://klp/docs/{filename}.md';
     }
 
     public function getName(): string
@@ -94,7 +94,7 @@ class McpDocumentationResource implements ResourceTemplateInterface
     private function getFilenameFromUri(string $uri): ?string
     {
         if (! isset($this->filenames[$uri])) {
-            if (! preg_match('#^file:/docs/([^/]+)\.md$#', $uri, $matches)) {
+            if (! preg_match('#^file://klp/docs/([^/]+)\.md$#', $uri, $matches)) {
                 $this->filenames[$uri] = null;
             } else {
                 $this->filenames[$uri] = $matches[1];
