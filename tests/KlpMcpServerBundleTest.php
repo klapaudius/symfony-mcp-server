@@ -29,7 +29,8 @@ class KlpMcpServerBundleTest extends TestCase
             ->expects($matcher = $this->exactly(2))
             ->method('addCompilerPass')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
-                $this->assertInstanceOf($invocations[$matcher->numberOfInvocations()-1], $argument);
+                $this->assertInstanceOf($invocations[$matcher->numberOfInvocations() - 1], $argument);
+
                 return true;
             }));
 

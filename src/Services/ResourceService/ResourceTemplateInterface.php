@@ -18,7 +18,7 @@ interface ResourceTemplateInterface extends ResourceDescriptorInterface
     /**
      * Get a resource by its URI.
      *
-     * @param string $uri The URI of the resource to retrieve.
+     * @param  string  $uri  The URI of the resource to retrieve.
      * @return ResourceInterface|null The resource if found, null otherwise.
      */
     public function getResource(string $uri): ?ResourceInterface;
@@ -26,7 +26,7 @@ interface ResourceTemplateInterface extends ResourceDescriptorInterface
     /**
      * Check if a resource exists.
      *
-     * @param string $uri The URI of the resource to check.
+     * @param  string  $uri  The URI of the resource to check.
      * @return bool True if the resource exists, false otherwise.
      */
     public function resourceExists(string $uri): bool;

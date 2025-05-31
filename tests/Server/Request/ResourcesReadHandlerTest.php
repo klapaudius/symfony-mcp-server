@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 class ResourcesReadHandlerTest extends TestCase
 {
     private ResourceRepository $resourceRepository;
+
     private ResourcesReadHandler $handler;
 
     protected function setUp(): void
@@ -49,8 +50,8 @@ class ResourcesReadHandlerTest extends TestCase
                     'uri' => 'test-uri',
                     'mimeType' => 'text/plain',
                     'text' => 'Sample text data',
-                ]
-            ]
+                ],
+            ],
         ], $result);
     }
 
@@ -78,8 +79,8 @@ class ResourcesReadHandlerTest extends TestCase
                     'uri' => 'image-uri',
                     'mimeType' => 'image/png',
                     'blob' => 'binarydata123',
-                ]
-            ]
+                ],
+            ],
         ], $result);
     }
 

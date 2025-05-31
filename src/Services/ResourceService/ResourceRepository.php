@@ -161,6 +161,7 @@ class ResourceRepository
             $resource = $resourceTemplate->getResource($uri);
             if ($resource) {
                 $this->resources[$uri] = $resource;
+
                 return $resource;
             }
         }
@@ -183,7 +184,7 @@ class ResourceRepository
                 'uri' => $resource->getUri(),
                 'name' => $resource->getName(),
                 'description' => $resource->getDescription(),
-                'mimeType' => $resource->getMimeType()
+                'mimeType' => $resource->getMimeType(),
             ];
         }
 
@@ -204,7 +205,7 @@ class ResourceRepository
                 'uriTemplate' => $resourceTemplate->getUriTemplate(),
                 'name' => $resourceTemplate->getName(),
                 'description' => $resourceTemplate->getDescription(),
-                'mimeType' => $resourceTemplate->getMimeType()
+                'mimeType' => $resourceTemplate->getMimeType(),
             ];
         }
 

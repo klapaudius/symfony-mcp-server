@@ -39,9 +39,9 @@ class ResourcesReadHandler implements RequestHandler
     /**
      * Executes a process based on the specified method and message ID, with optional parameters.
      *
-     * @param string $method The method to be executed.
-     * @param string|int $messageId The identifier of the message associated with the execution.
-     * @param array|null $params Optional parameters for the execution process.
+     * @param  string  $method  The method to be executed.
+     * @param  string|int  $messageId  The identifier of the message associated with the execution.
+     * @param  array|null  $params  Optional parameters for the execution process.
      * @return array An array containing the resource's content information if successful; returns an empty array if no resource is found.
      */
     public function execute(string $method, string|int $messageId, ?array $params = null): array
@@ -58,8 +58,8 @@ class ResourcesReadHandler implements RequestHandler
                     'uri' => $resource->getUri(),
                     'mimeType' => $resource->getMimeType(),
                     $this->getContentType($resource) => $resource->getData(),
-                ]
-            ]
+                ],
+            ],
         ];
     }
 

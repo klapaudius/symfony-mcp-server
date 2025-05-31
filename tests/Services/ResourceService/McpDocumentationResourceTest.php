@@ -12,7 +12,9 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class McpDocumentationResourceTest extends TestCase
 {
     private KernelInterface $kernel;
+
     private McpDocumentationResource $resource;
+
     private string $baseDir;
 
     protected function setUp(): void
@@ -34,23 +36,23 @@ class McpDocumentationResourceTest extends TestCase
         $property->setValue($this->resource, $this->baseDir);
 
         // Create test directory and files
-        if (!file_exists($this->baseDir)) {
+        if (! file_exists($this->baseDir)) {
             mkdir($this->baseDir, 0777, true);
         }
 
         // Create test markdown files
-        file_put_contents($this->baseDir . '/test1.md', "# Test Document 1\nThis is a test document.");
-        file_put_contents($this->baseDir . '/test2.md', "# Test Document 2\nThis is another test document.");
+        file_put_contents($this->baseDir.'/test1.md', "# Test Document 1\nThis is a test document.");
+        file_put_contents($this->baseDir.'/test2.md', "# Test Document 2\nThis is another test document.");
     }
 
     protected function tearDown(): void
     {
         // Clean up test files
-        if (file_exists($this->baseDir . '/test1.md')) {
-            unlink($this->baseDir . '/test1.md');
+        if (file_exists($this->baseDir.'/test1.md')) {
+            unlink($this->baseDir.'/test1.md');
         }
-        if (file_exists($this->baseDir . '/test2.md')) {
-            unlink($this->baseDir . '/test2.md');
+        if (file_exists($this->baseDir.'/test2.md')) {
+            unlink($this->baseDir.'/test2.md');
         }
         if (file_exists($this->baseDir)) {
             rmdir($this->baseDir);
@@ -62,7 +64,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_uri_template(): void
     {
-        $this->assertSame("file:/docs/{filename}.md", $this->resource->getUriTemplate());
+        $this->assertSame('file:/docs/{filename}.md', $this->resource->getUriTemplate());
     }
 
     /**
@@ -70,7 +72,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_name(): void
     {
-        $this->assertSame("documentation.md", $this->resource->getName());
+        $this->assertSame('documentation.md', $this->resource->getName());
     }
 
     /**
@@ -79,9 +81,9 @@ class McpDocumentationResourceTest extends TestCase
     public function test_get_description(): void
     {
         $description = $this->resource->getDescription();
-        $this->assertStringContainsString("The MCP Documentation resources", $description);
-        $this->assertStringContainsString("test1", $description);
-        $this->assertStringContainsString("test2", $description);
+        $this->assertStringContainsString('The MCP Documentation resources', $description);
+        $this->assertStringContainsString('test1', $description);
+        $this->assertStringContainsString('test2', $description);
     }
 
     /**
@@ -89,7 +91,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_mime_type(): void
     {
-        $this->assertSame("text/plain", $this->resource->getMimeType());
+        $this->assertSame('text/plain', $this->resource->getMimeType());
     }
 
     /**
@@ -97,14 +99,14 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_resource(): void
     {
-        $uri = "file:/docs/test1.md";
+        $uri = 'file:/docs/test1.md';
         $resource = $this->resource->getResource($uri);
 
         $this->assertInstanceOf(ResourceInterface::class, $resource);
         $this->assertSame($uri, $resource->getUri());
-        $this->assertSame("test1.md", $resource->getName());
-        $this->assertSame("# Test Document 1", $resource->getDescription());
-        $this->assertStringContainsString("text/", $resource->getMimeType());
+        $this->assertSame('test1.md', $resource->getName());
+        $this->assertSame('# Test Document 1', $resource->getDescription());
+        $this->assertStringContainsString('text/', $resource->getMimeType());
         $this->assertSame("# Test Document 1\nThis is a test document.", $resource->getData());
     }
 
@@ -113,7 +115,7 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_get_resource_with_invalid_uri(): void
     {
-        $uri = "file:/docs/nonexistent.md";
+        $uri = 'file:/docs/nonexistent.md';
         $resource = $this->resource->getResource($uri);
 
         $this->assertNull($resource);
@@ -124,10 +126,10 @@ class McpDocumentationResourceTest extends TestCase
      */
     public function test_resource_exists(): void
     {
-        $this->assertTrue($this->resource->resourceExists("file:/docs/test1.md"));
-        $this->assertTrue($this->resource->resourceExists("file:/docs/test2.md"));
-        $this->assertFalse($this->resource->resourceExists("file:/docs/nonexistent.md"));
-        $this->assertFalse($this->resource->resourceExists("invalid-uri"));
+        $this->assertTrue($this->resource->resourceExists('file:/docs/test1.md'));
+        $this->assertTrue($this->resource->resourceExists('file:/docs/test2.md'));
+        $this->assertFalse($this->resource->resourceExists('file:/docs/nonexistent.md'));
+        $this->assertFalse($this->resource->resourceExists('invalid-uri'));
     }
 
     /**
@@ -140,9 +142,9 @@ class McpDocumentationResourceTest extends TestCase
         $method = $reflectionClass->getMethod('getFilenameFromUri');
         $method->setAccessible(true);
 
-        $this->assertSame("test1", $method->invoke($this->resource, "file:/docs/test1.md"));
-        $this->assertSame("test2", $method->invoke($this->resource, "file:/docs/test2.md"));
-        $this->assertNull($method->invoke($this->resource, "invalid-uri"));
+        $this->assertSame('test1', $method->invoke($this->resource, 'file:/docs/test1.md'));
+        $this->assertSame('test2', $method->invoke($this->resource, 'file:/docs/test2.md'));
+        $this->assertNull($method->invoke($this->resource, 'invalid-uri'));
     }
 
     /**
@@ -155,7 +157,7 @@ class McpDocumentationResourceTest extends TestCase
         $method = $reflectionClass->getMethod('guessMimeType');
         $method->setAccessible(true);
 
-        $mimeType = $method->invoke($this->resource, $this->baseDir . '/test1.md');
-        $this->assertStringContainsString("text/", $mimeType);
+        $mimeType = $method->invoke($this->resource, $this->baseDir.'/test1.md');
+        $this->assertStringContainsString('text/', $mimeType);
     }
 }

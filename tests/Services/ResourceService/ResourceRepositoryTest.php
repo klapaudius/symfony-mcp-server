@@ -6,8 +6,8 @@ use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource;
 use KLP\KlpMcpServer\Services\ResourceService\Resource;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
-use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ResourceRepositoryTest extends TestCase
 {
     private ContainerInterface $container;
+
     private ResourceRepository $resourceRepository;
 
     protected function setUp(): void
@@ -42,6 +43,7 @@ class ResourceRepositoryTest extends TestCase
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
                 $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $parameter);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -76,13 +78,14 @@ class ResourceRepositoryTest extends TestCase
 
         $invocations = [
             'klp_mcp_server.resources',
-            'klp_mcp_server.resources_templates'
+            'klp_mcp_server.resources_templates',
         ];
         $this->container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
                 $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $parameter);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -118,13 +121,14 @@ class ResourceRepositoryTest extends TestCase
     {
         $invocations = [
             'klp_mcp_server.resources',
-            'klp_mcp_server.resources_templates'
+            'klp_mcp_server.resources_templates',
         ];
         $this->container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
                 $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $parameter);
+
                 return true;
             }))
             ->willReturn(null);
@@ -181,7 +185,7 @@ class ResourceRepositoryTest extends TestCase
     public function test_register_many_with_invalid_resource(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Resource must implement the ' . ResourceInterface::class);
+        $this->expectExceptionMessage('Resource must implement the '.ResourceInterface::class);
 
         $this->resourceRepository->registerMany(['InvalidResourceClass']);
     }

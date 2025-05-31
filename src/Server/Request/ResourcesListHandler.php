@@ -16,7 +16,7 @@ class ResourcesListHandler implements RequestHandler
 
     public function isHandle(string $method): bool
     {
-        return in_array($method,['resources/list', 'resources/templates/list']);
+        return in_array($method, ['resources/list', 'resources/templates/list']);
     }
 
     public function execute(string $method, string|int $messageId, ?array $params = null): array

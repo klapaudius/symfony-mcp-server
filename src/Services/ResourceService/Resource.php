@@ -40,11 +40,11 @@ class Resource implements ResourceInterface
     /**
      * Constructor.
      *
-     * @param string $uri The URI of the resource.
-     * @param string $name The name of the resource.
-     * @param string $description The description of the resource.
-     * @param string $mimeType The MIME type of the resource.
-     * @param string $data The data of the resource.
+     * @param  string  $uri  The URI of the resource.
+     * @param  string  $name  The name of the resource.
+     * @param  string  $description  The description of the resource.
+     * @param  string  $mimeType  The MIME type of the resource.
+     * @param  string  $data  The data of the resource.
      */
     public function __construct(string $uri, string $name, string $description, string $mimeType, string $data)
     {
@@ -107,49 +107,49 @@ class Resource implements ResourceInterface
     /**
      * Set the name of the resource.
      *
-     * @param string $name The new name of the resource.
-     * @return self
+     * @param  string  $name  The new name of the resource.
      */
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
     /**
      * Set the description of the resource.
      *
-     * @param string $description The new description of the resource.
-     * @return self
+     * @param  string  $description  The new description of the resource.
      */
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
     /**
      * Set the MIME type of the resource.
      *
-     * @param string $mimeType The new MIME type of the resource.
-     * @return self
+     * @param  string  $mimeType  The new MIME type of the resource.
      */
     public function setMimeType(string $mimeType): self
     {
         $this->mimeType = $mimeType;
+
         return $this;
     }
 
     /**
      * Set the data of the resource.
      *
-     * @param string $data The new data of the resource.
-     * @return self
+     * @param  string  $data  The new data of the resource.
      */
     public function setData(string $data): self
     {
         $this->data = $data;
         $this->size = strlen($data);
+
         return $this;
     }
 }

@@ -8,27 +8,27 @@ class HelloWorldResource implements ResourceInterface
 {
     public function getUri(): string
     {
-        return "file:/hello-world.txt";
+        return 'file:/hello-world.txt';
     }
 
     public function getName(): string
     {
-        return "hello-world.txt";
+        return 'hello-world.txt';
     }
 
     public function getDescription(): string
     {
-        return "The HelloWorld resource.";
+        return 'The HelloWorld resource.';
     }
 
     public function getMimeType(): string
     {
-        return "text/plain";
+        return 'text/plain';
     }
 
     public function getData(): string
     {
-        return "Hello, World!";
+        return 'Hello, World!';
     }
 
     public function getSize(): int

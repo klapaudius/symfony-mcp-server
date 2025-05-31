@@ -25,7 +25,6 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->container = new ContainerBuilder;
     }
 
-
     /**
      * Tests that all parameters are correctly set when loading a valid configuration
      */

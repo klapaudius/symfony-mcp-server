@@ -2,8 +2,6 @@
 
 namespace KLP\KlpMcpServer\Services\ResourceService;
 
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-
 interface ResourceInterface extends ResourceDescriptorInterface
 {
     /**

@@ -50,7 +50,7 @@ class ResourcesListHandlerTest extends TestCase
     /**
      * Tests that isHandle returns true for 'resources/list'.
      */
-    public function test_isHandle_returns_true_for_resources_list(): void
+    public function test_is_handle_returns_true_for_resources_list(): void
     {
         $result = $this->resourcesListHandler->isHandle('resources/list');
         $this->assertTrue($result);
@@ -59,7 +59,7 @@ class ResourcesListHandlerTest extends TestCase
     /**
      * Tests that isHandle returns false for a non-matching method.
      */
-    public function test_isHandle_returns_false_for_non_matching_method(): void
+    public function test_is_handle_returns_false_for_non_matching_method(): void
     {
         $result = $this->resourcesListHandler->isHandle('non-matching/method');
         $this->assertFalse($result);

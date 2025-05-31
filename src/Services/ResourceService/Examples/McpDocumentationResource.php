@@ -21,12 +21,12 @@ class McpDocumentationResource implements ResourceTemplateInterface
 
     public function getUriTemplate(): string
     {
-        return "file:/docs/{filename}.md";
+        return 'file:/docs/{filename}.md';
     }
 
     public function getName(): string
     {
-        return "documentation.md";
+        return 'documentation.md';
     }
 
     public function getDescription(): string
@@ -44,13 +44,13 @@ class McpDocumentationResource implements ResourceTemplateInterface
 
     public function getMimeType(): string
     {
-        return "text/plain";
+        return 'text/plain';
     }
 
     /**
      * Retrieve a resource by its URI.
      *
-     * @param string $uri The unique identifier of the resource.
+     * @param  string  $uri  The unique identifier of the resource.
      * @return ResourceInterface|null The retrieved resource object, or null if the resource does not exist.
      */
     public function getResource(string $uri): ?ResourceInterface
@@ -75,7 +75,7 @@ class McpDocumentationResource implements ResourceTemplateInterface
     /**
      * Check if the specified resource exists.
      *
-     * @param string $uri The URI of the resource to check.
+     * @param  string  $uri  The URI of the resource to check.
      * @return bool True if the resource exists, false otherwise.
      */
     public function resourceExists(string $uri): bool
@@ -88,13 +88,13 @@ class McpDocumentationResource implements ResourceTemplateInterface
     /**
      * Extracts the filename from a given URI.
      *
-     * @param string $uri The URI from which to extract the filename.
+     * @param  string  $uri  The URI from which to extract the filename.
      * @return string|null The extracted filename if found, or null otherwise.
      */
     private function getFilenameFromUri(string $uri): ?string
     {
-        if (!isset($this->filenames[$uri])) {
-            if (!preg_match('#^file:/docs/([^/]+)\.md$#', $uri, $matches)) {
+        if (! isset($this->filenames[$uri])) {
+            if (! preg_match('#^file:/docs/([^/]+)\.md$#', $uri, $matches)) {
                 $this->filenames[$uri] = null;
             } else {
                 $this->filenames[$uri] = $matches[1];
@@ -107,12 +107,13 @@ class McpDocumentationResource implements ResourceTemplateInterface
     /**
      * Guess the MIME type of a file.
      *
-     * @param string $path The path to the file.
+     * @param  string  $path  The path to the file.
      * @return string The guessed MIME type.
      */
     protected function guessMimeType(string $path): string
     {
         $mimeType = mime_content_type($path);
+
         return $mimeType ?: 'application/octet-stream';
     }
 }

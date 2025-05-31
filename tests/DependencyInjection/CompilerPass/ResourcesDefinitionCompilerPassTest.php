@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Definition;
 #[Small]
 class ResourcesDefinitionCompilerPassTest extends TestCase
 {
-    public function testProcessRegistersResourcesAsServices()
+    public function test_process_registers_resources_as_services()
     {
         eval('namespace App\Resource; class ResourceA {}');
         eval('namespace App\Resource; class ResourceB {}');
@@ -21,12 +21,13 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
 
         $invocations = [
             'klp_mcp_server.resources',
-            'klp_mcp_server.resources_templates'
+            'klp_mcp_server.resources_templates',
         ];
         $container->expects($matcher = $this->exactly(2))
             ->method('getParameter')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -42,6 +43,7 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
             ->method('has')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(false, false);
@@ -50,26 +52,28 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
             ->method('setDefinition')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 
-        $pass = new ResourcesDefinitionCompilerPass();
+        $pass = new ResourcesDefinitionCompilerPass;
         $pass->process($container);
     }
 
-    public function testProcessDoesNotRegisterAlreadyDefinedResources()
+    public function test_process_does_not_register_already_defined_resources()
     {
         $container = $this->createMock(ContainerBuilder::class);
         $resources = ['App\Resource\ExistingResource'];
 
         $invocations = [
             'klp_mcp_server.resources',
-            'klp_mcp_server.resources_templates'
+            'klp_mcp_server.resources_templates',
         ];
         $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -85,11 +89,11 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
         $container->expects($this->never())
             ->method('setDefinition');
 
-        $pass = new ResourcesDefinitionCompilerPass();
+        $pass = new ResourcesDefinitionCompilerPass;
         $pass->process($container);
     }
 
-    public function testProcessAddsMethodCallToServer()
+    public function test_process_adds_method_call_to_server()
     {
         $container = $this->createMock(ContainerBuilder::class);
         $serverDefinition = $this->createMock(Definition::class);
@@ -97,12 +101,13 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
 
         $invocations = [
             'klp_mcp_server.resources',
-            'klp_mcp_server.resources_templates'
+            'klp_mcp_server.resources_templates',
         ];
         $container->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturn([]);
@@ -115,6 +120,7 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
             ->method('getDefinition')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertEquals($argument, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
@@ -126,7 +132,7 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
             ->method('addMethodCall')
             ->with('registerResourceRepository', [$resourceRepositoryDefinition]);
 
-        $pass = new ResourcesDefinitionCompilerPass();
+        $pass = new ResourcesDefinitionCompilerPass;
         $pass->process($container);
     }
 }
