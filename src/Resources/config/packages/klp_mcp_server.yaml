@@ -35,9 +35,10 @@ klp_mcp_server:
         enable: true
         interval: 30
 
-    # Server-Sent Events Provider
-    # The type of server provider to use. Currently, only 'sse' is supported.
-    server_provider: 'sse'
+    # Server-Sent Events Providers
+    # The type of server providers to use. Currently, only 'streamable_http' and
+    # 'sse' are supported.
+    server_providers: [ 'streamable_http', 'sse' ]
 
     # SSE Adapters Configuration
     # Configuration for the different SSE adapters available in the MCP server.

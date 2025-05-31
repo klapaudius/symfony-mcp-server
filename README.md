@@ -62,7 +62,7 @@ Key benefits:
         ping:
             enabled: true  # Read the warning section in the default configuration file before disable it
             interval: 30
-        server_provider: 'sse'
+        server_providers: ['sse']
         sse_adapter: 'cache'
         adapters:
             cache:
@@ -282,8 +282,8 @@ We are committed to actively pursuing the following key initiatives to enhance t
 
 - **Core Features:**
   - ✅ Resources implementation compliant with MCP specification.
-  - Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
-  - Prompts implementation compliant with MCP specification.
+  - ⏳ Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
+  - 🗓️ Prompts implementation compliant with MCP specification.
 - **Additional Adaptaters:**
   - Support for more Pub/Sub adapters (e.g., RabbitMQ).
 
