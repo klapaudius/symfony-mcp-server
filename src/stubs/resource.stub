@@ -1,0 +1,38 @@
+<?php
+
+namespace {{ namespace }};
+
+use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
+
+class {{ className }} implements ResourceInterface
+{
+    public function getUri(): string
+    {
+        return "file:/my-resource.txt";
+    }
+
+    public function getName(): string
+    {
+        return "my-resource.txt";
+    }
+
+    public function getDescription(): string
+    {
+        return "My resource.";
+    }
+
+    public function getMimeType(): string
+    {
+        return "text/plain";
+    }
+
+    public function getData(): string
+    {
+        return "My Resource";
+    }
+
+    public function getSize(): int
+    {
+        return strlen($this->getData());
+    }
+}
