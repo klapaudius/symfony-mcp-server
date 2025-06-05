@@ -36,7 +36,7 @@
         </service>
 
         <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
-            <argument type="string">%klp_mcp_server.default_path%</argument>
+            <argument type="service" id="router" />
             <argument type="service" id="klp_mcp_server.adapter" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
             <argument type="binary">%klp_mcp_server.ping.enabled%</argument>

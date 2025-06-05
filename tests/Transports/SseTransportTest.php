@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 #[Small]
 class SseTransportTest extends TestCase
@@ -18,6 +19,8 @@ class SseTransportTest extends TestCase
 
     private SseAdapterInterface|MockObject $adapterMock;
 
+    private RouterInterface|MockObject $routerMock;
+
     private SseTransport $instance;
 
     protected function setUp(): void
@@ -25,7 +28,8 @@ class SseTransportTest extends TestCase
         parent::setUp();
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->adapterMock = $this->createMock(SseAdapterInterface::class);
-        $this->instance = new SseTransport('/default-path', $this->adapterMock, $this->loggerMock);
+        $this->routerMock = $this->createMock(RouterInterface::class);
+        $this->instance = new SseTransport($this->routerMock, $this->adapterMock, $this->loggerMock);
     }
 
     /**
@@ -58,6 +62,17 @@ class SseTransportTest extends TestCase
      */
     public function test_initialize_generates_client_id_and_sends_endpoint(): void
     {
+        // Arrange
+        $this->routerMock
+            ->expects($this->once())
+            ->method('generate')
+            ->willReturnCallback(function (string $name, array $parameters = []): string {
+                $this->assertEquals('message_route', $name);
+                $this->assertArrayHasKey('sessionId', $parameters);
+
+                return '/default-path/messages?sessionId='.$parameters['sessionId'];
+            })
+        ;
         // Act
         ob_start();
         try {
@@ -84,6 +99,11 @@ class SseTransportTest extends TestCase
         // Arrange
         $existingClientId = 'predefined-client-id';
         $this->setProtectedProperty($this->instance, 'clientId', $existingClientId);
+        $this->routerMock
+            ->expects($this->once())
+            ->method('generate')
+            ->with('message_route', ['sessionId' => $existingClientId])
+            ->willReturn('/default-path/messages?sessionId=' . $existingClientId);
 
         // Act
         ob_start();
