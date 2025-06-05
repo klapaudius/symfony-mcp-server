@@ -6,6 +6,7 @@ use Exception;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * SSE (Server-Sent Events) Transport implementation.
@@ -58,7 +59,7 @@ final class SseTransport implements SseTransportInterface
     /**
      * Initializes the class with the default path, adapter, logger, and ping settings.
      *
-     * @param  string  $defaultPath  The default path for resources.
+     * @param RouterInterface $router The router instance (optional).
      * @param  SseAdapterInterface|null  $adapter  Optional adapter for message persistence and retrieval (e.g., Redis).
      *                                             Enables simulation of request/response patterns over SSE.
      * @param  LoggerInterface|null  $logger  The logger instance (optional).
@@ -66,7 +67,7 @@ final class SseTransport implements SseTransportInterface
      * @param  int  $pingInterval  The interval, in secondes, at which ping messages are sent to maintain the connection.
      */
     public function __construct(
-        private readonly string $defaultPath,
+        private readonly RouterInterface $router,
         private ?SseAdapterInterface $adapter = null,
         private readonly ?LoggerInterface $logger = null,
         private bool $pingEnabled = false,
@@ -330,10 +331,7 @@ final class SseTransport implements SseTransportInterface
 
     private function getEndpoint(string $sessionId): string
     {
-        return sprintf('/%s/messages?sessionId=%s',
-            trim($this->defaultPath, '/'),
-            $sessionId,
-        );
+        return $this->router->generate('message_route', ['sessionId' => $sessionId]);
     }
 
     /**
