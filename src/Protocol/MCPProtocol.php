@@ -22,6 +22,7 @@ use KLP\KlpMcpServer\Utils\DataUtil;
 /**
  * MCPProtocol
  *
+ * @internal
  * @see https://modelcontextprotocol.io/docs/concepts/architecture
  */
 final class MCPProtocol implements MCPProtocolInterface
@@ -47,9 +48,9 @@ final class MCPProtocol implements MCPProtocolInterface
         $this->transport->onMessage([$this, 'handleMessage']);
         if ($this->transport instanceof SseTransportInterface) {
             $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
-            $this->registerNotificationHandler(new InitializedHandler);
             $this->registerRequestHandler(new PingHandler($this->transport));
         }
+        $this->registerNotificationHandler(new InitializedHandler);
     }
 
     /**
@@ -239,5 +240,15 @@ final class MCPProtocol implements MCPProtocolInterface
     public function requestMessage(string $clientId, array $message): void
     {
         $this->transport->processMessage(clientId: $clientId, message: $message);
+    }
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string
+    {
+        return $this->transport->getClientId();
     }
 }

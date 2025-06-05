@@ -18,7 +18,7 @@ use Symfony\Component\Routing\RouterInterface;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events
  * @since 1.0.0
  */
-final class SseTransport implements SseTransportInterface
+final class SseTransport extends AbstractTransport implements SseTransportInterface
 {
     /**
      * Tracks if the server-side connection is considered active.
@@ -59,7 +59,7 @@ final class SseTransport implements SseTransportInterface
     /**
      * Initializes the class with the default path, adapter, logger, and ping settings.
      *
-     * @param RouterInterface $router The router instance (optional).
+     * @param  RouterInterface  $router  The router instance.
      * @param  SseAdapterInterface|null  $adapter  Optional adapter for message persistence and retrieval (e.g., Redis).
      *                                             Enables simulation of request/response patterns over SSE.
      * @param  LoggerInterface|null  $logger  The logger instance (optional).
@@ -103,13 +103,10 @@ final class SseTransport implements SseTransportInterface
      */
     public function initialize(): void
     {
-        if ($this->clientId === null) {
-            $this->clientId = uniqid();
-        }
         $this->lastPingTimestamp = time();
-        $this->adapter?->storeLastPongResponseTimestamp($this->clientId, time());
+        $this->adapter?->storeLastPongResponseTimestamp($this->getClientId(), time());
 
-        $this->sendEvent(event: 'endpoint', data: $this->getEndpoint(sessionId: $this->clientId));
+        $this->sendEvent(event: 'endpoint', data: $this->getEndpoint(sessionId: $this->getClientId()));
     }
 
     /**
@@ -339,7 +336,7 @@ final class SseTransport implements SseTransportInterface
      */
     protected function getLastPongResponseTimestamp(): ?int
     {
-        return $this->adapter->getLastPongResponseTimestamp($this->clientId);
+        return $this->adapter?->getLastPongResponseTimestamp($this->clientId);
     }
 
     /**

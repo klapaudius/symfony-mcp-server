@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 return function (RoutingConfigurator $routes) {
     $defaultPath = '%klp_mcp_server.default_path%';
 
+    // SSE (Procole version: 2024-11-05)
     $routes->add('sse_route', "/$defaultPath/sse")
         ->controller([SseController::class, 'handle'])
         ->methods(['GET', 'POST']);

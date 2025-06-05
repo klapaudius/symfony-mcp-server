@@ -8,7 +8,6 @@ use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
-use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\Request\InitializeHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
@@ -183,7 +182,7 @@ final class MCPServer implements MCPServerInterface
         $this->initialized = true;
 
         $this->clientCapabilities = $data->capabilities;
-        $protocolVersion = $data->protocolVersion ?? MCPProtocol::PROTOCOL_VERSION;
+        $protocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
 
         return new InitializeResource(
             $this->serverInfo['name'],
@@ -203,5 +202,15 @@ final class MCPServer implements MCPServerInterface
     public function requestMessage(string $clientId, array $message): void
     {
         $this->protocol->requestMessage(clientId: $clientId, message: $message);
+    }
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string
+    {
+        return $this->protocol->getClientId();
     }
 }

@@ -9,10 +9,14 @@ use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 /**
  * MCPProtocol
  *
+ * @internal
  * @see https://modelcontextprotocol.io/docs/concepts/architecture
  */
 interface MCPProtocolInterface
 {
+    public const PROTOCOL_VERSION_SSE = '2024-11-05';
+    public const PROTOCOL_VERSION_STREAMABE_HTTP = '2025-03-26';
+
     /**
      * @throws Exception
      */
@@ -29,4 +33,6 @@ interface MCPProtocolInterface
     public function handleMessage(string $clientId, array $message): void;
 
     public function requestMessage(string $clientId, array $message): void;
+
+    public function getClientId(): string;
 }

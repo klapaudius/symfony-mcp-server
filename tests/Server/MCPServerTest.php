@@ -7,7 +7,6 @@ use KLP\KlpMcpServer\Data\Resources\InitializeResource;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
-use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServer;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
@@ -257,7 +256,7 @@ class MCPServerTest extends TestCase
         // Assert
         $this->assertTrue($this->getPrivateProperty($server, 'initialized'));
         $this->assertSame(['mock-capability' => true], $this->getPrivateProperty($server, 'clientCapabilities'));
-        $this->assertEquals(MCPProtocol::PROTOCOL_VERSION, $initializeResource->protocolVersion);
+        $this->assertEquals(MCPProtocolInterface::PROTOCOL_VERSION_SSE, $initializeResource->protocolVersion);
         $this->assertSame($serverInfo, $initializeResource->serverInfo);
     }
 

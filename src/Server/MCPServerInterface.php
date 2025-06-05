@@ -58,7 +58,7 @@ interface MCPServerInterface
 
     /**
      * Handles the 'initialize' request from the client.
-     * Stores client capabilities, checks protocol version, and marks the server as initialized.
+     * Stores client capabilities, checks the protocol version, and marks the server as initialized.
      * Throws an error if the server is already initialized.
      *
      * @param  InitializeData  $data  The data object containing initialization parameters from the client.
@@ -76,4 +76,11 @@ interface MCPServerInterface
      * @param  array<string, mixed>  $message  The request message payload (following JSON-RPC structure).
      */
     public function requestMessage(string $clientId, array $message): void;
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string;
 }

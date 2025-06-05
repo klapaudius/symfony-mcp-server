@@ -2,7 +2,7 @@
 
 namespace KLP\KlpMcpServer\Data\Resources;
 
-use KLP\KlpMcpServer\Protocol\MCPProtocol;
+use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 
 /**
  * Represents the response data for the MCP Initialize request.
@@ -14,7 +14,7 @@ class InitializeResource
      * The version of the Model Context Protocol being used.
      * Defaults to the version defined in MCPProtocol.
      */
-    public string $protocolVersion = MCPProtocol::PROTOCOL_VERSION;
+    public string $protocolVersion = MCPProtocolInterface::PROTOCOL_VERSION_SSE;
 
     /**
      * An array describing the capabilities of the server.
@@ -38,7 +38,11 @@ class InitializeResource
      * @param  array  $capabilities  The capabilities supported by the server.
      * @param  string  $protocolVersion  The protocol version being used.
      */
-    public function __construct(string $name, string $version, array $capabilities, string $protocolVersion = '2024-11-05')
+    public function __construct(
+        string $name,
+        string $version,
+        array $capabilities,
+        string $protocolVersion = MCPProtocolInterface::PROTOCOL_VERSION_SSE)
     {
         $this->serverInfo = [
             'name' => $name,
