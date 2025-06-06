@@ -71,8 +71,7 @@ class SseTransportTest extends TestCase
                 $this->assertArrayHasKey('sessionId', $parameters);
 
                 return '/default-path/messages?sessionId='.$parameters['sessionId'];
-            })
-        ;
+            });
         // Act
         ob_start();
         try {
@@ -103,7 +102,7 @@ class SseTransportTest extends TestCase
             ->expects($this->once())
             ->method('generate')
             ->with('message_route', ['sessionId' => $existingClientId])
-            ->willReturn('/default-path/messages?sessionId=' . $existingClientId);
+            ->willReturn('/default-path/messages?sessionId='.$existingClientId);
 
         // Act
         ob_start();

@@ -59,7 +59,7 @@ final class SseTransport implements SseTransportInterface
     /**
      * Initializes the class with the default path, adapter, logger, and ping settings.
      *
-     * @param RouterInterface $router The router instance (optional).
+     * @param  RouterInterface  $router  The router instance (optional).
      * @param  SseAdapterInterface|null  $adapter  Optional adapter for message persistence and retrieval (e.g., Redis).
      *                                             Enables simulation of request/response patterns over SSE.
      * @param  LoggerInterface|null  $logger  The logger instance (optional).
