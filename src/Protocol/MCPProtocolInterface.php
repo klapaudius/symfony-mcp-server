@@ -3,7 +3,6 @@
 namespace KLP\KlpMcpServer\Protocol;
 
 use Exception;
-use KLP\KlpMcpServer\Data\Resources\JsonRpc\JsonRpcResourceCollection;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 

@@ -15,31 +15,31 @@
 
 ## Overview
 
-Symfony MCP Server is a powerful package designed to streamline the implementation of Model Context Protocol (MCP) servers in Symfony applications. This package **utilizes Server-Sent Events (SSE)** transport, providing a secure and controlled integration method.
+Symfony MCP Server is a powerful package designed to streamline the implementation of Model Context Protocol (MCP) servers in Symfony applications. This package **utilizes StreamableHTTP and/or Server-Sent Events (SSE)** transport, providing a secure and controlled integration methods.
 
-### Why SSE instead of STDIO?
+### Why not STDIO?
 
 While stdio is straightforward and widely used in MCP implementations, it has significant security implications for enterprise environments:
 
 - **Security Risk**: STDIO transport potentially exposes internal system details and API specifications
 - **Data Protection**: Organizations need to protect proprietary API endpoints and internal system architecture
-- **Control**: SSE offers better control over the communication channel between LLM clients and your application
+- **Control**: StreamableHTTP or SSE offers better control over the communication channel between LLM clients and your application
 
-By implementing the MCP server with SSE transport, enterprises can:
+By implementing the MCP server with StreamableHTTP or SSE transport, enterprises can:
 
 - Expose only the necessary tools and resources while keeping proprietary API details private
 - Maintain control over authentication and authorization processes
 
 Key benefits:
 
-- Seamless and rapid implementation of SSE in existing Symfony projects
+- Seamless and rapid implementation of StreamableHTTP and/or SSE in existing Symfony projects
 - Support for the latest Symfony and PHP versions
 - Efficient server communication and real-time data processing
 - Enhanced security for enterprise environments
 
 ## Key Features
 
-- Real-time communication support through Server-Sent Events (SSE) integration specified in the MCP 2024-11-05 version (Streamable HTTP from 2025-03-26 version is planned)
+- Real-time communication support through StreamableHTTP and/or Server-Sent Events (SSE) integration
 - Implementation of tools and resources compliant with Model Context Protocol specifications
 - Adapter-based design architecture with Pub/Sub messaging pattern
 
@@ -62,7 +62,7 @@ Key benefits:
         ping:
             enabled: true  # Read the warning section in the default configuration file before disable it
             interval: 30
-        server_providers: ['sse']
+        server_providers: ['streamable_http','sse']
         sse_adapter: 'cache'
         adapters:
             cache:
@@ -97,6 +97,7 @@ klp_mcp_server:
 
 - **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
 - **Request Submission Endpoint**: `POST /{default_path}/messages`
+- **Streamable HTTP Endpoint**: `GET|POST /{default_path}`
 
 ### Docker Setup (Optional)
 
@@ -178,15 +179,19 @@ This will typically open a web interface at `localhost:6274`. To test your MCP s
 2. In the Inspector interface, enter your Symfony server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
 3. Connect and explore available tools visually
 
-The SSE URL follows the pattern: `http(s)://[your-web-server]/[default_path]/sse` where `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
+|  MCP Specification version   | Connection Url pattern                           |
+|:----------------------------:|--------------------------------------------------|
+|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse` |
+| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`     |
+`default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
 
 ## Advanced Features
 
-### Pub/Sub Architecture with SSE Adapters
+### Pub/Sub Architecture with Adapters
 
 The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system:
 
-1. **Publisher (Server)**: When clients send requests to the `/messages` endpoint, the server processes these requests and publishes responses through the configured adapter.
+1. **Publisher (Server)**: When clients send requests (e.g. `/messages` endpoint for SSE connection), the server processes these requests and publishes responses through the configured adapter.
 
 2. **Message Broker (Adapter)**: The adapter maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
 
@@ -282,8 +287,8 @@ We are committed to actively pursuing the following key initiatives to enhance t
 
 - **Core Features:**
   - ✅ Resources implementation compliant with MCP specification.
-  - ⏳ Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
-  - 🗓️ Prompts implementation compliant with MCP specification.
+  - ✅ Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
+  - ⏳️ Prompts implementation compliant with MCP specification.
 - **Additional Adaptaters:**
   - Support for more Pub/Sub adapters (e.g., RabbitMQ).
 
