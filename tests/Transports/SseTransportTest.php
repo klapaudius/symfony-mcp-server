@@ -2,10 +2,10 @@
 
 namespace KLP\KlpMcpServer\Tests\Transports;
 
+use KLP\KlpMcpServer\Transports\Exception\SseTransportException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\SseTransport;
-use KLP\KlpMcpServer\Transports\SseTransportException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -311,13 +311,13 @@ class SseTransportTest extends TestCase
         // Arrange
         $this->setProtectedProperty($this->instance, 'connected', true);
         $invocations = [
-            'Error in SSE close handler: Handler Exception',
+            'SSE Transport. Error in close handler: Handler Exception',
             'Error cleaning up SSE adapter resources on close: Adapter Exception',
         ];
         $this->loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
-                $this->assertEquals($arg, $invocations[$matcher->numberOfInvocations() - 1]);
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
 
                 return true;
             }));
@@ -552,7 +552,7 @@ class SseTransportTest extends TestCase
         $message = 'Error Message';
         $invocations = [
             'SSE Transport error: Error Message',
-            'Error in SSE error handler itself: Test Exception',
+            'Error in SSE Transport error handler itself: Test Exception',
         ];
         $this->loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')

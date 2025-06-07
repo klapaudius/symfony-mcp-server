@@ -339,8 +339,8 @@ class CachePoolAdapterTest extends TestCase
             ->willReturn($this->cacheItemMock);
 
         $this->cacheItemMock
-            ->method('isHit')
-            ->willReturn(true);
+            ->method('get')
+            ->willReturn(['message']);
 
         $result = $this->adapter->hasMessages($clientId);
 

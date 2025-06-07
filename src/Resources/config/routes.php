@@ -2,6 +2,7 @@
 
 use KLP\KlpMcpServer\Controllers\MessageController;
 use KLP\KlpMcpServer\Controllers\SseController;
+use KLP\KlpMcpServer\Controllers\StreamableHttpController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 /**
@@ -21,4 +22,9 @@ return function (RoutingConfigurator $routes) {
     $routes->add('message_route', "/$defaultPath/messages")
         ->controller([MessageController::class, 'handle'])
         ->methods(['POST']);
+
+    // Streamable Http (Procole version: 2025-03-26)
+    $routes->add('streamable_http_route', "/$defaultPath")
+        ->controller([StreamableHttpController::class, 'handle'])
+        ->methods(['GET', 'POST']);
 };

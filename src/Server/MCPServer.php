@@ -51,12 +51,7 @@ final class MCPServer implements MCPServerInterface
      */
     private bool $initialized = false;
 
-    /**
-     * Capabilities reported by the client during initialization. Null if not initialized.
-     *
-     * @var array<string, mixed>|null
-     */
-    private ?array $clientCapabilities = null;
+    private ?string $protocolVersion = null;
 
     /**
      * Creates a new MCPServer instance.
@@ -141,7 +136,7 @@ final class MCPServer implements MCPServerInterface
      */
     public function connect(): void
     {
-        $this->protocol->connect();
+        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -181,7 +176,6 @@ final class MCPServer implements MCPServerInterface
 
         $this->initialized = true;
 
-        $this->clientCapabilities = $data->capabilities;
         $protocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
 
         return new InitializeResource(
@@ -204,6 +198,11 @@ final class MCPServer implements MCPServerInterface
         $this->protocol->requestMessage(clientId: $clientId, message: $message);
     }
 
+    public function getResponseResult(string $clientId): array
+    {
+        return $this->protocol->getResponseResult($clientId);
+    }
+
     /**
      * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
      *
@@ -212,5 +211,11 @@ final class MCPServer implements MCPServerInterface
     public function getClientId(): string
     {
         return $this->protocol->getClientId();
+    }
+
+    public function setProtocolVersion(string $protocolVersion): void
+    {
+        $this->protocolVersion = $protocolVersion;
+        $this->protocol->setProtocolVersion($protocolVersion);
     }
 }

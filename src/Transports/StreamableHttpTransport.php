@@ -3,23 +3,21 @@
 namespace KLP\KlpMcpServer\Transports;
 
 use Exception;
-use KLP\KlpMcpServer\Transports\Exception\SseTransportException;
-use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
+use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
- * SSE (Server-Sent Events) Transport implementation.
+ * Streamable HTTP Transport implementation.
  *
- * Handles one-way server-to-client communication using the SSE protocol.
- * Optionally uses an adapter for simulating bi-directional communication.
+ * Handles bidirectional communication using HTTP streaming for server-to-client
+ * and HTTP POST requests for client-to-server communication.
  *
- * @see https://modelcontextprotocol.io/docs/concepts/transports
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events
- * @since 1.0.0
+ * @see https://modelcontextprotocol.io/specification/2025-03-26/basic/transports
+ * @since 1.2.0
  */
-final class SseTransport extends AbstractTransport implements SseTransportInterface
+final class StreamableHttpTransport extends AbstractTransport implements StreamableHttpTransportInterface
 {
     /**
      * Initializes the class with the default path, adapter, logger, and ping settings.
@@ -39,21 +37,28 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
     ) {}
 
     /**
-     * Initializes the transport: generates client ID and sends the initial 'endpoint' event.
-     * Adapter-specific initialization might occur here or externally.
+     * Checks if the connection is currently active based on the last ping timestamp
+     * and the defined ping interval.
      *
-     * @throws SseAdapterException If sending the initial event fails.
+     * @return bool True if the connection is active, false otherwise.
      */
-    public function initialize(): void
+    public function isConnected(): bool
     {
-        parent::initialize();
+        $hasMessages = $this->adapter->hasMessages($this->clientId);
+        $this->logger?->debug('Streamable HTTP Transport::isConnected: hasMessages: '.($hasMessages ? 'true' : 'false' ));
 
-        $this->sendEvent(event: 'endpoint', data: $this->getEndpoint(sessionId: $this->getClientId()));
+        return $hasMessages && parent::isConnected();
+    }
+
+    public function setConnected(bool $connected): void
+    {
+        $this->connected = $connected;
+        $this->lastPingTimestamp = time();
     }
 
     /**
      * Processes a message payload by invoking all registered message handlers.
-     * Typically called after `receive()`. Catches exceptions within handlers.
+     * Typically called after receiving a message from the client.
      *
      * @param  string  $clientId  The client ID associated with the message.
      * @param  array  $message  The message payload (usually an array).
@@ -64,10 +69,8 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
             try {
                 $handler($clientId, $message);
             } catch (Exception $e) {
-                $this->logger?->error('Error processing SSE message via handler: '.$e->getMessage(), [
+                $this->logger?->error('Error processing Streamable HTTP message via handler: '.$e->getMessage(), [
                     'clientId' => $clientId,
-                    // Avoid logging potentially sensitive message content in production
-                    // 'message_summary' => is_array($message) ? json_encode(array_keys($message)) : substr($message, 0, 100)
                 ]);
             }
         }
@@ -80,25 +83,20 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
      * @param  string  $clientId  The target client ID.
      * @param  array  $message  The message payload (as an array).
      *
-     * @throws SseTransportException If adapter is not set, JSON encoding fails, or adapter push fails.
+     * @throws Exception If adapter is not set, JSON encoding fails, or adapter push fails.
      */
     public function pushMessage(string $clientId, array $message): void
     {
         if ($this->adapter === null) {
-            throw new SseTransportException('Cannot push message: SSE Adapter is not configured.');
+            throw new StreamableHttpTransportException('Cannot push message: Adapter is not configured.');
         }
 
         $messageString = json_encode($message);
         if ($messageString === false) {
-            throw new SseTransportException('Failed to JSON encode message for pushing: '.json_last_error_msg());
+            throw new StreamableHttpTransportException('Failed to JSON encode message for pushing: '.json_last_error_msg());
         }
 
         $this->adapter->pushMessage(clientId: $clientId, message: $messageString);
-    }
-
-    protected function getEndpoint(string $sessionId): string
-    {
-        return $this->router->generate('message_route', ['sessionId' => $sessionId]);
     }
 
     /**
@@ -108,6 +106,6 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
      */
     protected function getTransportName(): string
     {
-        return 'SSE Transport';
+        return 'Streamable HTTP Transport';
     }
 }

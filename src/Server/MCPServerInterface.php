@@ -7,6 +7,7 @@ use KLP\KlpMcpServer\Data\Resources\InitializeResource;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -21,6 +22,21 @@ use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
  */
 interface MCPServerInterface
 {
+
+    /**
+     * Sets the protocol version for the current communication session.
+     * Can accept one of the following values:
+     * - '2024-11-05' for SSE transport
+     * - '2025-03-26' for StreamableHTTP transport
+     *
+     * If the protocol version is not set, the server will use the default version for the transport type.
+     * If the protocol version is set to null, the server will unset the protocol version.
+     *
+     * @param string $protocolVersion The protocol version to be set.
+     * @return void
+     */
+    public function setProtocolVersion(string $protocolVersion): void;
+
     /**
      * Registers a request handler with the protocol layer.
      * Request handlers process incoming method calls from the client.
@@ -76,6 +92,8 @@ interface MCPServerInterface
      * @param  array<string, mixed>  $message  The request message payload (following JSON-RPC structure).
      */
     public function requestMessage(string $clientId, array $message): void;
+
+    public function getResponseResult(string $clientId): array;
 
     /**
      * Retrieves the client ID. If the client ID is not already set, generates a unique ID.

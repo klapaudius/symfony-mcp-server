@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Controllers;
 
+use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,6 +14,8 @@ class MessageController
 
     public function handle(Request $request)
     {
+        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+
         $sessionId = $request->request->get('sessionId') ?? $request->query->get('sessionId');
 
         $messageJson = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);

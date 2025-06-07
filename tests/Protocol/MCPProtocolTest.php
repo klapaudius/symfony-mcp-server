@@ -5,7 +5,9 @@ namespace KLP\KlpMcpServer\Tests\Protocol;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
+use KLP\KlpMcpServer\Transports\StreamableHttpTransportInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -13,14 +15,73 @@ use PHPUnit\Framework\TestCase;
 #[Small]
 class MCPProtocolTest extends TestCase
 {
+    private TransportFactoryInterface|MockObject $mockTransportFactory;
     private SseTransportInterface|MockObject $mockTransport;
 
     private MCPProtocol $mcpProtocol;
+    private string $exampleClientId = 'test_client_id';
 
     protected function setUp(): void
     {
+        $this->mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
         $this->mockTransport = $this->createMock(SseTransportInterface::class);
-        $this->mcpProtocol = new MCPProtocol($this->mockTransport);
+        $this->mockTransportFactory->method('create')->willReturn($this->mockTransport);
+        $this->mockTransport
+            ->method('getClientId')
+            ->willReturn($this->exampleClientId);
+        $this->mcpProtocol = new MCPProtocol($this->mockTransportFactory);
+        $this->mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+    }
+
+    /**
+     * Test that initTransport initializes transport when it is null
+     */
+    public function test_init_transport_initializes_transport(): void
+    {
+        $mcpProtocol = new MCPProtocol($this->mockTransportFactory);
+        $this->mockTransportFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($this->equalTo(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP))
+            ->willReturn($this->mockTransport);
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('onMessage');
+
+        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+
+        $this->assertEquals($this->exampleClientId, $mcpProtocol->getClientId());
+    }
+
+    /**
+     * Test that initTransport sets connected to true for StreamableHttpTransport
+     */
+    public function test_init_transport_sets_connected_for_streamable_http(): void
+    {
+        $mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
+        $mcpProtocol = new MCPProtocol($mockTransportFactory);
+        $streamableHttpTransport = $this->createMock(StreamableHttpTransportInterface::class);
+        $streamableHttpTransport
+            ->method('getClientId')
+            ->willReturn($this->exampleClientId);
+
+        $mockTransportFactory
+            ->method('create')
+            ->willReturn($streamableHttpTransport);
+
+        $streamableHttpTransport
+            ->expects($this->once())
+            ->method('setConnected')
+            ->with(true);
+
+        $streamableHttpTransport
+            ->expects($this->once())
+            ->method('onMessage');
+
+        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+
+        $this->assertEquals($this->exampleClientId, $mcpProtocol->getClientId());
     }
 
     /**
@@ -41,7 +102,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect();
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -76,7 +137,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect();
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -107,7 +168,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect();
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -138,7 +199,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect();
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -400,5 +461,49 @@ class MCPProtocolTest extends TestCase
             ->with($this->equalTo($clientId), $this->equalTo($message));
 
         $this->mcpProtocol->requestMessage($clientId, $message);
+    }
+
+    /**
+     * Test getClientId method returns a valid client ID from the transport layer
+     */
+    public function test_get_client_id_returns_valid_client_id(): void
+    {
+        $clientId = $this->mcpProtocol->getClientId();
+
+        $this->assertEquals($this->exampleClientId, $clientId);
+    }
+
+    /**
+     * Test that getResponseResult returns decoded messages from the transport
+     */
+    public function test_get_response_result_returns_decoded_messages(): void
+    {
+        $messages = ['{"key":"value"}', '{"anotherKey":"anotherValue"}'];
+        $decodedMessages = [json_decode($messages[0]), json_decode($messages[1])];
+
+        $this->mockTransport
+            ->method('receive')
+            ->willReturn($messages);
+
+        $result = $this->mcpProtocol->getResponseResult($this->exampleClientId);
+
+        $this->assertEquals($decodedMessages, $result);
+    }
+
+    /**
+     * Test that getResponseResult skips null messages
+     */
+    public function test_get_response_result_skips_null_messages(): void
+    {
+        $messages = ['{"key":"value"}', null, '{"anotherKey":"anotherValue"}'];
+        $decodedMessages = [json_decode($messages[0]), json_decode($messages[2])];
+
+        $this->mockTransport
+            ->method('receive')
+            ->willReturn($messages);
+
+        $result = $this->mcpProtocol->getResponseResult($this->exampleClientId);
+
+        $this->assertEquals($decodedMessages, $result);
     }
 }
