@@ -3,9 +3,9 @@
 namespace {{ namespace }};
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class {{ className }} implements ToolInterface
+class {{ className }} implements StreamableToolInterface
 {
     /**
      * Get the tool name.
@@ -69,5 +69,18 @@ class {{ className }} implements ToolInterface
 
         // Implement your tool logic here
         return "Tool executed with parameter: {$param1}";
+    }
+
+    /**
+     * Determines if this tool should return a streaming response.
+     *
+     * When this method returns true, the execute() method should return
+     * a callback function that will be used as the StreamedResponse callback.
+     *
+     * @return bool True if the tool supports streaming, false otherwise.
+     */
+    public function isStreaming(): bool
+    {
+        return false;
     }
 }

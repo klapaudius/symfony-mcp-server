@@ -3,7 +3,7 @@
 namespace KLP\KlpMcpServer\Command;
 
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -109,11 +109,11 @@ EOT
      * from the input or user prompt. The method checks for a matching class name,
      * an exact tool match, or a case-insensitive tool name match from the configured tools.
      *
-     * @return ToolInterface Returns the tool instance if found.
+     * @return StreamableToolInterface Returns the tool instance if found.
      *
      * @throws TestMcpToolCommandException If no tool is specified or if the tool cannot be resolved.
      */
-    public function getToolInstance(): ToolInterface
+    public function getToolInstance(): StreamableToolInterface
     {
         // Get the tool name from the argument or prompt for it
         $identifier = $this->input->getArgument('tool') ?: $this->askForTool();
@@ -147,9 +147,9 @@ EOT
         }
 
         if ($toolInstance
-            && ! ($toolInstance instanceof ToolInterface)) {
+            && ! ($toolInstance instanceof StreamableToolInterface)) {
             $toolClass = get_class($toolInstance);
-            throw new TestMcpToolCommandException("The class '{$toolClass}' does not implement ToolInterface.");
+            throw new TestMcpToolCommandException("The class '{$toolClass}' does not implement StreamableToolInterface.");
         }
 
         return $toolInstance ?: throw new TestMcpToolCommandException("Tool '{$identifier}' not found.");
@@ -158,9 +158,9 @@ EOT
     /**
      * Displays the schema information for a specific tool.
      *
-     * @param  ToolInterface  $tool  The tool instance whose schema is to be displayed.
+     * @param  StreamableToolInterface  $tool  The tool instance whose schema is to be displayed.
      */
-    public function displaySchema(ToolInterface $tool): void
+    public function displaySchema(StreamableToolInterface $tool): void
     {
         $toolClass = get_class($tool);
         $this->io->text([
@@ -302,7 +302,7 @@ EOT
             try {
                 if (class_exists($toolClass)) {
                     $instance = $this->container->get($toolClass);
-                    if ($instance instanceof ToolInterface) {
+                    if ($instance instanceof StreamableToolInterface) {
                         $tools[] = [
                             'name' => $instance->getName(),
                             'class' => $toolClass,
@@ -347,7 +347,7 @@ EOT
             try {
                 if (class_exists($toolClass)) {
                     $instance = $this->container->get($toolClass);
-                    if ($instance instanceof ToolInterface) {
+                    if ($instance instanceof StreamableToolInterface) {
                         $name = $instance->getName();
                         $choices[] = "{$name} ({$toolClass})";
                         $validTools[] = $toolClass;

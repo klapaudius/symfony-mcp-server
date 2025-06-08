@@ -221,11 +221,11 @@ class DataUtilTest extends TestCase
    php bin/console make:mcp-tool MyCustomTool
    ```
 
-2. Implement the `ToolInterface` in your custom tool class:
+2. Implement the `StreamableToolInterface` in your custom tool class:
    ```php
-   use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+   use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-   class MyCustomTool implements ToolInterface
+   class MyCustomTool implements StreamableToolInterface
    {
        // Implementation
    }

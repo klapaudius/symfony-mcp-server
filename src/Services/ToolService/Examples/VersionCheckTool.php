@@ -3,11 +3,11 @@
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use stdClass;
 use Symfony\Component\HttpKernel\Kernel;
 
-class VersionCheckTool implements ToolInterface
+class VersionCheckTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -39,5 +39,10 @@ class VersionCheckTool implements ToolInterface
         $version = Kernel::VERSION;
 
         return "current Version: {$version} - {$now}";
+    }
+
+    public function isStreaming(): bool
+    {
+        return false;
     }
 }

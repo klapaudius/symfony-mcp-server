@@ -38,16 +38,16 @@ This command:
 
 ### Step 2: Understanding the Generated Tool Structure
 
-The generated tool implements the `ToolInterface` and includes these key methods:
+The generated tool implements the `StreamableToolInterface` and includes these key methods:
 
 ```php
 // src/MCP/Tools/MyCustomTool.php
 namespace App\MCP\Tools;
 
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use ableKLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\StreamToolInterface;
 
-class MyCustomTool implements ToolInterface
+class MyCustomTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -104,7 +104,7 @@ klp_mcp_server:
 
 ## Understanding the Tool Interface
 
-All MCP tools must implement the `ToolInterface`, which requires five methods:
+All MCP tools must implement the `StreamableToolInterface`, which requires five methods:
 
 ### 1. getName(): string
 
@@ -264,7 +264,7 @@ public function getInputSchema(): array
 For tools that need to access Symfony services, use dependency injection:
 
 ```php
-class DatabaseQueryTool implements ToolInterface
+class DatabaseQueryTool implements StreamableToolInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -415,7 +415,7 @@ Use the testing command to verify your tool handles edge cases correctly:
 A simple tool that greets a user:
 
 ```php
-class HelloWorldTool implements ToolInterface
+class HelloWorldTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -460,7 +460,7 @@ class HelloWorldTool implements ToolInterface
 A tool that returns the current Symfony version:
 
 ```php
-final class VersionCheckTool implements ToolInterface
+final class VersionCheckTool implements StreamableToolInterface
 {
     public function getName(): string
     {

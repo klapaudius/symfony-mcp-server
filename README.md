@@ -128,9 +128,9 @@ This command:
 You can also manually create and register tools in `config/packages/klp_mcp_server.yaml`:
 
 ```php
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class MyCustomTool implements ToolInterface
+class MyCustomTool implements StreamableToolInterface
 {
     // Tool implementation
 }

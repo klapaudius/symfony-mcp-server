@@ -6,7 +6,7 @@ use KLP\KlpMcpServer\Command\TestMcpToolCommand;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -90,7 +90,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_get_tool_instance_valid_class_name_returns_tool_instance(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $this->inputMock
             ->expects($this->once())
             ->method('getArgument')
@@ -117,7 +117,7 @@ class TestMcpToolCommandTest extends TestCase
     {
         $identifier = 'custom';
         $configuredTools = ['App\\Tools\\CustomTool'];
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
 
         $toolMock->method('getName')->willReturn('custom');
 
@@ -140,7 +140,7 @@ class TestMcpToolCommandTest extends TestCase
     }
 
     /**
-     * Tests that an exception is thrown when the tool class does not implement ToolInterface
+     * Tests that an exception is thrown when the tool class does not implement StreamableToolInterface
      */
     public function test_get_tool_instance_invalid_tool_class_throws_exception(): void
     {
@@ -161,7 +161,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('getParameter');
 
         $this->expectException(TestMcpToolCommandException::class);
-        $this->expectExceptionMessage("The class 'stdClass' does not implement ToolInterface.");
+        $this->expectExceptionMessage("The class 'stdClass' does not implement StreamableToolInterface.");
 
         $this->invokeGetToolInstanceMethod();
     }
@@ -188,7 +188,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('get')
             ->willReturnCallback(function ($class) use ($configuredTools) {
                 if (in_array($class, $configuredTools)) {
-                    $toolMock = $this->createMock(ToolInterface::class);
+                    $toolMock = $this->createMock(StreamableToolInterface::class);
                     $toolMock->method('getName')->willReturn('Valid Tool');
 
                     return $toolMock;
@@ -203,7 +203,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->invokeGetToolInstanceMethod();
     }
 
-    private function invokeGetToolInstanceMethod(): ToolInterface
+    private function invokeGetToolInstanceMethod(): StreamableToolInterface
     {
         $reflection = new \ReflectionMethod(TestMcpToolCommand::class, 'getToolInstance');
 
@@ -213,7 +213,6 @@ class TestMcpToolCommandTest extends TestCase
     private function injectPrivateProperty(object $object, string $propertyName, mixed $value): void
     {
         $reflection = new \ReflectionProperty($object, $propertyName);
-        $reflection->setAccessible(true);
         $reflection->setValue($object, $value);
     }
 
@@ -223,7 +222,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_display_schema_for_tool_with_simple_schema_displays_correct_output(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getName')->willReturn('SimpleTool');
         $toolMock->method('getDescription')->willReturn('A simple tool.');
         $toolMock->method('getInputSchema')->willReturn([
@@ -269,7 +268,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_display_schema_for_tool_with_nested_object_schema_displays_correct_output(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getName')->willReturn('NestedTool');
         $toolMock->method('getDescription')->willReturn('A tool with nested schema.');
         $toolMock->method('getInputSchema')->willReturn([
@@ -325,7 +324,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_display_schema_for_tool_with_array_schema_displays_correct_output(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getName')->willReturn('ArrayTool');
         $toolMock->method('getDescription')->willReturn('A tool with array schema.');
         $toolMock->method('getInputSchema')->willReturn([
@@ -463,7 +462,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_test_tool_valid_input_process_tool(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getInputSchema')->willReturn([]);
         $toolMock->method('execute')->with([])->willReturn(['success' => true]);
 
@@ -493,7 +492,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_test_tool_execution_failure_handles_error(): void
     {
-        $toolMock = $this->createMock(ToolInterface::class);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getInputSchema')->willReturn([]);
         $toolMock->method('execute')->willThrowException(new \RuntimeException('Execution error.'));
 
@@ -542,8 +541,8 @@ class TestMcpToolCommandTest extends TestCase
         $this->containerMock
             ->method('get')
             ->willReturnMap([
-                [HelloWorldTool::class, $this->createConfiguredMock(ToolInterface::class, ['getName' => 'Tool1', 'getDescription' => 'This is tool 1'])],
-                [VersionCheckTool::class, $this->createConfiguredMock(ToolInterface::class, ['getName' => 'Tool2', 'getDescription' => 'This is tool 2'])],
+                [HelloWorldTool::class, $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool1', 'getDescription' => 'This is tool 1'])],
+                [VersionCheckTool::class, $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool2', 'getDescription' => 'This is tool 2'])],
             ]);
 
         $this->ioMock

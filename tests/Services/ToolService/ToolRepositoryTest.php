@@ -4,7 +4,7 @@ namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 
 use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -35,8 +35,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_tool_instances(): void
     {
-        $tool1 = $this->createMock(ToolInterface::class);
-        $tool2 = $this->createMock(ToolInterface::class);
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
@@ -58,8 +58,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_is_called_on_constructor(): void
     {
-        $tool1 = $this->createMock(ToolInterface::class);
-        $tool2 = $this->createMock(ToolInterface::class);
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
@@ -102,8 +102,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_tool_class_names(): void
     {
-        $tool1 = $this->createMock(ToolInterface::class);
-        $tool2 = $this->createMock(ToolInterface::class);
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
@@ -174,8 +174,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_returns_valid_schemas(): void
     {
-        $tool1 = $this->createMock(ToolInterface::class);
-        $tool2 = $this->createMock(ToolInterface::class);
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool1->method('getDescription')->willReturn('Description for tool1');
@@ -208,7 +208,7 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_handles_tools_with_empty_input_schema(): void
     {
-        $tool = $this->createMock(ToolInterface::class);
+        $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('tool1');
         $tool->method('getDescription')->willReturn('Description for tool1');
@@ -231,7 +231,7 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_includes_annotations_if_present(): void
     {
-        $tool = $this->createMock(ToolInterface::class);
+        $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('toolWithAnnotations');
         $tool->method('getDescription')->willReturn('Tool with annotations');

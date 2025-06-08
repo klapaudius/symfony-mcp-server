@@ -3,9 +3,9 @@
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class HelloWorldTool implements ToolInterface
+class HelloWorldTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -41,5 +41,10 @@ class HelloWorldTool implements ToolInterface
         $name = $arguments['name'] ?? 'MCP';
 
         return "Hello, HelloWorld `{$name}` developer.";
+    }
+
+    public function isStreaming(): bool
+    {
+        return false;
     }
 }

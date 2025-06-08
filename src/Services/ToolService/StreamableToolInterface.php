@@ -4,20 +4,7 @@ namespace KLP\KlpMcpServer\Services\ToolService;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 
-trigger_deprecation(
-    "klapaudius/klp-mcp-server",
-    "1.2.0",
-    sprintf(
-        'Interface "%s" is deprecated, use "%s" instead.',
-        ToolInterface::class,
-        StreamableToolInterface::class
-    )
-);
-
-/**
- * @deprecated The ToolInterface is deprecated. Use StreamableToolInterface instead.
- */
-interface ToolInterface extends StreamableToolInterface
+interface StreamableToolInterface
 {
     /**
      * Retrieves the name.
@@ -33,8 +20,14 @@ interface ToolInterface extends StreamableToolInterface
     public function getAnnotations(): ToolAnnotation;
 
     public function execute(array $arguments): mixed;
-}
 
-interface StreamableToolInterface
-{
+    /**
+     * Determines if this tool should return a streaming response.
+     *
+     * When this method returns true, the execute() method should return
+     * a callback function that will be used as the StreamedResponse callback.
+     *
+     * @return bool True if the tool supports streaming, false otherwise.
+     */
+    public function isStreaming(): bool;
 }
