@@ -5,6 +5,7 @@
 - **Deprecations:**
   - Configuration key `klp_mcp_server.server_provider` is replaced by `klp_mcp_server.server_providers` to maintain backward compatibility
   for clients that does not support the `2025-03-26` protocol version yet.
+  - The ToolInterface is deprecated. Use StreamableToolInterface instead.
 
 ### Version 1.1.0
 
