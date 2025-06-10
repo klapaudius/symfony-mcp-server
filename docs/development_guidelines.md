@@ -51,8 +51,8 @@ This document provides essential information for developers working on the Symfo
        ping:
            enabled: true
            interval: 30
-       server_provider: 'sse'
-       sse_adapter: 'redis'
+       server_provider: 'streamable_http'  # Available options: 'sse', 'streamable_http'
+       sse_adapter: 'cache'
        adapters:
            redis:
                prefix: 'mcp_sse_'
@@ -75,6 +75,9 @@ This document provides essential information for developers working on the Symfo
 - **Web Server**: This package cannot be used with `symfony server:start` as it requires processing multiple connections concurrently. Use Nginx + PHP-FPM, Apache + PHP-FPM, or a custom Docker setup instead.
 - **Redis Configuration**: Ensure your Redis server is properly configured and accessible at the host specified in the configuration.
 - **Security**: It's strongly recommended to implement OAuth2 Authentication for production use.
+- **Protocol Support**: This bundle supports two protocols:
+  - **SSE (Server-Sent Events)**: The legacy protocol for real-time communication.
+  - **StreamableHTTP**: The actual protocol that works over standard HTTP connection or Streaming if needed.
 
 ### Docker Setup
 
@@ -260,4 +263,6 @@ php bin/console mcp:test-tool MyCustomTool --input='{"param":"value"}'
 
 - The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system.
 - The default Redis adapter maintains message queues for each client, identified by unique client IDs.
-- Long-lived SSE connections subscribe to messages for their respective clients and deliver them in real-time.
+- The bundle supports two transport protocols:
+  - **SSE (Server-Sent Events)**: Long-lived connections that subscribe to messages for their respective clients and deliver them in real-time.
+  - **StreamableHTTP**: An HTTP-based protocol that can handle both streaming and non-streaming responses.

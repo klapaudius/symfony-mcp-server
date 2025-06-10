@@ -9,7 +9,7 @@ The Model Context Protocol (MCP) is a standardized communication protocol that e
 - Perform complex operations beyond their training data
 - Interact with your business logic in a controlled manner
 
-This Symfony MCP Server implementation uses Server-Sent Events (SSE) transport for secure, real-time communication between LLM clients and your application.
+This Symfony MCP Server implementation supports multiple transport protocols for secure, real-time communication between LLM clients and your application, including Server-Sent Events (SSE) and StreamableHTTP Protocol.
 
 ## What are MCP Tools?
 
@@ -218,12 +218,12 @@ npx @modelcontextprotocol/inspector node build/index.js
 ```
 
 This opens a web interface (typically at `localhost:6274`) where you can:
-1. Connect to your MCP server
+1. Connect to your MCP server (using either SSE or StreamableHTTP Protocol)
 2. Browse available tools
 3. Test tools with different inputs
 4. View formatted results
 
-**Note:** Your Symfony application must be running with a proper web server (not `symfony server:start`), as MCP SSE requires processing multiple connections concurrently.
+**Note:** Your Symfony application must be running with a proper web server (not `symfony server:start`), as MCP transport protocols require processing multiple connections concurrently.
 
 ## Advanced Tool Development
 
@@ -498,6 +498,6 @@ final class VersionCheckTool implements StreamableToolInterface
 
 ## Conclusion
 
-MCP Tools provide a powerful way to extend the capabilities of LLMs by giving them access to your application's functionality. By following this guide, you can create well-designed, secure, and effective tools that enhance the capabilities of LLM clients interacting with your Symfony application.
+MCP Tools provide a powerful way to extend the capabilities of LLMs by giving them access to your application's functionality. By following this guide, you can create well-designed, secure, and effective tools that enhance the capabilities of LLM clients interacting with your Symfony application. With support for both SSE and StreamableHTTP Protocol, you can choose the transport method that best fits your application's needs.
 
 For more information about the Model Context Protocol, visit the [official MCP documentation](https://modelcontextprotocol.io/) or explore the [MCP specification](https://github.com/modelcontextprotocol/specification).
