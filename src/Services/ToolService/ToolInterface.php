@@ -17,24 +17,4 @@ trigger_deprecation(
 /**
  * @deprecated The ToolInterface is deprecated. Use StreamableToolInterface instead.
  */
-interface ToolInterface extends StreamableToolInterface
-{
-    /**
-     * Retrieves the name.
-     *
-     * @return string The name.
-     */
-    public function getName(): string;
-
-    public function getDescription(): string;
-
-    public function getInputSchema(): array;
-
-    public function getAnnotations(): ToolAnnotation;
-
-    public function execute(array $arguments): mixed;
-}
-
-interface StreamableToolInterface
-{
-}
+interface ToolInterface extends BaseToolInterface {}

@@ -75,7 +75,7 @@ class ToolRepository
             $tool = $this->container->get($tool);
         }
 
-        if (! $tool instanceof StreamableToolInterface) {
+        if (! $tool instanceof BaseToolInterface) {
             throw new InvalidArgumentException('Tool must implement the '.StreamableToolInterface::class);
         }
 

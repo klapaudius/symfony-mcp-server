@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Command;
 
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
+use KLP\KlpMcpServer\Services\ToolService\BaseToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -158,9 +159,9 @@ EOT
     /**
      * Displays the schema information for a specific tool.
      *
-     * @param  StreamableToolInterface  $tool  The tool instance whose schema is to be displayed.
+     * @param  BaseToolInterface  $tool  The tool instance whose schema is to be displayed.
      */
-    public function displaySchema(StreamableToolInterface $tool): void
+    public function displaySchema(BaseToolInterface $tool): void
     {
         $toolClass = get_class($tool);
         $this->io->text([
@@ -302,7 +303,7 @@ EOT
             try {
                 if (class_exists($toolClass)) {
                     $instance = $this->container->get($toolClass);
-                    if ($instance instanceof StreamableToolInterface) {
+                    if ($instance instanceof BaseToolInterface) {
                         $tools[] = [
                             'name' => $instance->getName(),
                             'class' => $toolClass,
@@ -347,7 +348,7 @@ EOT
             try {
                 if (class_exists($toolClass)) {
                     $instance = $this->container->get($toolClass);
-                    if ($instance instanceof StreamableToolInterface) {
+                    if ($instance instanceof BaseToolInterface) {
                         $name = $instance->getName();
                         $choices[] = "{$name} ({$toolClass})";
                         $validTools[] = $toolClass;
