@@ -11,6 +11,7 @@
         <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
         <service id="KLP\KlpMcpServer\Controllers\StreamableHttpController" class="KLP\KlpMcpServer\Controllers\StreamableHttpController">
             <argument type="service" id="klp_mcp_server.server" />
+            <argument type="service" id="klp_mcp_server.tool_repository" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
@@ -55,6 +56,7 @@
         </service>
         <service id="klp_mcp_server.server" class="KLP\KlpMcpServer\Server\MCPServer">
             <argument type="service" id="klp_mcp_server.protocol" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.progress_notifier_repository" on-invalid="null" />
             <argument type="collection">
                 <argument key="name">%klp_mcp_server.server.name%</argument>
                 <argument key="version">%klp_mcp_server.server.version%</argument>
@@ -63,6 +65,10 @@
 
         <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <service id="klp_mcp_server.progress_notifier_repository" class="KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository">
+            <argument type="service" id="klp_mcp_server.transport.factory" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.capabilities" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">

@@ -14,6 +14,7 @@ use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesReadHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
@@ -53,6 +54,8 @@ final class MCPServer implements MCPServerInterface
 
     private ?string $protocolVersion = null;
 
+    private ProgressNotifierRepository $progressNotifierRepository;
+
     /**
      * Creates a new MCPServer instance.
      *
@@ -63,9 +66,14 @@ final class MCPServer implements MCPServerInterface
      * @param  array{name: string, version: string}  $serverInfo  Associative array containing the server's name and version.
      * @param  ServerCapabilities|null  $capabilities  Optional server capabilities configuration. If null, default capabilities are used.
      */
-    public function __construct(MCPProtocolInterface $protocol, array $serverInfo, ?ServerCapabilitiesInterface $capabilities = null)
+    public function __construct(
+        MCPProtocolInterface $protocol,
+        ProgressNotifierRepository $progressNotifierRepository,
+        array $serverInfo,
+        ?ServerCapabilitiesInterface $capabilities = null)
     {
         $this->protocol = $protocol;
+        $this->progressNotifierRepository = $progressNotifierRepository;
         $this->serverInfo = $serverInfo;
         $this->capabilities = $capabilities ?? new ServerCapabilities;
 
@@ -95,11 +103,13 @@ final class MCPServer implements MCPServerInterface
      */
     public static function create(
         MCPProtocolInterface $protocol,
+        ProgressNotifierRepository $progressNotifierRepository,
         string $name,
         string $version,
         ?ServerCapabilitiesInterface $capabilities = null
     ): self {
-        return new self($protocol, [
+        return new self($protocol,
+            $progressNotifierRepository, [
             'name' => $name,
             'version' => $version,
         ], $capabilities);
@@ -115,7 +125,7 @@ final class MCPServer implements MCPServerInterface
     public function registerToolRepository(ToolRepository $toolRepository): self
     {
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
-        $this->registerRequestHandler(new ToolsCallHandler($toolRepository));
+        $this->registerRequestHandler(new ToolsCallHandler($toolRepository, $this->progressNotifierRepository));
         $this->capabilities->withTools($toolRepository->getToolSchemas());
 
         return $this;

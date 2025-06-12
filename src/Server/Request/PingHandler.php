@@ -14,7 +14,7 @@ class PingHandler implements RequestHandler
         return $method === 'ping';
     }
 
-    public function execute(string $method, string|int $messageId, ?array $params = null): array
+    public function execute(string $method, string $clientId, string|int $messageId, ?array $params = null): array
     {
         $this->transport->send(['id' => $messageId, 'jsonrpc' => '2.0', 'result' => []]);
 

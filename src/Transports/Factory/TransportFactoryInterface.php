@@ -24,6 +24,15 @@ interface TransportFactoryInterface
     public function create(string $protocolVersion): TransportInterface;
 
     /**
+     * Retrieves the currently initialized transport instance.
+     *
+     * @return TransportInterface The currently initialized transport instance.
+     *
+     * @throws TransportFactoryException If the transport has not been initialized yet.
+     */
+    public function get(): TransportInterface;
+
+    /**
      * Returns the list of supported protocol versions.
      *
      * @return array<string> The supported protocol versions.

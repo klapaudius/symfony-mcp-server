@@ -19,7 +19,7 @@ class ToolsListHandler implements RequestHandler
         return $method === 'tools/list';
     }
 
-    public function execute(string $method, string|int $messageId, ?array $params = null): array
+    public function execute(string $method, string $clientId, string|int $messageId, ?array $params = null): array
     {
         return [
             'tools' => $this->toolRepository->getToolSchemas(),

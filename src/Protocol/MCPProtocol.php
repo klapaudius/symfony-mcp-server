@@ -165,7 +165,7 @@ final class MCPProtocol implements MCPProtocolInterface
         try {
             foreach ($this->requestHandlers as $handler) {
                 if ($handler->isHandle(method: $requestData->method)) {
-                    $result = $handler->execute(method: $requestData->method, messageId: $requestData->id, params: $requestData->params);
+                    $result = $handler->execute(method: $requestData->method, clientId: $clientId, messageId: $requestData->id, params: $requestData->params);
 
                     $resultResource = new JsonRpcResultResource(id: $requestData->id, result: $result);
                     $this->pushMessage(clientId: $clientId, message: $resultResource);

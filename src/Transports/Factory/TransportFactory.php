@@ -16,8 +16,11 @@ use Symfony\Component\Routing\RouterInterface;
  *
  * @since 1.2.0
  */
-readonly class TransportFactory implements TransportFactoryInterface
+final class TransportFactory implements TransportFactoryInterface
 {
+    private ?TransportInterface $transport = null;
+    private ?string $protocolVersion = null;
+
     /**
      * Initializes the factory with required dependencies.
      *
@@ -26,11 +29,11 @@ readonly class TransportFactory implements TransportFactoryInterface
      * @param LoggerInterface|null $logger Optional logger for transport operations.
      */
     public function __construct(
-        private RouterInterface      $router,
-        private ?SseAdapterInterface $adapter = null,
-        private ?LoggerInterface     $logger = null,
-        private bool                 $pingEnabled = false,
-        private int                  $pingInterval = 10
+        private readonly RouterInterface      $router,
+        private readonly ?SseAdapterInterface $adapter = null,
+        private readonly ?LoggerInterface     $logger = null,
+        private readonly bool                 $pingEnabled = false,
+        private readonly int                  $pingInterval = 10
     ) {}
 
     /**
@@ -44,8 +47,9 @@ readonly class TransportFactory implements TransportFactoryInterface
      */
     public function create(string $protocolVersion): TransportInterface
     {
+        $this->setProtocolVersion($protocolVersion);
         // Create the appropriate transport based on the protocol version
-        return match ($protocolVersion) {
+        $this->transport = match ($this->protocolVersion) {
             MCPProtocolInterface::PROTOCOL_VERSION_SSE => new SseTransport(
                 router: $this->router,
                 adapter: $this->adapter,
@@ -67,6 +71,23 @@ readonly class TransportFactory implements TransportFactoryInterface
                 )
             ),
         };
+
+        return $this->transport;
+    }
+
+    /**
+     * Retrieves the currently initialized transport instance.
+     *
+     * @return TransportInterface The currently initialized transport instance.
+     *
+     * @throws TransportFactoryException If the transport has not been initialized yet.
+     */
+    public function get(): TransportInterface
+    {
+        if (null === $this->transport) {
+            throw new TransportFactoryException('Transport must be initialized first. Please use create() method.');
+        }
+        return $this->transport;
     }
 
     /**
@@ -80,5 +101,13 @@ readonly class TransportFactory implements TransportFactoryInterface
             MCPProtocolInterface::PROTOCOL_VERSION_SSE,
             MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP
         ];
+    }
+
+    private function setProtocolVersion(string $protocolVersion): void
+    {
+        if ($this->protocolVersion) {
+            throw new InvalidArgumentException('Protocol version already set.');
+        }
+        $this->protocolVersion = $protocolVersion;
     }
 }
