@@ -3,10 +3,16 @@
 namespace {{ namespace }};
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class {{ className }} implements StreamableToolInterface
 {
+    /**
+     * Progress notifier for streaming operations
+     */
+    private ?ProgressNotifier $progressNotifier = null;
+
     /**
      * Get the tool name.
      *
@@ -61,9 +67,9 @@ class {{ className }} implements StreamableToolInterface
      * Execute the tool.
      *
      * @param array $arguments Tool arguments
-     * @return mixed
+     * @return ToolResultInterface
      */
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $param1 = $arguments['param1'] ?? 'default';
 
@@ -82,5 +88,15 @@ class {{ className }} implements StreamableToolInterface
     public function isStreaming(): bool
     {
         return false;
+    }
+
+    /**
+     * Set the progress notifier for streaming operations
+     *
+     * @param ProgressNotifier $progressNotifier The progress notifier instance
+     */
+    public function setProgressNotifier(ProgressNotifier $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
     }
 }
