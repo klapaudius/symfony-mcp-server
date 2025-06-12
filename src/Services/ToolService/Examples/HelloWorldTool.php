@@ -3,6 +3,8 @@
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class HelloWorldTool implements StreamableToolInterface
@@ -36,11 +38,11 @@ class HelloWorldTool implements StreamableToolInterface
         return new ToolAnnotation;
     }
 
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $name = $arguments['name'] ?? 'MCP';
 
-        return "Hello, HelloWorld `{$name}` developer.";
+        return new  TextToolResult("Hello, HelloWorld `{$name}` developer.");
     }
 
     public function isStreaming(): bool

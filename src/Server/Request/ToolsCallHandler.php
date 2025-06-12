@@ -6,6 +6,11 @@ use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Services\ToolService\Result\AudioToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
@@ -53,12 +58,27 @@ class ToolsCallHandler implements RequestHandler
         $result = $tool->execute($arguments);
 
         if ($method === 'tools/call') {
+            if (! $result instanceof ToolResultInterface) {
+                trigger_deprecation(
+                    'klapaudius/symfony-mcp-server',
+                    '1.2',
+                    sprintf(
+                        'The return value of the "%s" method must be an instance of "%s", please use one of this classes instead: "%s".',
+                        get_class($tool)."::execute",
+                        ToolResultInterface::class,
+                        join(', ', [
+                            TextToolResult::class,
+                            ImageToolResult::class,
+                            AudioToolResult::class,
+                            ResourceToolResult::class,
+                        ])
+                    ));
+
+                $result = new TextToolResult(is_string($result) ? $result : json_encode($result));
+            }
             return [
                 'content' => [
-                    [
-                        'type' => 'text',
-                        'text' => is_string($result) ? $result : json_encode($result),
-                    ],
+                    $result->getSanitizedResult(),
                 ],
             ];
         } else {
