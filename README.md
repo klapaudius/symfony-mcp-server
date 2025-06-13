@@ -115,7 +115,7 @@ Enhance your application's security by implementing OAuth2 Authentication. You c
 
 ### Creating and Adding Custom Tools
 
-The package provides convenient Artisan commands to generate new tools:
+The package provides convenient commands to generate new tools:
 
 ```bash
 php bin/console make:mcp-tool MyCustomTool
