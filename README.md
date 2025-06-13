@@ -183,14 +183,16 @@ This will typically open a web interface at `localhost:6274`. To test your MCP s
      - Apache + PHP-FPM
      - Custom Docker setup
      - Any web server that properly supports SSE streaming  
-2. In the Inspector interface, enter your Symfony server's MCP SSE URL (e.g., `http://localhost:8000/mcp/sse`)  
-3. Connect and explore available tools visually
+     - 
+2. In the Inspector interface, chose the protocol and enter the corresponding endpoint url
 
-|  MCP Specification version   | Connection Url pattern                           |
-|:----------------------------:|--------------------------------------------------|
-|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse` |
-| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`     |
-`default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.
+|  MCP Specification version   | Connection Url pattern                                                         |
+|:----------------------------:|--------------------------------------------------------------------------------|
+|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse`                               |
+| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`                                   |
+|                              | `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.  |
+
+3. Connect and explore available tools visually
 
 ## Advanced Features
 
