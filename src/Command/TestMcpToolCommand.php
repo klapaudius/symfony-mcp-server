@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Command;
 
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifier;
 use KLP\KlpMcpServer\Services\ToolService\BaseToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -26,16 +27,34 @@ class TestMcpToolCommand extends Command
 
     private SymfonyStyle $io;
 
-    public function displayResult(mixed $result): void
+    public function displayResult(mixed $result, array $sentNotifications = [], ?StreamableToolInterface $tool = null): void
     {
-        $this->io->success('Tool executed successfully!');
-        $resultText = ['Result:'];
-        if (is_array($result) || is_object($result)) {
-            $resultText[] = json_encode($result, JSON_PRETTY_PRINT);
-        } else {
-            $resultText[] = (string) $result;
+        // Display progress notifications if any were sent
+        if (!empty($sentNotifications)) {
+            $this->io->newLine();
+            $this->io->section('Progress Notifications');
+            $this->io->text(sprintf('Total notifications sent: %d', count($sentNotifications)));
+
+            foreach ($sentNotifications as $index => $notification) {
+                $this->io->text([
+                    sprintf('Notification #%d:', $index + 1),
+                    json_encode($notification, JSON_PRETTY_PRINT),
+                ]);
+            }
         }
+
+        $this->io->success('Tool executed successfully!');
+
+        // Display the tool result
+        $resultText = ['Result:'];
+        $resultText[] = json_encode($result->getSanitizedResult(), JSON_PRETTY_PRINT);
         $this->io->text($resultText);
+
+        // Check if this was a streaming tool that should have sent notifications
+        if ($tool && $tool->isStreaming() && empty($sentNotifications)) {
+            $this->io->newLine();
+            $this->io->warning('No progress notifications were sent by this streaming tool. Consider adding progress notifications to improve user experience during long-running operations.');
+        }
     }
 
     protected function configure(): void
@@ -85,8 +104,20 @@ EOT
                 json_encode($inputData, JSON_PRETTY_PRINT),
             ]);
             try {
+                // Track progress notifications if this is a streaming tool
+                $sentNotifications = [];
+                if ($tool->isStreaming()) {
+                    $progressNotifier = new ProgressNotifier(
+                        'test-progress-token',
+                        function (array $notification) use (&$sentNotifications) {
+                            $sentNotifications[] = $notification;
+                        }
+                    );
+                    $tool->setProgressNotifier($progressNotifier);
+                }
+
                 $result = $tool->execute($inputData);
-                $this->displayResult($result);
+                $this->displayResult($result, $sentNotifications, $tool);
 
                 return command::SUCCESS;
             } catch (\Throwable $e) {
