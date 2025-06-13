@@ -2,8 +2,7 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService;
 
-use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifier;
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 
 interface StreamableToolInterface extends BaseToolInterface
@@ -38,8 +37,8 @@ interface StreamableToolInterface extends BaseToolInterface
      * to send progress updates during streaming operations. The notifier enables the tool
      * to communicate progress information to the client during long-running operations.
      *
-     * @param ProgressNotifier $progressNotifier The progress notifier instance to use for
+     * @param ProgressNotifierInterface $progressNotifier The progress notifier instance to use for
      *                                           sending progress updates during streaming.
      */
-    public function setProgressNotifier(ProgressNotifier $progressNotifier): void;
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void;
 }

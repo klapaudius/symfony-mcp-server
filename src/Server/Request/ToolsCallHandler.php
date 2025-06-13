@@ -57,10 +57,20 @@ class ToolsCallHandler implements RequestHandler
         }
 
         $arguments = $params['arguments'] ?? [];
+        $progressToken = $params["_meta"]['progressToken'] ?? null;
 
         ToolParamsValidator::validate($tool->getInputSchema(), $arguments);
 
+        if ( $tool instanceof StreamableToolInterface
+            && $tool->isStreaming()
+            && $progressToken
+        ) {
+            $progressNotifier = $this->progressNotifierRepository->registerToken($progressToken, $clientId);
+            $tool->setProgressNotifier($progressNotifier);
+        }
         $result = $tool->execute($arguments);
+
+        $this->progressNotifierRepository->unregisterToken($progressToken);
 
         if ($method === 'tools/call') {
             if (! $result instanceof ToolResultInterface) {

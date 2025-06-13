@@ -117,7 +117,15 @@ abstract class AbstractTransport implements TransportInterface
     public function send(string|array $message): void
     {
         if (is_array($message)) {
-            $message = json_encode(array_merge(['id' => uniqid('r')], $message));
+            // Check if this is a notification (has method but no id)
+            $isNotification = isset($message['method']) && !isset($message['id']);
+
+            // Only add ID to non-notification messages
+            if (!$isNotification) {
+                $message = array_merge(['id' => uniqid('r')], $message);
+            }
+
+            $message = json_encode($message);
         }
 
         $this->sendEvent(event: 'message', data: $message);
@@ -244,7 +252,6 @@ abstract class AbstractTransport implements TransportInterface
     public function receive(): array
     {
         if ($this->adapter !== null && $this->clientId !== null && $this->connected) {
-            $this->logger?->debug($this->getTransportName() . '::receive for client: '.$this->clientId);
             try {
                 $messages = $this->adapter->receiveMessages($this->clientId);
 

@@ -5,7 +5,6 @@ namespace KLP\KlpMcpServer\Controllers;
 use JsonException;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
-use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +16,6 @@ final readonly class StreamableHttpController
 {
     public function __construct(
         private MCPServerInterface $server,
-        private ToolRepository $toolRepository,
         private ?LoggerInterface $logger = null
     ) {}
 
@@ -53,28 +51,15 @@ final readonly class StreamableHttpController
             $willStream = !isset($input['jsonrpc']) && isset($input[0]['jsonrpc']);
             $messages = $willStream ? $input : [$input];
 
-            foreach ($messages as $message) {
-                $this->server->requestMessage(clientId: $clientId, message: $message);
-                if ($message['method'] === 'tools/call') {
-                    $tool = $this->toolRepository->getTool($message['params']['name']);
-                    $willStream |= $tool?->isStreaming();
+            return new StreamedResponse(function () use ($clientId, $messages) {
+                foreach ($messages as $message) {
+                    $this->server->requestMessage(clientId: $clientId, message: $message);
                 }
-            }
-
-            if ($willStream) {
-                return new StreamedResponse(fn() => $this->server->connect(), headers: [
-                    'Content-Type' => 'text/event-stream',
-                    'Cache-Control' => 'no-cache, private',
-                    'X-Accel-Buffering' => 'no',
-                ]);
-            } else {
-                $result = $this->server->getResponseResult($clientId);
-                if (!isset($result[0])) {
-                    throw new StreamableHttpTransportException('Result is not an array');
-                }
-                $this->logger->debug('Streamable HTTP: Send JsonResponse data: '.json_encode($result[0]));
-                return new JsonResponse($result[0]);
-            }
+            }, headers: [
+                'Content-Type' => 'text/event-stream',
+                'Cache-Control' => 'no-cache, private',
+                'X-Accel-Buffering' => 'no',
+            ]);
         } catch (JsonException|StreamableHttpTransportException $e) {
             $message = $e instanceof JsonException ? 'Parse error' : $e->getMessage();
             return new JsonResponse(['jsonrpc' => 2.0, 'error' => ['code' => -32700, 'message' => $message]], 400);

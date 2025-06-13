@@ -95,8 +95,12 @@ final class StreamableHttpTransport extends AbstractTransport implements Streama
         if ($messageString === false) {
             throw new StreamableHttpTransportException('Failed to JSON encode message for pushing: '.json_last_error_msg());
         }
+        $this->logger?->debug('Streamable HTTP Transport::pushMessage: clientId: '.$clientId . " message: $messageString");
 
         $this->adapter->pushMessage(clientId: $clientId, message: $messageString);
+
+        $this->receive();
+        $this->send(message: $message);
     }
 
     /**
@@ -107,5 +111,13 @@ final class StreamableHttpTransport extends AbstractTransport implements Streama
     protected function getTransportName(): string
     {
         return 'Streamable HTTP Transport';
+    }
+
+    public function sendHeaders(): void
+    {
+        set_time_limit(0);
+        ini_set('output_buffering', 'off');
+        ini_set('zlib.output_compression', false);
+        ini_set('zlib.default_socket_timeout', 5);
     }
 }

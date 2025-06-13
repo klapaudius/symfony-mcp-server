@@ -273,6 +273,7 @@ final class MCPProtocol implements MCPProtocolInterface
             $this->transport = $this->transportFactory->create($version);
             if ($this->transport instanceof StreamableHttpTransportInterface) {
                 $this->transport->setConnected(true);
+                $this->transport->sendHeaders();
             }
 
             $this->transport->onMessage([$this, 'handleMessage']);

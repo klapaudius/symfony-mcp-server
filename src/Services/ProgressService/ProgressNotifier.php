@@ -11,7 +11,7 @@ namespace KLP\KlpMcpServer\Services\ProgressService;
  * @internal
  * @see https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
  */
-class ProgressNotifier
+class ProgressNotifier implements ProgressNotifierInterface
 {
     private array $handlers = [];
     private int $lastProgress = -1;

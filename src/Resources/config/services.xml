@@ -11,7 +11,6 @@
         <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
         <service id="KLP\KlpMcpServer\Controllers\StreamableHttpController" class="KLP\KlpMcpServer\Controllers\StreamableHttpController">
             <argument type="service" id="klp_mcp_server.server" />
-            <argument type="service" id="klp_mcp_server.tool_repository" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
