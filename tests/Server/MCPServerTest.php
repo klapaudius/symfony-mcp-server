@@ -15,6 +15,7 @@ use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
 use KLP\KlpMcpServer\Server\ServerCapabilities;
 use KLP\KlpMcpServer\Server\ServerCapabilitiesInterface;
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
@@ -33,9 +34,11 @@ class MCPServerTest extends TestCase
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
         $mockToolRepository = $this->createMock(ToolRepository::class);
 
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+
         $invocations = [
             new ToolsListHandler($mockToolRepository),
-            new ToolsCallHandler($mockToolRepository),
+            new ToolsCallHandler($mockToolRepository, $mockProgressNotifierRepository),
         ];
         $mockProtocol->expects($matcher = $this->exactly(count($invocations)))
             ->method('registerRequestHandler')
@@ -49,6 +52,7 @@ class MCPServerTest extends TestCase
         $instance = $server->newInstanceWithoutConstructor();
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('progressNotifierRepository')->setValue($instance, $mockProgressNotifierRepository);
 
         // Act
         $instance->registerToolRepository($mockToolRepository);
@@ -117,11 +121,13 @@ class MCPServerTest extends TestCase
         // Arrange
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
         $mockToolRepository = $this->createMock(ToolRepository::class);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
 
         $server = new ReflectionClass(MCPServer::class);
         $instance = $server->newInstanceWithoutConstructor();
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('progressNotifierRepository')->setValue($instance, $mockProgressNotifierRepository);
 
         // Act
         $result = $instance->registerToolRepository($mockToolRepository);
@@ -163,7 +169,8 @@ class MCPServerTest extends TestCase
         $version = '1.0';
 
         // Act
-        $server = MCPServer::create($mockProtocol, $name, $version);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $name, $version);
 
         // Assert
         $this->assertInstanceOf(MCPServer::class, $server);
@@ -183,7 +190,8 @@ class MCPServerTest extends TestCase
         $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
 
         // Act
-        $server = MCPServer::create($mockProtocol, $name, $version, $mockCapabilities);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $name, $version, $mockCapabilities);
 
         // Assert
         $this->assertInstanceOf(MCPServer::class, $server);
@@ -421,7 +429,8 @@ class MCPServerTest extends TestCase
             ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
-        $server = MCPServer::create($mockProtocol, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
         $initializeData = new InitializeData('2.0', ['mock-capability' => true]);
 
         // Act
@@ -444,7 +453,8 @@ class MCPServerTest extends TestCase
         $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
         $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
 
-        $server = MCPServer::create($mockProtocol, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
         $initializeData = new InitializeData('2.0', ['mock-capability' => true]);
 
         $server->initialize($initializeData);
@@ -476,7 +486,8 @@ class MCPServerTest extends TestCase
             ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
-        $server = MCPServer::create($mockProtocol, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
         $initializeData = new InitializeData('2024-11-05', ['mock-capability' => true]);
 
         // Act

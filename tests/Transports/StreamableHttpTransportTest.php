@@ -3,10 +3,8 @@
 namespace KLP\KlpMcpServer\Tests\Transports;
 
 use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
-use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\StreamableHttpTransport;
-use KLP\KlpMcpServer\Transports\StreamableHttpTransportInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -182,7 +180,13 @@ class StreamableHttpTransportTest extends TestCase
             ->with($clientId, $expectedMessage);
 
         // Act
+        ob_start();
         $this->instance->pushMessage($clientId, $message);
+        $output = ob_get_clean();
+
+        // Verify SSE output is generated
+        $this->assertStringContainsString('event: message', $output);
+        $this->assertStringContainsString('data: {"id":"', $output);
     }
 
     /**

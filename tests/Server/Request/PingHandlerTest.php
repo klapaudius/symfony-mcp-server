@@ -4,8 +4,10 @@ namespace KLP\KlpMcpServer\Tests\Server\Request;
 
 use KLP\KlpMcpServer\Server\Request\PingHandler;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
+use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
+#[Small]
 class PingHandlerTest extends TestCase
 {
     private SseTransportInterface $transportMock;
@@ -29,6 +31,7 @@ class PingHandlerTest extends TestCase
     {
         $messageId = '12345';
         $method = 'ping';
+        $clientId = 'test-client';
         $params = null;
 
         // Expect the transport to send the correct response
@@ -37,7 +40,7 @@ class PingHandlerTest extends TestCase
             ->method('send')
             ->with($expectedResponse);
 
-        $result = $this->pingHandler->execute($method, $messageId, $params);
+        $result = $this->pingHandler->execute($method, $clientId, $messageId, $params);
 
         // Assert that the method returns an empty array
         $this->assertSame([], $result);

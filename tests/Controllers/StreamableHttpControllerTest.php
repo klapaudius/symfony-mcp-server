@@ -2,11 +2,10 @@
 
 namespace KLP\KlpMcpServer\Tests\Controllers;
 
-use Exception;
-use JsonException;
 use KLP\KlpMcpServer\Controllers\StreamableHttpController;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
+use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -53,7 +52,6 @@ class StreamableHttpControllerTest extends TestCase
         // Create a POST request with some content
         $clientId = 'test-client-id';
         $message = ['jsonrpc' => '2.0', 'method' => 'test', 'params' => [], 'id' => 1];
-        $responseResult = [['jsonrpc' => '2.0', 'result' => 'success', 'id' => 1]];
 
         $request = new Request(
             [], // query parameters
@@ -76,17 +74,19 @@ class StreamableHttpControllerTest extends TestCase
             ->method('requestMessage')
             ->with($clientId, $message);
 
-        $this->mockServer->expects($this->once())
-            ->method('getResponseResult')
-            ->with($clientId)
-            ->willReturn($responseResult);
-
         // Call handle() which should internally call postHandle()
         $response = $this->controller->handle($request);
 
         // Verify the response is what we expect from postHandle()
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($responseResult[0], json_decode($response->getContent(), true));
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
+        $this->assertEquals('no-cache, private', $response->headers->get('Cache-Control'));
+        $this->assertEquals('no', $response->headers->get('X-Accel-Buffering'));
+
+        // Execute the streamed response to trigger the callback
+        ob_start();
+        $response->sendContent();
+        ob_end_clean();
     }
 
     public function test_gethandle(): void
@@ -109,7 +109,6 @@ class StreamableHttpControllerTest extends TestCase
         $clientId = 'test-client-id';
         // The controller checks for 'jsonrpc' key to determine if it's a single message
         $message = ['jsonrpc' => '2.0', 'method' => 'test', 'params' => [], 'id' => 1];
-        $responseResult = [['jsonrpc' => '2.0', 'result' => 'success', 'id' => 1]];
 
         // Create request with headers and content
         $request = new Request(
@@ -135,10 +134,6 @@ class StreamableHttpControllerTest extends TestCase
         $this->mockServer->expects($this->once())
             ->method('requestMessage');
 
-        $this->mockServer->expects($this->once())
-            ->method('getResponseResult')
-            ->willReturn($responseResult);
-
         // Set up logger mock expectations - we can't be too specific about the parameters
         $this->mockLogger->expects($this->atLeastOnce())
             ->method('debug');
@@ -146,16 +141,15 @@ class StreamableHttpControllerTest extends TestCase
         // Call the method and verify response
         $response = $this->controller->postHandle($request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
+        $this->assertEquals('no-cache, private', $response->headers->get('Cache-Control'));
+        $this->assertEquals('no', $response->headers->get('X-Accel-Buffering'));
 
-        // Instead of checking the exact content, just verify it's a valid JSON response
-        $content = json_decode($response->getContent(), true);
-        $this->assertIsArray($content);
-        // The response might have either 'jsonrpc' or 'jsonrpc' key depending on the implementation
-        $this->assertTrue(
-            isset($content['jsonrpc']) || isset($content['jsonrpc']),
-            'Response should have either jsonrpc or jsonrpc key'
-        );
+        // Execute the streamed response to trigger the callback
+        ob_start();
+        $response->sendContent();
+        ob_end_clean();
     }
 
     public function test_postHandle_with_multiple_messages(): void
@@ -197,7 +191,7 @@ class StreamableHttpControllerTest extends TestCase
                 return true;
             }));
 
-        $this->mockServer->expects($this->once())
+        $this->mockServer->expects($this->never())
             ->method('connect');
 
         // Set up logger mock expectations
@@ -224,7 +218,6 @@ class StreamableHttpControllerTest extends TestCase
     {
         $clientId = 'fallback-client-id';
         $message = ['jsonrpc' => '2.0', 'method' => 'test', 'params' => [], 'id' => 1];
-        $responseResult = [['jsonrpc' => '2.0', 'result' => 'success', 'id' => 1]];
 
         // Create request without mcp-session-id header
         $request = new Request(
@@ -250,16 +243,18 @@ class StreamableHttpControllerTest extends TestCase
             ->method('requestMessage')
             ->with($clientId, $message);
 
-        $this->mockServer->expects($this->once())
-            ->method('getResponseResult')
-            ->with($clientId)
-            ->willReturn($responseResult);
-
         // Call the method and verify response
         $response = $this->controller->postHandle($request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($responseResult[0], json_decode($response->getContent(), true));
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
+        $this->assertEquals('no-cache, private', $response->headers->get('Cache-Control'));
+        $this->assertEquals('no', $response->headers->get('X-Accel-Buffering'));
+
+        // Execute the streamed response to trigger the callback
+        ob_start();
+        $response->sendContent();
+        ob_end_clean();
     }
 
     public function test_postHandle_with_json_parse_error(): void
@@ -303,30 +298,37 @@ class StreamableHttpControllerTest extends TestCase
         );
         $request->headers->set('mcp-session-id', $clientId);
 
-        // Set up server mock to return a result that will trigger the exception
+        // Set up server mock to throw an exception
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
 
         $this->mockServer->expects($this->once())
             ->method('requestMessage')
-            ->with($clientId, $message);
-
-        // Return an empty array to trigger the "Result is not an array" exception
-        // The controller checks for !isset($result[0])
-        $this->mockServer->expects($this->once())
-            ->method('getResponseResult')
-            ->with($clientId)
-            ->willReturn([]);
+            ->with($clientId, $message)
+            ->willThrowException(new StreamableHttpTransportException('Test exception'));
 
         // Call the method and verify response
         $response = $this->controller->postHandle($request);
 
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(400, $response->getStatusCode());
-        $this->assertEquals(
-            ['jsonrpc' => 2.0, 'error' => ['code' => -32700, 'message' => 'Result is not an array']],
-            json_decode($response->getContent(), true)
-        );
+        // The response is still a StreamedResponse because exceptions in callbacks are not caught
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
+        $this->assertEquals('no-cache, private', $response->headers->get('Cache-Control'));
+        $this->assertEquals('no', $response->headers->get('X-Accel-Buffering'));
+
+        // The exception will be thrown when the callback is executed
+        $this->expectException(StreamableHttpTransportException::class);
+        $this->expectExceptionMessage('Test exception');
+
+        try {
+            ob_start();
+            $response->sendContent();
+        } finally {
+            // Always clean up the output buffer, even if an exception is thrown
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+        }
     }
 }

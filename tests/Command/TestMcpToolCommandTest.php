@@ -7,6 +7,8 @@ use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -464,7 +466,7 @@ class TestMcpToolCommandTest extends TestCase
     {
         $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getInputSchema')->willReturn([]);
-        $toolMock->method('execute')->with([])->willReturn(['success' => true]);
+        $toolMock->method('execute')->with([])->willReturn(new TextToolResult('Tool executed successfully'));
 
         $this->containerMock
             ->method('get')
@@ -842,5 +844,490 @@ class TestMcpToolCommandTest extends TestCase
         $result = $this->command->askForInputData($schema);
 
         $this->assertEquals(['age' => 0], $result);
+    }
+
+    /**
+     * Tests displayResult method with no notifications and non-streaming tool.
+     */
+    public function test_display_result_no_notifications_non_streaming(): void
+    {
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('isStreaming')->willReturn(false);
+
+        $resultMock = $this->createMock(ToolResultInterface::class);
+        $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
+
+        $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
+        $this->ioMock->expects($this->once())->method('text')->with([
+            'Result:',
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+        ]);
+        $this->ioMock->expects($this->never())->method('newLine');
+        $this->ioMock->expects($this->never())->method('section');
+        $this->ioMock->expects($this->never())->method('warning');
+
+        $this->command->displayResult($resultMock, [], $toolMock);
+    }
+
+    /**
+     * Tests displayResult method with notifications sent.
+     */
+    public function test_display_result_with_notifications(): void
+    {
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('isStreaming')->willReturn(true);
+
+        $resultMock = $this->createMock(ToolResultInterface::class);
+        $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
+
+        $notifications = [
+            ['type' => 'progress', 'value' => 50],
+            ['type' => 'progress', 'value' => 100]
+        ];
+
+        $this->ioMock->expects($this->once())->method('newLine');
+        $this->ioMock->expects($this->once())->method('section')->with('Progress Notifications');
+
+        $callCount = 0;
+        $this->ioMock->expects($this->exactly(4))->method('text')
+            ->willReturnCallback(function ($text) use (&$callCount) {
+                $callCount++;
+                if ($callCount === 1) {
+                    $this->assertEquals('Total notifications sent: 2', $text);
+                } elseif ($callCount === 2) {
+                    $expected = [
+                        'Notification #1:',
+                        json_encode(['type' => 'progress', 'value' => 50], JSON_PRETTY_PRINT)
+                    ];
+                    $this->assertEquals($expected, $text);
+                } elseif ($callCount === 3) {
+                    $expected = [
+                        'Notification #2:',
+                        json_encode(['type' => 'progress', 'value' => 100], JSON_PRETTY_PRINT)
+                    ];
+                    $this->assertEquals($expected, $text);
+                } elseif ($callCount === 4) {
+                    $expected = [
+                        'Result:',
+                        json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+                    ];
+                    $this->assertEquals($expected, $text);
+                }
+                return true;
+            });
+        $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
+
+        $this->command->displayResult($resultMock, $notifications, $toolMock);
+    }
+
+    /**
+     * Tests displayResult method with streaming tool but no notifications sent.
+     */
+    public function test_display_result_streaming_tool_no_notifications(): void
+    {
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('isStreaming')->willReturn(true);
+
+        $resultMock = $this->createMock(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
+
+        $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
+        $this->ioMock->expects($this->once())->method('text')->with([
+            'Result:',
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+        ]);
+        $this->ioMock->expects($this->once())->method('newLine');
+        $this->ioMock->expects($this->once())->method('warning')
+            ->with('No progress notifications were sent by this streaming tool. Consider adding progress notifications to improve user experience during long-running operations.');
+
+        $this->command->displayResult($resultMock, [], $toolMock);
+    }
+
+    /**
+     * Tests displayResult method without tool parameter.
+     */
+    public function test_display_result_without_tool(): void
+    {
+        $resultMock = $this->createMock(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
+
+        $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
+        $this->ioMock->expects($this->once())->method('text')->with([
+            'Result:',
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+        ]);
+        $this->ioMock->expects($this->never())->method('warning');
+
+        $this->command->displayResult($resultMock);
+    }
+
+    /**
+     * Tests array schema display with complex items structure.
+     */
+    public function test_display_schema_for_array_with_nested_items(): void
+    {
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('getName')->willReturn('ComplexArrayTool');
+        $toolMock->method('getDescription')->willReturn('A tool with complex array schema.');
+        $toolMock->method('getInputSchema')->willReturn([
+            'properties' => [
+                'items' => [
+                    'type' => 'array',
+                    'description' => 'An array of complex objects.',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'id' => ['type' => 'integer'],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $expectedMessages = [
+            'Input schema:',
+            '- items: array (optional)',
+            '  Description: An array of complex objects.',
+            '  Items: object',
+            '  Item Properties:',
+            '    - id: integer (optional)',
+            '      Description: ',
+            '    - name: string (optional)',
+            '      Description: ',
+        ];
+
+        $this->ioMock->expects($this->exactly(2))->method('text');
+        $this->ioMock->expects($this->once())->method('newLine');
+
+        $this->command->displaySchema($toolMock);
+    }
+
+    /**
+     * Tests askForTool when no tools are configured.
+     */
+    public function test_ask_for_tool_no_tools_configured_returns_null(): void
+    {
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([]);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+
+        $result = $this->invokePrivateMethod('askForTool');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests askForTool when tools exist but none can be loaded.
+     */
+    public function test_ask_for_tool_no_valid_tools_returns_null(): void
+    {
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([HelloWorldTool::class]);
+
+        $this->containerMock
+            ->method('get')
+            ->willThrowException(new \RuntimeException('Tool not loadable'));
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('No valid MCP tools found.');
+
+        $result = $this->invokePrivateMethod('askForTool');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests askForTool with valid tools and user selection.
+     */
+    public function test_ask_for_tool_with_valid_tools_returns_selected(): void
+    {
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('getName')->willReturn('TestTool');
+
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn([HelloWorldTool::class]);
+
+        $this->containerMock
+            ->method('get')
+            ->with(HelloWorldTool::class)
+            ->willReturn($toolMock);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('choice')
+            ->with('Select a tool to test', ['TestTool ('.HelloWorldTool::class.')'])
+            ->willReturn('TestTool ('.HelloWorldTool::class.')');
+
+        $result = $this->invokePrivateMethod('askForTool');
+
+        $this->assertEquals(HelloWorldTool::class, $result);
+    }
+
+    /**
+     * Tests askForJsonInput with valid array input.
+     */
+    public function test_ask_for_json_input_valid_array(): void
+    {
+        $this->ioMock
+            ->method('text')
+            ->with('Enter JSON for object (or leave empty to skip):');
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('["item1", "item2"]');
+
+        $result = $this->invokePrivateMethod('askForJsonInput', [[], 'array', false]);
+
+        $this->assertEquals(['item1', 'item2'], $result);
+    }
+
+    /**
+     * Tests askForJsonInput with object when array expected.
+     */
+    public function test_ask_for_json_input_object_when_array_expected(): void
+    {
+        $this->ioMock
+            ->method('text')
+            ->with('Enter JSON for object (or leave empty to skip):');
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('{"not": "array"}');
+
+        // This should actually succeed since PHP treats objects as arrays
+        $result = $this->invokePrivateMethod('askForJsonInput', [[], 'array', false]);
+
+        $this->assertEquals(['not' => 'array'], $result);
+    }
+
+    /**
+     * Tests askForJsonInput with required field but empty input.
+     */
+    public function test_ask_for_json_input_required_empty_input(): void
+    {
+        $this->ioMock
+            ->method('text')
+            ->with('Enter JSON for object (or leave empty to skip):');
+        $this->ioMock
+            ->method('ask')
+            ->with('JSON')
+            ->willReturn('');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('Required field skipped. Using empty object.');
+
+        $result = $this->invokePrivateMethod('askForJsonInput', [[], 'object', true]);
+
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * Tests askForNumericInput with default value.
+     */
+    public function test_ask_for_numeric_input_with_default(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value (default: 42)')
+            ->willReturn('');
+
+        $result = $this->invokePrivateMethod('askForNumericInput', [42, 'integer', false]);
+
+        $this->assertEquals(42, $result);
+    }
+
+    /**
+     * Tests askForNumericInput with valid float.
+     */
+    public function test_ask_for_numeric_input_valid_float(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('3.14');
+
+        $result = $this->invokePrivateMethod('askForNumericInput', ['', 'number', false]);
+
+        $this->assertEquals(3.14, $result);
+    }
+
+    /**
+     * Tests askForNumericInput with non-numeric required field.
+     */
+    public function test_ask_for_numeric_input_non_numeric_required(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('not-a-number');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('Required field skipped. Using 0.');
+
+        $result = $this->invokePrivateMethod('askForNumericInput', ['', 'integer', true]);
+
+        $this->assertEquals(0, $result);
+    }
+
+    /**
+     * Tests askForStandardInput with default value.
+     */
+    public function test_ask_for_standard_input_with_default(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value (default: hello)')
+            ->willReturn('');
+
+        $result = $this->invokePrivateMethod('askForStandardInput', ['hello', false]);
+
+        $this->assertEquals('hello', $result);
+    }
+
+    /**
+     * Tests askForStandardInput with user input.
+     */
+    public function test_ask_for_standard_input_with_user_input(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('user-input');
+
+        $result = $this->invokePrivateMethod('askForStandardInput', ['', false]);
+
+        $this->assertEquals('user-input', $result);
+    }
+
+    /**
+     * Tests askForStandardInput with required field but empty input.
+     */
+    public function test_ask_for_standard_input_required_empty(): void
+    {
+        $this->ioMock
+            ->method('ask')
+            ->with('Value')
+            ->willReturn('');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('Required field skipped. Using empty string.');
+
+        $result = $this->invokePrivateMethod('askForStandardInput', ['', true]);
+
+        $this->assertEquals('', $result);
+    }
+
+    /**
+     * Tests askForInputData with number type property.
+     */
+    public function test_ask_for_input_data_processes_number_property(): void
+    {
+        $schema = [
+            'properties' => [
+                'price' => [
+                    'type' => 'number',
+                    'description' => 'Enter price',
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('ask')
+            ->with('Value', false)
+            ->willReturn('19.99');
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['price' => 19.99], $result);
+    }
+
+    /**
+     * Tests askForInputData with boolean default value.
+     */
+    public function test_ask_for_input_data_processes_boolean_with_default(): void
+    {
+        $schema = [
+            'properties' => [
+                'enabled' => [
+                    'type' => 'boolean',
+                    'description' => 'Is enabled?',
+                    'default' => true,
+                ],
+            ],
+        ];
+        $this->ioMock
+            ->method('confirm')
+            ->with('Value (yes/no)', true)
+            ->willReturn(false);
+
+        $result = $this->command->askForInputData($schema);
+
+        $this->assertEquals(['enabled' => false], $result);
+    }
+
+    /**
+     * Tests getInputDataFromOption with TestMcpToolCommandException.
+     */
+    public function test_get_input_data_from_option_with_exception(): void
+    {
+        $this->inputMock
+            ->method('getOption')
+            ->with('input')
+            ->willReturn('{"invalid": json}');
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Invalid JSON input:'));
+
+        $result = $this->invokePrivateMethod('getInputDataFromOption');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests listAllTools with class_exists returning false.
+     */
+    public function test_list_all_tools_class_does_not_exist(): void
+    {
+        $this->inputMock
+            ->expects($this->once())
+            ->method('getOption')
+            ->with('list')
+            ->willReturn('list');
+
+        $this->containerMock
+            ->method('getParameter')
+            ->with('klp_mcp_server.tools')
+            ->willReturn(['NonExistentClass']);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('info')
+            ->with('Available MCP Tools:');
+        $this->ioMock
+            ->expects($this->once())
+            ->method('table')
+            ->with(['Name', 'Class', 'Description'], []);
+
+        $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
 }

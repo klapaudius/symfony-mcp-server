@@ -237,7 +237,7 @@ class MCPProtocolTest extends TestCase
 
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', 1, ['param1' => 'value1'])->willReturn(['response' => 'ok']);
+        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'value1'])->willReturn(['response' => 'ok']);
         $this->mcpProtocol->registerRequestHandler($mockHandler);
 
         $this->mockTransport
@@ -368,7 +368,7 @@ class MCPProtocolTest extends TestCase
 
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', 1, ['param1' => 'invalid'])
+        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new ToolParamsValidatorException('An error occurred.', ['Invalid params param1']));
 
         $this->mockTransport
@@ -397,7 +397,7 @@ class MCPProtocolTest extends TestCase
         $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', 1, ['param1' => 'invalid'])
+        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new \Exception('An error occurred.'));
 
         $this->mockTransport
