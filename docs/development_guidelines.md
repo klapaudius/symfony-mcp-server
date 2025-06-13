@@ -51,7 +51,7 @@ This document provides essential information for developers working on the Symfo
        ping:
            enabled: true
            interval: 30
-       server_provider: 'streamable_http'  # Available options: 'sse', 'streamable_http'
+       server_providers: ['streamable_http', 'sse']  # Available options: 'sse', 'streamable_http'
        sse_adapter: 'cache'
        adapters:
            redis:
@@ -60,6 +60,7 @@ This document provides essential information for developers working on the Symfo
                ttl: 100
        tools:
            - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+           - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
            - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
    ```
 

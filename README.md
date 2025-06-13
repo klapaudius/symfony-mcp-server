@@ -41,6 +41,8 @@ Key benefits:
 
 - Real-time communication support through StreamableHTTP and/or Server-Sent Events (SSE) integration
 - Implementation of tools and resources compliant with Model Context Protocol specifications
+- Support of streaming tools with progres notifications
+- Support different types of tool results such as Text, Image, Audio, or Resource
 - Adapter-based design architecture with Pub/Sub messaging pattern
 
 ## Requirements
@@ -70,6 +72,7 @@ Key benefits:
                 ttl: 100
         tools:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
         resources:
             - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
@@ -128,6 +131,9 @@ This command:
 You can also manually create and register tools in `config/packages/klp_mcp_server.yaml`:
 
 ```php
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class MyCustomTool implements StreamableToolInterface
@@ -156,6 +162,7 @@ This helps you rapidly develop and debug tools by:
 - Showing the tool's input schema and validating inputs
 - Executing the tool with your provided input
 - Displaying formatted results or detailed error information
+- Displaying progress notifications for streaming tool
 - Supporting complex input types including objects and arrays
 
 **For deep diving into tools creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
