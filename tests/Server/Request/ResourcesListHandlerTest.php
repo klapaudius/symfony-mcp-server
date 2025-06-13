@@ -41,7 +41,7 @@ class ResourcesListHandlerTest extends TestCase
             ->method('getResourceSchemas')
             ->willReturn($expectedSchemas);
 
-        $result = $this->resourcesListHandler->execute('resources/list', 123);
+        $result = $this->resourcesListHandler->execute('resources/list', 'test-client', 123);
 
         $this->assertArrayHasKey('resources', $result);
         $this->assertEquals($expectedSchemas, $result['resources']);

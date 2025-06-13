@@ -8,13 +8,13 @@ use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
-use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\Request\InitializeHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesReadHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
@@ -52,12 +52,9 @@ final class MCPServer implements MCPServerInterface
      */
     private bool $initialized = false;
 
-    /**
-     * Capabilities reported by the client during initialization. Null if not initialized.
-     *
-     * @var array<string, mixed>|null
-     */
-    private ?array $clientCapabilities = null;
+    private ?string $protocolVersion = null;
+
+    private ProgressNotifierRepository $progressNotifierRepository;
 
     /**
      * Creates a new MCPServer instance.
@@ -69,9 +66,14 @@ final class MCPServer implements MCPServerInterface
      * @param  array{name: string, version: string}  $serverInfo  Associative array containing the server's name and version.
      * @param  ServerCapabilities|null  $capabilities  Optional server capabilities configuration. If null, default capabilities are used.
      */
-    public function __construct(MCPProtocolInterface $protocol, array $serverInfo, ?ServerCapabilitiesInterface $capabilities = null)
+    public function __construct(
+        MCPProtocolInterface $protocol,
+        ProgressNotifierRepository $progressNotifierRepository,
+        array $serverInfo,
+        ?ServerCapabilitiesInterface $capabilities = null)
     {
         $this->protocol = $protocol;
+        $this->progressNotifierRepository = $progressNotifierRepository;
         $this->serverInfo = $serverInfo;
         $this->capabilities = $capabilities ?? new ServerCapabilities;
 
@@ -101,11 +103,13 @@ final class MCPServer implements MCPServerInterface
      */
     public static function create(
         MCPProtocolInterface $protocol,
+        ProgressNotifierRepository $progressNotifierRepository,
         string $name,
         string $version,
         ?ServerCapabilitiesInterface $capabilities = null
     ): self {
-        return new self($protocol, [
+        return new self($protocol,
+            $progressNotifierRepository, [
             'name' => $name,
             'version' => $version,
         ], $capabilities);
@@ -121,7 +125,7 @@ final class MCPServer implements MCPServerInterface
     public function registerToolRepository(ToolRepository $toolRepository): self
     {
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
-        $this->registerRequestHandler(new ToolsCallHandler($toolRepository));
+        $this->registerRequestHandler(new ToolsCallHandler($toolRepository, $this->progressNotifierRepository));
         $this->capabilities->withTools($toolRepository->getToolSchemas());
 
         return $this;
@@ -142,7 +146,7 @@ final class MCPServer implements MCPServerInterface
      */
     public function connect(): void
     {
-        $this->protocol->connect();
+        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
     }
 
     /**
@@ -182,8 +186,7 @@ final class MCPServer implements MCPServerInterface
 
         $this->initialized = true;
 
-        $this->clientCapabilities = $data->capabilities;
-        $protocolVersion = $data->protocolVersion ?? MCPProtocol::PROTOCOL_VERSION;
+        $protocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
 
         return new InitializeResource(
             $this->serverInfo['name'],
@@ -203,5 +206,26 @@ final class MCPServer implements MCPServerInterface
     public function requestMessage(string $clientId, array $message): void
     {
         $this->protocol->requestMessage(clientId: $clientId, message: $message);
+    }
+
+    public function getResponseResult(string $clientId): array
+    {
+        return $this->protocol->getResponseResult($clientId);
+    }
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string
+    {
+        return $this->protocol->getClientId();
+    }
+
+    public function setProtocolVersion(string $protocolVersion): void
+    {
+        $this->protocolVersion = $protocolVersion;
+        $this->protocol->setProtocolVersion($protocolVersion);
     }
 }

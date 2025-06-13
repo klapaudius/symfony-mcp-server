@@ -97,4 +97,11 @@ interface TransportInterface
      * @throws Exception If the message cannot be pushed to the client
      */
     public function pushMessage(string $clientId, array $message): void;
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string;
 }

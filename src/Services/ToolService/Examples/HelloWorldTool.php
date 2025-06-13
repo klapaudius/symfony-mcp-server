@@ -2,10 +2,13 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class HelloWorldTool implements ToolInterface
+class HelloWorldTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -36,10 +39,20 @@ class HelloWorldTool implements ToolInterface
         return new ToolAnnotation;
     }
 
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $name = $arguments['name'] ?? 'MCP';
 
-        return "Hello, HelloWorld `{$name}` developer.";
+        return new  TextToolResult("Hello, HelloWorld `{$name}` developer.");
+    }
+
+    public function isStreaming(): bool
+    {
+        return false;
+    }
+
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        // nothing to do here this tool is not streaming.
     }
 }

@@ -15,19 +15,20 @@ use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Server\Notification\InitializedHandler;
 use KLP\KlpMcpServer\Server\Notification\PongHandler;
 use KLP\KlpMcpServer\Server\Request\PingHandler;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
+use KLP\KlpMcpServer\Transports\StreamableHttpTransportInterface;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use KLP\KlpMcpServer\Utils\DataUtil;
 
 /**
  * MCPProtocol
  *
+ * @internal
  * @see https://modelcontextprotocol.io/docs/concepts/architecture
  */
 final class MCPProtocol implements MCPProtocolInterface
 {
-    public const PROTOCOL_VERSION = '2024-11-05';
-
     /**
      * @var RequestHandler[]
      */
@@ -38,18 +39,14 @@ final class MCPProtocol implements MCPProtocolInterface
      */
     private array $notificationHandlers = [];
 
+    private ?TransportInterface $transport = null;
+
     /**
-     * @param  TransportInterface  $transport  The transport implementation to use for communication
+     * @param  TransportFactoryInterface  $transportFactory  The transport factory to use for creating transports.
      * @return void
      */
-    public function __construct(private readonly TransportInterface $transport)
+    public function __construct(private readonly TransportFactoryInterface $transportFactory)
     {
-        $this->transport->onMessage([$this, 'handleMessage']);
-        if ($this->transport instanceof SseTransportInterface) {
-            $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
-            $this->registerNotificationHandler(new InitializedHandler);
-            $this->registerRequestHandler(new PingHandler($this->transport));
-        }
     }
 
     /**
@@ -60,8 +57,10 @@ final class MCPProtocol implements MCPProtocolInterface
      *
      * @throws Exception
      */
-    public function connect(): void
+    public function connect(string $version): void
     {
+        $this->initTransport($version);
+
         $this->transport->start();
 
         while ($this->transport->isConnected()) {
@@ -166,7 +165,7 @@ final class MCPProtocol implements MCPProtocolInterface
         try {
             foreach ($this->requestHandlers as $handler) {
                 if ($handler->isHandle(method: $requestData->method)) {
-                    $result = $handler->execute(method: $requestData->method, messageId: $requestData->id, params: $requestData->params);
+                    $result = $handler->execute(method: $requestData->method, clientId: $clientId, messageId: $requestData->id, params: $requestData->params);
 
                     $resultResource = new JsonRpcResultResource(id: $requestData->id, result: $result);
                     $this->pushMessage(clientId: $clientId, message: $resultResource);
@@ -177,7 +176,8 @@ final class MCPProtocol implements MCPProtocolInterface
 
             throw new JsonRpcErrorException("Method not found: {$requestData->method}", JsonRpcErrorCode::METHOD_NOT_FOUND, data: $requestData->toArray());
         } catch (JsonRpcErrorException $e) {
-            $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $e, id: $messageId));
+            $jsonRpcErrorException = new JsonRpcErrorResource(exception: $e, id: $messageId);
+            $this->pushMessage(clientId: $clientId, message: $jsonRpcErrorException);
         } catch (ToolParamsValidatorException $e) {
             $jsonRpcErrorException = new JsonRpcErrorException(message: $e->getMessage().' '.implode(',', $e->getErrors()), code: JsonRpcErrorCode::INVALID_PARAMS);
             $this->pushMessage(clientId: $clientId, message: new JsonRpcErrorResource(exception: $jsonRpcErrorException, id: $messageId));
@@ -239,5 +239,49 @@ final class MCPProtocol implements MCPProtocolInterface
     public function requestMessage(string $clientId, array $message): void
     {
         $this->transport->processMessage(clientId: $clientId, message: $message);
+    }
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string
+    {
+        return $this->transport->getClientId();
+    }
+
+    public function getResponseResult(string $clientId): array
+    {
+        $result = [];
+        foreach ($this->transport->receive() as $message) {
+            if ($message !== null) {
+                $result[] = json_decode($message);
+            }
+        }
+        return $result;
+    }
+
+    public function setProtocolVersion(string $version): void
+    {
+        $this->initTransport($version);
+    }
+
+    private function initTransport(string $version)
+    {
+        if (! $this->transport instanceof TransportInterface) {
+            $this->transport = $this->transportFactory->create($version);
+            if ($this->transport instanceof StreamableHttpTransportInterface) {
+                $this->transport->setConnected(true);
+                $this->transport->sendHeaders();
+            }
+
+            $this->transport->onMessage([$this, 'handleMessage']);
+            if ($this->transport instanceof SseTransportInterface) {
+                $this->registerRequestHandler(new PingHandler($this->transport));
+                $this->registerNotificationHandler(new PongHandler($this->transport->getAdapter()));
+            }
+            $this->registerNotificationHandler(new InitializedHandler);
+        }
     }
 }

@@ -33,7 +33,7 @@ class ToolsListHandlerTest extends TestCase
             ->method('getToolSchemas')
             ->willReturn($expectedSchemas);
 
-        $result = $this->toolsListHandler->execute('tools/list', 1, null);
+        $result = $this->toolsListHandler->execute('tools/list', 'test-client', 1);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('tools', $result);

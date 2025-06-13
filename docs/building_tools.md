@@ -9,7 +9,7 @@ The Model Context Protocol (MCP) is a standardized communication protocol that e
 - Perform complex operations beyond their training data
 - Interact with your business logic in a controlled manner
 
-This Symfony MCP Server implementation uses Server-Sent Events (SSE) transport for secure, real-time communication between LLM clients and your application.
+This Symfony MCP Server implementation supports multiple transport protocols for secure, real-time communication between LLM clients and your application, including Server-Sent Events (SSE) and StreamableHTTP Protocol.
 
 ## What are MCP Tools?
 
@@ -38,17 +38,21 @@ This command:
 
 ### Step 2: Understanding the Generated Tool Structure
 
-The generated tool implements the `ToolInterface` and includes these key methods:
+The generated tool implements the `StreamableToolInterface` and includes these key methods:
 
 ```php
 // src/MCP/Tools/MyCustomTool.php
 namespace App\MCP\Tools;
 
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class MyCustomTool implements ToolInterface
+class MyCustomTool implements StreamableToolInterface
 {
+    private ?ProgressNotifier $progressNotifier = null;
+
     public function getName(): string
     {
         return 'my-custom'; // Kebab-case name
@@ -86,6 +90,16 @@ class MyCustomTool implements ToolInterface
         // Implement your tool logic here
         return "Tool executed with parameter: {$param1}";
     }
+
+    public function isStreaming(): bool
+    {
+        return false;
+    }
+
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
+    }
 }
 ```
 
@@ -104,7 +118,7 @@ klp_mcp_server:
 
 ## Understanding the Tool Interface
 
-All MCP tools must implement the `ToolInterface`, which requires five methods:
+All MCP tools must implement the `StreamableToolInterface`, which requires methods:
 
 ### 1. getName(): string
 
@@ -173,18 +187,127 @@ public function getAnnotations(): ToolAnnotation
 }
 ```
 
-### 5. execute(array $arguments): mixed
+### 5. execute(array $arguments): ToolResultInterface
 
 Contains the actual logic of your tool. This method:
 - Receives validated input arguments
 - Performs the tool's functionality
-- Returns results (typically as a string, but can be any serializable data)
+- Returns results
 
-Best practices:
+**Best practices:**
 - Validate inputs even though the framework does basic validation
 - Handle exceptions gracefully
 - Return clear, structured responses
 - Keep execution time reasonable
+
+### 6. isStreaming(): bool
+
+Determines whether the tool supports streaming responses with real-time progress updates. This method is crucial for enabling the MCP server to provide live feedback during long-running operations.
+
+**When to return `true`:**
+- Tools that perform batch processing operations
+- File processing with multiple items
+- Data analysis or computation that takes significant time
+- API calls with multiple steps
+- Any operation where progress feedback would be valuable
+
+**When to return `false`:**
+- Simple, fast operations (< 1 second)
+- Tools that don't benefit from progress tracking
+- Operations that can't be meaningfully broken into progress steps
+
+**Important Notes:**
+- Only tools returning `true` will receive progress notifier instances
+- Progress notifications are only sent when `isStreaming()` returns `true`
+
+### 7. setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+
+Injects a progress notifier instance that allows the tool to send real-time progress updates to the client during execution. This method is called automatically by the framework for streaming tools.
+
+**Using the Progress Notifier:**
+
+```php
+public function execute(array $arguments): ToolResultInterface
+{
+    $totalItems = count($arguments['items']);
+    $processedItems = 0;
+    
+    foreach ($arguments['items'] as $item) {
+        // Process the item
+        $result = $this->processItem($item);
+        $processedItems++;
+        
+        // Send progress notification
+        if ($this->progressNotifier && $this->isStreaming()) {
+            try {
+                $this->progressNotifier->sendProgress(
+                    progress: $processedItems,
+                    total: $totalItems,
+                    message: "Processed {$processedItems}/{$totalItems} items"
+                );
+            } catch (\Exception $e) {
+                // Continue processing even if progress notification fails
+                error_log("Progress notification failed: " . $e->getMessage());
+            }
+        }
+    }
+    
+    return new TextToolResult("Processing complete");
+}
+```
+
+**Progress Notification Parameters:**
+- `progress` (required): Current progress value (must always increase)
+- `total` (optional): Total expected value for percentage calculation
+- `message` (optional): Human-readable progress description
+
+**Best Practices:**
+- Always check if the notifier exists and streaming is enabled
+- Wrap progress notifications in try-catch blocks
+- Continue processing even if notifications fail
+- Provide meaningful progress messages
+- Ensure progress values always increase (framework validates this)
+- Use appropriate granularity for progress updates (not too frequent, not too sparse)
+
+**Progress Notification Flow:**
+1. Client sends tool call request with progress token in `_meta.progressToken`
+2. Framework registers the progress token and creates a notifier
+3. Tool receives the notifier via `setProgressNotifier()`
+4. During execution, tool calls `sendProgress()` to update progress
+5. Framework sends real-time notifications to client via SSE/HTTP streaming
+6. Client receives progress updates and can display them to the user
+
+### Tool Result Types
+
+Streaming tools must return objects that implement `ToolResultInterface`. The framework provides several built-in result types:
+
+#### TextToolResult
+For plain text responses:
+
+```php
+return new TextToolResult("Operation completed successfully");
+```
+
+#### ImageToolResult
+For image data:
+
+```php
+return new ImageToolResult($imageData, 'image/png');
+```
+
+#### AudioToolResult
+For audio data:
+
+```php
+return new AudioToolResult($audioData, 'audio/wav');
+```
+
+#### ResourceToolResult
+For referencing external resources:
+
+```php
+return new ResourceToolResult($resourceUri, 'application/json');
+```
 
 ## Testing Your MCP Tools
 
@@ -218,12 +341,347 @@ npx @modelcontextprotocol/inspector node build/index.js
 ```
 
 This opens a web interface (typically at `localhost:6274`) where you can:
-1. Connect to your MCP server
+1. Connect to your MCP server (using either SSE or StreamableHTTP Protocol)
 2. Browse available tools
 3. Test tools with different inputs
 4. View formatted results
 
-**Note:** Your Symfony application must be running with a proper web server (not `symfony server:start`), as MCP SSE requires processing multiple connections concurrently.
+**Note:** Your Symfony application must be running with a proper web server (not `symfony server:start`), as MCP transport protocols require processing multiple connections concurrently.
+
+## Streaming Tools with Progress Notifications
+
+### Overview of Streaming Tools
+
+The MCP Server supports streaming tools that can provide real-time progress updates during long-running operations. This is particularly useful for:
+
+- Data processing operations
+- API calls with multiple steps
+- Any operation that takes significant time to complete
+
+### Creating a Streaming Tool
+
+Streaming tools implement the `StreamableToolInterface` and return `ToolResultInterface` objects instead of simple strings. They also support progress notifications through the `ProgressNotifierInterface`.
+
+Here's a complete example of a streaming tool:
+
+```php
+<?php
+
+namespace App\MCP\Tools;
+
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+
+class DataProcessingTool implements StreamableToolInterface
+{
+    private ?ProgressNotifierInterface $progressNotifier = null;
+
+    public function getName(): string
+    {
+        return 'process-data';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Processes data with real-time progress updates';
+    }
+
+    public function getInputSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'dataset' => [
+                    'type' => 'string',
+                    'description' => 'The dataset to process',
+                ],
+                'batchSize' => [
+                    'type' => 'integer',
+                    'description' => 'Number of items to process per batch',
+                    'minimum' => 1,
+                    'maximum' => 100,
+                    'default' => 10,
+                ],
+            ],
+            'required' => ['dataset'],
+        ];
+    }
+
+    public function getAnnotations(): ToolAnnotation
+    {
+        return new ToolAnnotation(
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false
+        );
+    }
+
+    public function execute(array $arguments): ToolResultInterface
+    {
+        $dataset = $arguments['dataset'];
+        $batchSize = $arguments['batchSize'] ?? 10;
+        $totalItems = strlen($dataset); // Simple example
+        $processedItems = 0;
+        $results = [];
+
+        // Process data in batches
+        for ($i = 0; $i < $totalItems; $i += $batchSize) {
+            $batch = substr($dataset, $i, $batchSize);
+            
+            // Simulate processing work
+            usleep(500000); // 500ms delay
+            
+            // Process the batch
+            $batchResult = $this->processBatch($batch);
+            $results[] = $batchResult;
+            
+            $processedItems += strlen($batch);
+
+            // Send progress notification if streaming
+            if ($this->progressNotifier && $this->isStreaming()) {
+                try {
+                    $this->progressNotifier->sendProgress(
+                        progress: $processedItems,
+                        total: $totalItems,
+                        message: "Processed {$processedItems}/{$totalItems} items"
+                    );
+                } catch (\Exception $e) {
+                    // Continue processing even if progress notification fails
+                    error_log("Progress notification failed: " . $e->getMessage());
+                }
+            }
+        }
+
+        return new TextToolResult(
+            "Processing complete. Processed " . count($results) . " batches.\n" .
+            "Results: " . implode(', ', $results)
+        );
+    }
+
+    public function isStreaming(): bool
+    {
+        return true;
+    }
+
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
+    }
+
+    private function processBatch(string $batch): string
+    {
+        // Your actual processing logic here
+        return "Processed: " . $batch;
+    }
+}
+```
+
+### Progress Notifications
+
+Progress notifications allow clients to track the progress of long-running operations. The `ProgressNotifierInterface` provides a simple API:
+
+```php
+// Basic progress notification
+$this->progressNotifier->sendProgress(
+    progress: 50,    // Current progress value
+    total: 100,      // Total expected value (optional)
+    message: "Processing item 50 of 100"  // Human-readable message (optional)
+);
+```
+
+**Important Notes:**
+- Progress values must always increase with each notification
+- The framework will throw a `ProgressTokenException` if progress decreases
+- Continue processing even if progress notifications fail
+- Progress notifications are only sent when `isStreaming()` returns `true`
+
+### Streaming Tool Best Practices
+
+#### 1. Handle Progress Notification Failures Gracefully
+
+```php
+if ($this->progressNotifier && $this->isStreaming()) {
+    try {
+        $this->progressNotifier->sendProgress($current, $total, $message);
+    } catch (\Exception $e) {
+        // Log the error but don't stop processing
+        error_log("Progress notification failed: " . $e->getMessage());
+    }
+}
+```
+
+#### 2. Provide Meaningful Progress Messages
+
+```php
+$this->progressNotifier->sendProgress(
+    progress: $processedFiles,
+    total: $totalFiles,
+    message: "Processing file: {$currentFileName} ({$processedFiles}/{$totalFiles})"
+);
+```
+
+#### 3. Use Appropriate Batch Sizes
+
+Choose batch sizes that balance performance with progress update frequency:
+
+```php
+// For large datasets, use reasonable batch sizes
+$batchSize = min(100, max(1, intval($totalItems / 20))); // 20 progress updates max
+```
+
+#### 4. Implement Proper Error Handling
+
+```php
+public function execute(array $arguments): ToolResultInterface
+{
+    try {
+        // ... processing logic
+        
+        return new TextToolResult("Success: Processed {$count} items");
+    } catch (\Exception $e) {
+        // Log the error
+        error_log("Tool execution failed: " . $e->getMessage());
+        
+        // Return an error result
+        return new TextToolResult("Error: " . $e->getMessage());
+    }
+}
+```
+
+### Testing Streaming Tools
+
+When testing streaming tools, you can use the MCP test command:
+
+```bash
+# Test with progress notifications
+php bin/console mcp:test-tool DataProcessingTool --input='{"dataset":"test data","batchSize":5}'
+```
+
+The test command will show progress notifications in real-time during execution.
+
+### Example: File Processing Tool
+
+Here's a complete example of a streaming tool that processes multiple files:
+
+```php
+class FileProcessingTool implements StreamableToolInterface
+{
+    private ?ProgressNotifierInterface $progressNotifier = null;
+
+    public function getName(): string
+    {
+        return 'process-files';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Process multiple files with progress tracking';
+    }
+
+    public function getInputSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'filePaths' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'description' => 'Array of file paths to process',
+                ],
+                'operation' => [
+                    'type' => 'string',
+                    'enum' => ['validate', 'convert', 'analyze'],
+                    'description' => 'Operation to perform on files',
+                ],
+            ],
+            'required' => ['filePaths', 'operation'],
+        ];
+    }
+
+    public function getAnnotations(): ToolAnnotation
+    {
+        return new ToolAnnotation(
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: false,
+            openWorldHint: true
+        );
+    }
+
+    public function execute(array $arguments): ToolResultInterface
+    {
+        $filePaths = $arguments['filePaths'];
+        $operation = $arguments['operation'];
+        $totalFiles = count($filePaths);
+        $processedFiles = 0;
+        $results = [];
+
+        foreach ($filePaths as $filePath) {
+            try {
+                // Process individual file
+                $result = $this->processFile($filePath, $operation);
+                $results[] = $result;
+                $processedFiles++;
+
+                // Send progress update
+                if ($this->progressNotifier && $this->isStreaming()) {
+                    try {
+                        $this->progressNotifier->sendProgress(
+                            progress: $processedFiles,
+                            total: $totalFiles,
+                            message: "Processed: {$filePath} ({$processedFiles}/{$totalFiles})"
+                        );
+                    } catch (\Exception $e) {
+                        error_log("Progress notification failed: " . $e->getMessage());
+                    }
+                }
+
+                // Small delay to simulate processing time
+                usleep(100000); // 100ms
+                
+            } catch (\Exception $e) {
+                $results[] = "Error processing {$filePath}: " . $e->getMessage();
+            }
+        }
+
+        return new TextToolResult(
+            "File processing complete.\n" .
+            "Operation: {$operation}\n" .
+            "Files processed: {$processedFiles}/{$totalFiles}\n" .
+            "Results:\n" . implode("\n", $results)
+        );
+    }
+
+    public function isStreaming(): bool
+    {
+        return true;
+    }
+
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
+    }
+
+    private function processFile(string $filePath, string $operation): string
+    {
+        // Your file processing logic here
+        switch ($operation) {
+            case 'validate':
+                return "✓ {$filePath} is valid";
+            case 'convert':
+                return "✓ {$filePath} converted successfully";
+            case 'analyze':
+                return "✓ {$filePath} analyzed: " . filesize($filePath) . " bytes";
+            default:
+                throw new \InvalidArgumentException("Unknown operation: {$operation}");
+        }
+    }
+}
+```
 
 ## Advanced Tool Development
 
@@ -264,7 +722,7 @@ public function getInputSchema(): array
 For tools that need to access Symfony services, use dependency injection:
 
 ```php
-class DatabaseQueryTool implements ToolInterface
+class DatabaseQueryTool implements StreamableToolInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -415,7 +873,7 @@ Use the testing command to verify your tool handles edge cases correctly:
 A simple tool that greets a user:
 
 ```php
-class HelloWorldTool implements ToolInterface
+class HelloWorldTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -460,7 +918,7 @@ class HelloWorldTool implements ToolInterface
 A tool that returns the current Symfony version:
 
 ```php
-final class VersionCheckTool implements ToolInterface
+final class VersionCheckTool implements StreamableToolInterface
 {
     public function getName(): string
     {
@@ -498,6 +956,6 @@ final class VersionCheckTool implements ToolInterface
 
 ## Conclusion
 
-MCP Tools provide a powerful way to extend the capabilities of LLMs by giving them access to your application's functionality. By following this guide, you can create well-designed, secure, and effective tools that enhance the capabilities of LLM clients interacting with your Symfony application.
+MCP Tools provide a powerful way to extend the capabilities of LLMs by giving them access to your application's functionality. By following this guide, you can create well-designed, secure, and effective tools that enhance the capabilities of LLM clients interacting with your Symfony application. With support for both SSE and StreamableHTTP Protocol, you can choose the transport method that best fits your application's needs.
 
 For more information about the Model Context Protocol, visit the [official MCP documentation](https://modelcontextprotocol.io/) or explore the [MCP specification](https://github.com/modelcontextprotocol/specification).

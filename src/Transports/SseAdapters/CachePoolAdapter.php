@@ -111,7 +111,7 @@ class CachePoolAdapter implements SseAdapterInterface
      */
     public function hasMessages(string $clientId): bool
     {
-        return $this->cache->getItem($this->generateQueueKey($clientId))->isHit();
+        return $this->getMessageCount($clientId) > 0;
     }
 
     /**

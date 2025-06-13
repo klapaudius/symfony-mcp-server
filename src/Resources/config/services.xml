@@ -9,6 +9,12 @@
             <tag name="controller.service_arguments" />
         </service>
         <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
+        <service id="KLP\KlpMcpServer\Controllers\StreamableHttpController" class="KLP\KlpMcpServer\Controllers\StreamableHttpController">
+            <argument type="service" id="klp_mcp_server.server" />
+            <argument type="service" id="logger" on-invalid="null" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="klp_mcp_server.controller.steamable_http" alias="KLP\KlpMcpServer\Controllers\StreamableHttpController" />
 
         <service id="KLP\KlpMcpServer\Controllers\MessageController" class="KLP\KlpMcpServer\Controllers\MessageController">
             <argument type="service" id="klp_mcp_server.server" />
@@ -29,13 +35,10 @@
 
         <service id="klp_mcp_server.adapter.factory" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory">
             <argument type="service" id="service_container" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
 
-        <service id="klp_mcp_server.adapter" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface">
-            <factory service="klp_mcp_server.adapter.factory" method="create" />
-        </service>
-
-        <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
+        <service id="klp_mcp_server.transport.factory" class="KLP\KlpMcpServer\Transports\Factory\TransportFactory">
             <argument type="service" id="router" />
             <argument type="service" id="klp_mcp_server.adapter" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
@@ -43,11 +46,16 @@
             <argument type="string">%klp_mcp_server.ping.interval%</argument>
         </service>
 
+        <service id="klp_mcp_server.adapter" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface">
+            <factory service="klp_mcp_server.adapter.factory" method="create" />
+        </service>
+
         <service id="klp_mcp_server.protocol" class="KLP\KlpMcpServer\Protocol\MCPProtocol">
-            <argument type="service" id="klp_mcp_server.transport.sse" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.transport.factory" on-invalid="null" />
         </service>
         <service id="klp_mcp_server.server" class="KLP\KlpMcpServer\Server\MCPServer">
             <argument type="service" id="klp_mcp_server.protocol" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.progress_notifier_repository" on-invalid="null" />
             <argument type="collection">
                 <argument key="name">%klp_mcp_server.server.name%</argument>
                 <argument key="version">%klp_mcp_server.server.version%</argument>
@@ -56,6 +64,10 @@
 
         <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <service id="klp_mcp_server.progress_notifier_repository" class="KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository">
+            <argument type="service" id="klp_mcp_server.transport.factory" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.capabilities" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">

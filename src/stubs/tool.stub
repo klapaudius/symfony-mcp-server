@@ -2,11 +2,18 @@
 
 namespace {{ namespace }};
 
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\ToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
-class {{ className }} implements ToolInterface
+class {{ className }} implements StreamableToolInterface
 {
+    /**
+     * Progress notifier for streaming operations
+     */
+    private ?ProgressNotifier $progressNotifier = null;
+
     /**
      * Get the tool name.
      *
@@ -61,13 +68,36 @@ class {{ className }} implements ToolInterface
      * Execute the tool.
      *
      * @param array $arguments Tool arguments
-     * @return mixed
+     * @return ToolResultInterface
      */
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $param1 = $arguments['param1'] ?? 'default';
 
         // Implement your tool logic here
         return "Tool executed with parameter: {$param1}";
+    }
+
+    /**
+     * Determines if this tool should return a streaming response.
+     *
+     * When this method returns true, the execute() method should return
+     * a callback function that will be used as the StreamedResponse callback.
+     *
+     * @return bool True if the tool supports streaming, false otherwise.
+     */
+    public function isStreaming(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Set the progress notifier for streaming operations
+     *
+     * @param ProgressNotifier $progressNotifier The progress notifier instance
+     */
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
     }
 }
