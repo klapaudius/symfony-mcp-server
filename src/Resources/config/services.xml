@@ -8,20 +8,20 @@
             <argument type="service" id="klp_mcp_server.server" />
             <tag name="controller.service_arguments" />
         </service>
-        <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
+        <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" public="true" />
         <service id="KLP\KlpMcpServer\Controllers\StreamableHttpController" class="KLP\KlpMcpServer\Controllers\StreamableHttpController">
             <argument type="service" id="klp_mcp_server.server" />
             <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
-        <service id="klp_mcp_server.controller.steamable_http" alias="KLP\KlpMcpServer\Controllers\StreamableHttpController" />
+        <service id="klp_mcp_server.controller.streamable_http" alias="KLP\KlpMcpServer\Controllers\StreamableHttpController" public="true" />
 
         <service id="KLP\KlpMcpServer\Controllers\MessageController" class="KLP\KlpMcpServer\Controllers\MessageController">
             <argument type="service" id="klp_mcp_server.server" />
             <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
-        <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" />
+        <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" public="true" />
 
         <service id="KLP\KlpMcpServer\Server\ServerCapabilitiesInterface" class="KLP\KlpMcpServer\Server\ServerCapabilities" />
         <service id="klp_mcp_server.command.make" class="KLP\KlpMcpServer\Command\MakeMcpToolCommand">
@@ -31,6 +31,10 @@
         <service id="klp_mcp_server.command.test" class="KLP\KlpMcpServer\Command\TestMcpToolCommand">
             <argument type="service" id="service_container" />
             <tag name="console.command" />
+        </service>
+
+        <service id="klp_mcp_server.route_loader" class="KLP\KlpMcpServer\Routing\Loader\McpRouteLoader">
+            <tag name="routing.loader" />
         </service>
 
         <service id="klp_mcp_server.adapter.factory" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory">

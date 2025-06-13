@@ -43,5 +43,25 @@ class KlpMcpServerExtension extends Extension
         $container->setParameter('klp_mcp_server.resources', $config['resources'] ?? []);
         // Set parameters for resource templates
         $container->setParameter('klp_mcp_server.resources_templates', $config['resources_templates'] ?? []);
+
+        // Conditionally remove controller services based on enabled providers
+        $this->removeDisabledControllers($container, $providers);
+    }
+
+    private function removeDisabledControllers(ContainerBuilder $container, array $enabledProviders): void
+    {
+        // Remove SSE controllers if SSE provider is not enabled
+        if (!in_array('klp_mcp_server.provider.sse', $enabledProviders, true)) {
+            $container->removeDefinition('KLP\KlpMcpServer\Controllers\SseController');
+            $container->removeAlias('klp_mcp_server.controller.sse');
+            $container->removeDefinition('KLP\KlpMcpServer\Controllers\MessageController');
+            $container->removeAlias('klp_mcp_server.controller.message');
+        }
+
+        // Remove StreamableHTTP controller if StreamableHTTP provider is not enabled
+        if (!in_array('klp_mcp_server.provider.streamable_http', $enabledProviders, true)) {
+            $container->removeDefinition('KLP\KlpMcpServer\Controllers\StreamableHttpController');
+            $container->removeAlias('klp_mcp_server.controller.streamable_http');
+        }
     }
 }

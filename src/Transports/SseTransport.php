@@ -98,7 +98,7 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
 
     protected function getEndpoint(string $sessionId): string
     {
-        return $this->router->generate('message_route', ['sessionId' => $sessionId]);
+        return $this->router->generate('klp_mcp_server_sse_message', ['sessionId' => $sessionId]);
     }
 
     /**

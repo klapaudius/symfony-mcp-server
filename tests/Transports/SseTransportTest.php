@@ -67,7 +67,7 @@ class SseTransportTest extends TestCase
             ->expects($this->once())
             ->method('generate')
             ->willReturnCallback(function (string $name, array $parameters = []): string {
-                $this->assertEquals('message_route', $name);
+                $this->assertEquals('klp_mcp_server_sse_message', $name);
                 $this->assertArrayHasKey('sessionId', $parameters);
 
                 return '/default-path/messages?sessionId='.$parameters['sessionId'];
@@ -101,7 +101,7 @@ class SseTransportTest extends TestCase
         $this->routerMock
             ->expects($this->once())
             ->method('generate')
-            ->with('message_route', ['sessionId' => $existingClientId])
+            ->with('klp_mcp_server_sse_message', ['sessionId' => $existingClientId])
             ->willReturn('/default-path/messages?sessionId='.$existingClientId);
 
         // Act
