@@ -1,8 +1,8 @@
 The MIT License (MIT)
 
-Copyright (c) OP.GG
+Copyright (c) 2025 Boris AUBE
 
-Copyright (c) 2025 klapaudius
+Copyright (c) OP.GG
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
