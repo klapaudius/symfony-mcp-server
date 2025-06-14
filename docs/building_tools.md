@@ -309,6 +309,19 @@ For referencing external resources:
 return new ResourceToolResult($resourceUri, 'application/json');
 ```
 
+#### CollectionToolResult
+For combining multiple tool results into a single response:
+
+```php
+$collection = new CollectionToolResult;
+$collection->addItem(new TextToolResult("Operation completed successfully"));
+$collection->addItem(new ImageToolResult($imageData, 'image/png'));
+
+return $collection;
+```
+
+You can add any type of ToolResultInterface object to a CollectionToolResult, except another CollectionToolResult (nesting is not supported).
+
 ## Testing Your MCP Tools
 
 ### Using the Test Command

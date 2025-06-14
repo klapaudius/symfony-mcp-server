@@ -72,6 +72,7 @@ Key benefits:
                 ttl: 100
         tools:
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
         resources:
