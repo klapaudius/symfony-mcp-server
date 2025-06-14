@@ -12,31 +12,31 @@ class ProgressNotifierRepository
 
     public function __construct(
         private readonly TransportFactoryInterface $transportFactory
-    ) {
-    }
+    ) {}
 
     /**
      * Active progress tokens to track current operations
+     *
      * @var array<string|int, array{clientId: string, lastProgress: float|int}>
      */
     private array $activeTokens = [];
-
 
     /**
      * Registers a progress token for tracking.
      * Must be called before sending progress notifications.
      *
-     * @param string|int $progressToken The progress token from the request
-     * @param string $clientId The client ID associated with the token
+     * @param  string|int  $progressToken  The progress token from the request
+     * @param  string  $clientId  The client ID associated with the token
+     *
      * @throws TransportFactoryException If the transport has not been initialized yet.
      */
     public function registerToken(string|int $progressToken, string $clientId): ?ProgressNotifier
     {
-        if (null === $this->transport) {
+        if ($this->transport === null) {
             $this->transport = $this->transportFactory->get();
         }
         $progressNotifier = null;
-        if (!isset($this->activeTokens[$progressToken])) {
+        if (! isset($this->activeTokens[$progressToken])) {
             $this->activeTokens[$progressToken] = [
                 'clientId' => $clientId,
                 'progressNotifier' => $progressNotifier = new ProgressNotifier($progressToken, [$this, 'handleMessage']),
@@ -49,7 +49,7 @@ class ProgressNotifierRepository
     /**
      * Unregisters a progress token when operation completes.
      *
-     * @param string|int|null $progressToken The progress token to unregister
+     * @param  string|int|null  $progressToken  The progress token to unregister
      */
     public function unregisterToken(string|int|null $progressToken): void
     {
@@ -62,7 +62,7 @@ class ProgressNotifierRepository
     /**
      * Checks if a progress token is currently active.
      *
-     * @param string|int $progressToken The progress token to check
+     * @param  string|int  $progressToken  The progress token to check
      * @return bool True if the token is active, false otherwise
      */
     public function isTokenActive(string|int $progressToken): bool
@@ -82,7 +82,7 @@ class ProgressNotifierRepository
 
     public function handleMessage(array $message): void
     {
-        if (!$this->isTokenActive($message['params']['progressToken'])) {
+        if (! $this->isTokenActive($message['params']['progressToken'])) {
             throw new ProgressTokenException("Invalid progress token: {$message['params']['progressToken']} is not active");
         }
         $clientId = $this->activeTokens[$message['params']['progressToken']]['clientId'];

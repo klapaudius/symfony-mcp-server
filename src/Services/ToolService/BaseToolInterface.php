@@ -36,11 +36,11 @@ interface BaseToolInterface
      *
      * @return array The JSON Schema as an associative array. Common structure:
      *               [
-     *                   'type' => 'object',
-     *                   'properties' => [
-     *                       'param' => ['type' => 'string', 'description' => '...'],
-     *                   ],
-     *                   'required' => ['param'],
+     *               'type' => 'object',
+     *               'properties' => [
+     *               'param' => ['type' => 'string', 'description' => '...'],
+     *               ],
+     *               'required' => ['param'],
      *               ]
      *               For tools with no parameters, use ['type' => 'object', 'properties' => new \stdClass].
      */

@@ -7,7 +7,6 @@ use KLP\KlpMcpServer\Data\Resources\InitializeResource;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
-use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -22,7 +21,6 @@ use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
  */
 interface MCPServerInterface
 {
-
     /**
      * Sets the protocol version for the current communication session.
      * Can accept one of the following values:
@@ -32,8 +30,7 @@ interface MCPServerInterface
      * If the protocol version is not set, the server will use the default version for the transport type.
      * If the protocol version is set to null, the server will unset the protocol version.
      *
-     * @param string $protocolVersion The protocol version to be set.
-     * @return void
+     * @param  string  $protocolVersion  The protocol version to be set.
      */
     public function setProtocolVersion(string $protocolVersion): void;
 

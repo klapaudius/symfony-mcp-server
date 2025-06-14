@@ -13,8 +13,8 @@ final class ImageToolResult extends AbstractToolResult
     /**
      * Creates a new image tool result.
      *
-     * @param string $base64EncodedData The image data encoded in base64 format
-     * @param string $mimeType The MIME type of the image (e.g., 'image/jpeg', 'image/png')
+     * @param  string  $base64EncodedData  The image data encoded in base64 format
+     * @param  string  $mimeType  The MIME type of the image (e.g., 'image/jpeg', 'image/png')
      */
     public function __construct(string $base64EncodedData, private readonly string $mimeType)
     {

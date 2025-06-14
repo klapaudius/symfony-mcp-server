@@ -16,7 +16,7 @@ class StreamingDataToolTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tool = new StreamingDataTool();
+        $this->tool = new StreamingDataTool;
     }
 
     public function test_get_name(): void
@@ -85,7 +85,7 @@ class StreamingDataToolTest extends TestCase
         $result = $this->tool->execute([
             'message' => 'Custom test',
             'chunks' => 3,
-            'delay' => 100
+            'delay' => 100,
         ]);
 
         $this->assertInstanceOf(TextToolResult::class, $result);

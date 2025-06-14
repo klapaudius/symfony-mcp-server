@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Result;
 
-
 /**
  * Represents an abstract result of a tool's operation.
  * This class serves as a base for defining specific tool results.

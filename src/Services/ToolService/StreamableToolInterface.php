@@ -13,8 +13,8 @@ interface StreamableToolInterface extends BaseToolInterface
      * This method contains the actual implementation logic of the tool. The arguments
      * are validated against the input schema before this method is called.
      *
-     * @param array $arguments The input parameters as an associative array, validated
-     *                         against the schema defined in getInputSchema().
+     * @param  array  $arguments  The input parameters as an associative array, validated
+     *                            against the schema defined in getInputSchema().
      * @return ToolResultInterface The result of the tool execution, containing the output data
      *                             formatted according to MCP specification.
      */
@@ -37,8 +37,8 @@ interface StreamableToolInterface extends BaseToolInterface
      * to send progress updates during streaming operations. The notifier enables the tool
      * to communicate progress information to the client during long-running operations.
      *
-     * @param ProgressNotifierInterface $progressNotifier The progress notifier instance to use for
-     *                                           sending progress updates during streaming.
+     * @param  ProgressNotifierInterface  $progressNotifier  The progress notifier instance to use for
+     *                                                       sending progress updates during streaming.
      */
     public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void;
 }

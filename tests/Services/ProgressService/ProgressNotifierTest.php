@@ -28,7 +28,7 @@ class ProgressNotifierTest extends TestCase
     {
         $progressToken = 'test-token-123';
         $handler = $this->createProgressHandler();
-        
+
         $notifier = new ProgressNotifier($progressToken, $handler);
 
         $this->assertInstanceOf(ProgressNotifier::class, $notifier);
@@ -44,7 +44,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals('2.0', $notification['jsonrpc']);
         $this->assertEquals('notifications/progress', $notification['method']);
         $this->assertEquals($progressToken, $notification['params']['progressToken']);
@@ -63,7 +63,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals('2.0', $notification['jsonrpc']);
         $this->assertEquals('notifications/progress', $notification['method']);
         $this->assertEquals($progressToken, $notification['params']['progressToken']);
@@ -82,7 +82,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals($progressToken, $notification['params']['progressToken']);
         $this->assertEquals(10, $notification['params']['progress']);
     }
@@ -97,7 +97,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals(25, $notification['params']['progress']);
         $this->assertEquals(100, $notification['params']['total']);
         $this->assertEquals('Half way through...', $notification['params']['message']);
@@ -114,13 +114,13 @@ class ProgressNotifierTest extends TestCase
         $notifier->sendProgress(100, 100, 'Complete!');
 
         $this->assertCount(3, $this->capturedNotifications);
-        
+
         $this->assertEquals(10, $this->capturedNotifications[0]['params']['progress']);
         $this->assertEquals('Starting...', $this->capturedNotifications[0]['params']['message']);
-        
+
         $this->assertEquals(50, $this->capturedNotifications[1]['params']['progress']);
         $this->assertEquals('Half done...', $this->capturedNotifications[1]['params']['message']);
-        
+
         $this->assertEquals(100, $this->capturedNotifications[2]['params']['progress']);
         $this->assertEquals('Complete!', $this->capturedNotifications[2]['params']['message']);
     }
@@ -163,7 +163,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals(0, $notification['params']['progress']);
         $this->assertEquals(100, $notification['params']['total']);
         $this->assertEquals('Starting from zero...', $notification['params']['message']);
@@ -191,7 +191,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals(50, $notification['params']['progress']);
         $this->assertEquals(200, $notification['params']['total']);
         $this->assertArrayNotHasKey('message', $notification['params']);
@@ -207,7 +207,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals(75, $notification['params']['progress']);
         $this->assertEquals('Almost there!', $notification['params']['message']);
         $this->assertArrayNotHasKey('total', $notification['params']);
@@ -223,7 +223,7 @@ class ProgressNotifierTest extends TestCase
 
         $this->assertCount(1, $this->capturedNotifications);
         $notification = $this->capturedNotifications[0];
-        
+
         $this->assertEquals(10, $notification['params']['progress']);
         $this->assertEquals(100, $notification['params']['total']);
         $this->assertEquals('', $notification['params']['message']);

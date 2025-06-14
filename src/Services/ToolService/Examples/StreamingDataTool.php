@@ -11,6 +11,7 @@ use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 class StreamingDataTool implements StreamableToolInterface
 {
     private ?ProgressNotifierInterface $progressNotifier = null;
+
     private string|int|null $progressToken = null;
 
     public function getName(): string
@@ -86,7 +87,7 @@ class StreamingDataTool implements StreamableToolInterface
                     );
                 } catch (\Exception $e) {
                     // Continue processing even if progress notification fails
-                    error_log("Progress notification failed: " . $e->getMessage());
+                    error_log('Progress notification failed: '.$e->getMessage());
                 }
             }
         }

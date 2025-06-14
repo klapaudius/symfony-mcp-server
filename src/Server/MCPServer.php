@@ -110,9 +110,9 @@ final class MCPServer implements MCPServerInterface
     ): self {
         return new self($protocol,
             $progressNotifierRepository, [
-            'name' => $name,
-            'version' => $version,
-        ], $capabilities);
+                'name' => $name,
+                'version' => $version,
+            ], $capabilities);
     }
 
     /**

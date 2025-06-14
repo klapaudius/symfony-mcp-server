@@ -16,9 +16,11 @@ use PHPUnit\Framework\TestCase;
 class MCPProtocolTest extends TestCase
 {
     private TransportFactoryInterface|MockObject $mockTransportFactory;
+
     private SseTransportInterface|MockObject $mockTransport;
 
     private MCPProtocol $mcpProtocol;
+
     private string $exampleClientId = 'test_client_id';
 
     protected function setUp(): void

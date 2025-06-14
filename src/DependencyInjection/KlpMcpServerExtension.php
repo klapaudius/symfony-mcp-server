@@ -27,7 +27,7 @@ class KlpMcpServerExtension extends Extension
         }
         if (isset($config['server_provider'])
             && $config['server_provider'] === 'sse'
-            && !count($providers)) {
+            && ! count($providers)) {
             $providers[] = 'klp_mcp_server.provider.sse';
         }
         $container->setParameter('klp_mcp_server.providers', $providers);
@@ -51,7 +51,7 @@ class KlpMcpServerExtension extends Extension
     private function removeDisabledControllers(ContainerBuilder $container, array $enabledProviders): void
     {
         // Remove SSE controllers if SSE provider is not enabled
-        if (!in_array('klp_mcp_server.provider.sse', $enabledProviders, true)) {
+        if (! in_array('klp_mcp_server.provider.sse', $enabledProviders, true)) {
             $container->removeDefinition('KLP\KlpMcpServer\Controllers\SseController');
             $container->removeAlias('klp_mcp_server.controller.sse');
             $container->removeDefinition('KLP\KlpMcpServer\Controllers\MessageController');
@@ -59,7 +59,7 @@ class KlpMcpServerExtension extends Extension
         }
 
         // Remove StreamableHTTP controller if StreamableHTTP provider is not enabled
-        if (!in_array('klp_mcp_server.provider.streamable_http', $enabledProviders, true)) {
+        if (! in_array('klp_mcp_server.provider.streamable_http', $enabledProviders, true)) {
             $container->removeDefinition('KLP\KlpMcpServer\Controllers\StreamableHttpController');
             $container->removeAlias('klp_mcp_server.controller.streamable_http');
         }

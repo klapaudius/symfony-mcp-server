@@ -118,10 +118,10 @@ abstract class AbstractTransport implements TransportInterface
     {
         if (is_array($message)) {
             // Check if this is a notification (has method but no id)
-            $isNotification = isset($message['method']) && !isset($message['id']);
+            $isNotification = isset($message['method']) && ! isset($message['id']);
 
             // Only add ID to non-notification messages
-            if (!$isNotification) {
+            if (! $isNotification) {
                 $message = array_merge(['id' => uniqid('r')], $message);
             }
 
@@ -235,7 +235,7 @@ abstract class AbstractTransport implements TransportInterface
         if ($this->pingEnabled) {
             $pingTest = $this->checkPing();
             if (! $pingTest) {
-                $this->logger?->info($this->getTransportName() . '::checkPing: pingTest failed');
+                $this->logger?->info($this->getTransportName().'::checkPing: pingTest failed');
             }
         }
 
@@ -257,10 +257,10 @@ abstract class AbstractTransport implements TransportInterface
 
                 return $messages ?: [];
             } catch (Exception $e) {
-                $this->triggerError($this->getTransportName() . ' Failed to receive messages via adapter: '.$e->getMessage());
+                $this->triggerError($this->getTransportName().' Failed to receive messages via adapter: '.$e->getMessage());
             }
         } elseif ($this->adapter === null) {
-            $this->logger?->info($this->getTransportName() . '::receive called but no adapter is configured.');
+            $this->logger?->info($this->getTransportName().'::receive called but no adapter is configured.');
         }
 
         return [];
@@ -274,13 +274,13 @@ abstract class AbstractTransport implements TransportInterface
      */
     protected function triggerError(string $message): void
     {
-        $this->logger?->error($this->getTransportName() . ' error: '.$message);
+        $this->logger?->error($this->getTransportName().' error: '.$message);
 
         foreach ($this->errorHandlers as $handler) {
             try {
                 call_user_func($handler, $message);
             } catch (Exception $e) {
-                $this->logger?->error('Error in ' . $this->getTransportName() . ' error handler itself: '.$e->getMessage());
+                $this->logger?->error('Error in '.$this->getTransportName().' error handler itself: '.$e->getMessage());
             }
         }
     }
@@ -309,6 +309,7 @@ abstract class AbstractTransport implements TransportInterface
      * Gets the last pong response timestamp from the adapter.
      *
      * @return int|null The timestamp of the last pong response, or null if no pong has been received.
+     *
      * @throws Exception If the adapter fails to retrieve the timestamp.
      */
     protected function getLastPongResponseTimestamp(): ?int
@@ -332,6 +333,7 @@ abstract class AbstractTransport implements TransportInterface
      * and verifying the last pong response timestamp.
      *
      * @return bool True if the connection is active, false otherwise.
+     *
      * @throws Exception If sending the ping message fails.
      */
     protected function checkPing(): bool

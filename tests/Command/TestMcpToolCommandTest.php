@@ -6,9 +6,9 @@ use KLP\KlpMcpServer\Command\TestMcpToolCommand;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
-use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -860,7 +860,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
         $this->ioMock->expects($this->once())->method('text')->with([
             'Result:',
-            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT),
         ]);
         $this->ioMock->expects($this->never())->method('newLine');
         $this->ioMock->expects($this->never())->method('section');
@@ -882,7 +882,7 @@ class TestMcpToolCommandTest extends TestCase
 
         $notifications = [
             ['type' => 'progress', 'value' => 50],
-            ['type' => 'progress', 'value' => 100]
+            ['type' => 'progress', 'value' => 100],
         ];
 
         $this->ioMock->expects($this->once())->method('newLine');
@@ -897,22 +897,23 @@ class TestMcpToolCommandTest extends TestCase
                 } elseif ($callCount === 2) {
                     $expected = [
                         'Notification #1:',
-                        json_encode(['type' => 'progress', 'value' => 50], JSON_PRETTY_PRINT)
+                        json_encode(['type' => 'progress', 'value' => 50], JSON_PRETTY_PRINT),
                     ];
                     $this->assertEquals($expected, $text);
                 } elseif ($callCount === 3) {
                     $expected = [
                         'Notification #2:',
-                        json_encode(['type' => 'progress', 'value' => 100], JSON_PRETTY_PRINT)
+                        json_encode(['type' => 'progress', 'value' => 100], JSON_PRETTY_PRINT),
                     ];
                     $this->assertEquals($expected, $text);
                 } elseif ($callCount === 4) {
                     $expected = [
                         'Result:',
-                        json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+                        json_encode(['status' => 'success'], JSON_PRETTY_PRINT),
                     ];
                     $this->assertEquals($expected, $text);
                 }
+
                 return true;
             });
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
@@ -934,7 +935,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
         $this->ioMock->expects($this->once())->method('text')->with([
             'Result:',
-            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT),
         ]);
         $this->ioMock->expects($this->once())->method('newLine');
         $this->ioMock->expects($this->once())->method('warning')
@@ -954,7 +955,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
         $this->ioMock->expects($this->once())->method('text')->with([
             'Result:',
-            json_encode(['status' => 'success'], JSON_PRETTY_PRINT)
+            json_encode(['status' => 'success'], JSON_PRETTY_PRINT),
         ]);
         $this->ioMock->expects($this->never())->method('warning');
 

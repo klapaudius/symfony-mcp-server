@@ -19,7 +19,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class StreamableHttpControllerTest extends TestCase
 {
     private MCPServerInterface|MockObject $mockServer;
+
     private LoggerInterface|MockObject $mockLogger;
+
     private StreamableHttpController $controller;
 
     protected function setUp(): void
@@ -41,7 +43,7 @@ class StreamableHttpControllerTest extends TestCase
         $this->assertEquals(
             [
                 'jsonrpc' => 2.0,
-                'error' => 'This endpoint does not support GET requests yet.'
+                'error' => 'This endpoint does not support GET requests yet.',
             ],
             json_decode($response->getContent(), true)
         );
@@ -98,13 +100,13 @@ class StreamableHttpControllerTest extends TestCase
         $this->assertEquals(
             [
                 'jsonrpc' => 2.0,
-                'error' => 'This endpoint does not support GET requests yet.'
+                'error' => 'This endpoint does not support GET requests yet.',
             ],
             json_decode($response->getContent(), true)
         );
     }
 
-    public function test_postHandle_with_single_message(): void
+    public function test_post_handle_with_single_message(): void
     {
         $clientId = 'test-client-id';
         // The controller checks for 'jsonrpc' key to determine if it's a single message
@@ -152,12 +154,12 @@ class StreamableHttpControllerTest extends TestCase
         ob_end_clean();
     }
 
-    public function test_postHandle_with_multiple_messages(): void
+    public function test_post_handle_with_multiple_messages(): void
     {
         $clientId = 'test-client-id';
         $messages = [
             ['jsonrpc' => '2.0', 'method' => 'test1', 'params' => [], 'id' => 1],
-            ['jsonrpc' => '2.0', 'method' => 'test2', 'params' => [], 'id' => 2]
+            ['jsonrpc' => '2.0', 'method' => 'test2', 'params' => [], 'id' => 2],
         ];
 
         // Create request with headers and content
@@ -182,12 +184,13 @@ class StreamableHttpControllerTest extends TestCase
 
         $invocations = [
             ['test-client-id', $messages[0]],
-            ['test-client-id', $messages[1]]
+            ['test-client-id', $messages[1]],
         ];
         $this->mockServer->expects($matcher = $this->exactly(count($invocations)))
             ->method('requestMessage')
             ->with($this->callback(function (...$args) use ($invocations, $matcher) {
-                $this->assertEquals($args, $invocations[$matcher->numberOfInvocations()-1]);
+                $this->assertEquals($args, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 
@@ -197,7 +200,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up logger mock expectations
         $this->mockLogger->expects($this->once())
             ->method('debug')
-            ->with($this->stringContains('Received message from clientId:' . $clientId), ['message' => $messages]);
+            ->with($this->stringContains('Received message from clientId:'.$clientId), ['message' => $messages]);
 
         // Call the method and verify response
         $response = $this->controller->postHandle($request);
@@ -214,7 +217,7 @@ class StreamableHttpControllerTest extends TestCase
         ob_end_clean();
     }
 
-    public function test_postHandle_with_fallback_client_id(): void
+    public function test_post_handle_with_fallback_client_id(): void
     {
         $clientId = 'fallback-client-id';
         $message = ['jsonrpc' => '2.0', 'method' => 'test', 'params' => [], 'id' => 1];
@@ -257,7 +260,7 @@ class StreamableHttpControllerTest extends TestCase
         ob_end_clean();
     }
 
-    public function test_postHandle_with_json_parse_error(): void
+    public function test_post_handle_with_json_parse_error(): void
     {
         // Create request with invalid JSON
         $request = new Request(
@@ -281,7 +284,7 @@ class StreamableHttpControllerTest extends TestCase
         );
     }
 
-    public function test_postHandle_with_general_exception(): void
+    public function test_post_handle_with_general_exception(): void
     {
         $clientId = 'test-client-id';
         $message = ['jsonrpc' => '2.0', 'method' => 'test', 'params' => [], 'id' => 1];

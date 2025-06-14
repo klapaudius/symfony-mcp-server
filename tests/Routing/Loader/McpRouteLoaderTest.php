@@ -6,13 +6,12 @@ namespace KLP\KlpMcpServer\Tests\Routing\Loader;
 
 use KLP\KlpMcpServer\Routing\Loader\McpRouteLoader;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Routing\RouteCollection;
 
 class McpRouteLoaderTest extends TestCase
 {
-    public function testOnlySseProviderEnabledRoutes(): void
+    public function test_only_sse_provider_enabled_routes(): void
     {
-        $loader = new McpRouteLoader();
+        $loader = new McpRouteLoader;
         $loader->setEnabledProviders(['klp_mcp_server.provider.sse']);
 
         $routes = $loader->load(null);
@@ -32,9 +31,9 @@ class McpRouteLoaderTest extends TestCase
         $this->assertEquals('/mcp/messages', $messageRoute->getPath());
     }
 
-    public function testOnlyStreamableHttpProviderEnabledRoutes(): void
+    public function test_only_streamable_http_provider_enabled_routes(): void
     {
-        $loader = new McpRouteLoader();
+        $loader = new McpRouteLoader;
         $loader->setEnabledProviders(['klp_mcp_server.provider.streamable_http']);
 
         $routes = $loader->load(null);
@@ -51,12 +50,12 @@ class McpRouteLoaderTest extends TestCase
         $this->assertEquals('/mcp', $streamableRoute->getPath());
     }
 
-    public function testBothProvidersEnabledRoutes(): void
+    public function test_both_providers_enabled_routes(): void
     {
-        $loader = new McpRouteLoader();
+        $loader = new McpRouteLoader;
         $loader->setEnabledProviders([
             'klp_mcp_server.provider.sse',
-            'klp_mcp_server.provider.streamable_http'
+            'klp_mcp_server.provider.streamable_http',
         ]);
 
         $routes = $loader->load(null);
@@ -67,9 +66,9 @@ class McpRouteLoaderTest extends TestCase
         $this->assertNotNull($routes->get('klp_mcp_server_streamable_http'));
     }
 
-    public function testNoProvidersEnabledRoutes(): void
+    public function test_no_providers_enabled_routes(): void
     {
-        $loader = new McpRouteLoader();
+        $loader = new McpRouteLoader;
         $loader->setEnabledProviders([]);
 
         $routes = $loader->load(null);
@@ -78,9 +77,9 @@ class McpRouteLoaderTest extends TestCase
         $this->assertCount(0, $routes);
     }
 
-    public function testSupportsMethod(): void
+    public function test_supports_method(): void
     {
-        $loader = new McpRouteLoader();
+        $loader = new McpRouteLoader;
 
         $this->assertTrue($loader->supports(null, 'mcp'));
         $this->assertFalse($loader->supports(null, 'yaml'));

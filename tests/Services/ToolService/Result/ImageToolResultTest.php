@@ -13,7 +13,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
         $mimeType = 'image/png';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $this->assertInstanceOf(ImageToolResult::class, $result);
@@ -23,7 +23,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
         $mimeType = 'image/png';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -41,7 +41,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==';
         $mimeType = 'image/jpeg';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -56,7 +56,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         $mimeType = 'image/gif';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -71,7 +71,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = '';
         $mimeType = 'image/png';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -86,7 +86,7 @@ class ImageToolResultTest extends TestCase
     {
         $base64Data = 'VGVzdCBkYXRhIGZvciBpbWFnZQ==';
         $mimeType = 'image/webp';
-        
+
         $result = new ImageToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();

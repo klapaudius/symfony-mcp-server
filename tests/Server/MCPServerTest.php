@@ -296,7 +296,7 @@ class MCPServerTest extends TestCase
         $this->assertSame(
             $version,
             $this->getPrivateProperty($instance, 'protocolVersion'),
-            "The protocolVersion property was not correctly set."
+            'The protocolVersion property was not correctly set.'
         );
     }
 

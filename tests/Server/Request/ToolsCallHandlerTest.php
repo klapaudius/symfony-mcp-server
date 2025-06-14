@@ -28,7 +28,9 @@ use PHPUnit\Framework\TestCase;
 class ToolsCallHandlerTest extends TestCase
 {
     private ToolRepository|MockObject $toolRepository;
+
     private ProgressNotifierRepository|MockObject $progressNotifierRepository;
+
     private ToolsCallHandler $toolsCallHandler;
 
     protected function setUp(): void
@@ -162,7 +164,7 @@ class ToolsCallHandlerTest extends TestCase
         $params = [
             'name' => 'streaming-tool',
             'arguments' => [],
-            '_meta' => ['progressToken' => 'progress-123']
+            '_meta' => ['progressToken' => 'progress-123'],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -202,7 +204,7 @@ class ToolsCallHandlerTest extends TestCase
 
         $params = [
             'name' => 'streaming-tool',
-            'arguments' => []
+            'arguments' => [],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -243,7 +245,7 @@ class ToolsCallHandlerTest extends TestCase
         $params = [
             'name' => 'non-streaming-tool',
             'arguments' => [],
-            '_meta' => ['progressToken' => 'progress-456']
+            '_meta' => ['progressToken' => 'progress-456'],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -276,7 +278,7 @@ class ToolsCallHandlerTest extends TestCase
 
         $params = [
             'name' => 'any-tool',
-            'arguments' => []
+            'arguments' => [],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/execute', 'client1', 1, $params);
@@ -315,7 +317,7 @@ class ToolsCallHandlerTest extends TestCase
         $params = [
             'name' => 'test-tool',
             'arguments' => [],
-            '_meta' => [] // Empty meta array
+            '_meta' => [], // Empty meta array
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -356,7 +358,7 @@ class ToolsCallHandlerTest extends TestCase
         $params = [
             'name' => 'test-tool',
             'arguments' => [],
-            '_meta' => ['progressToken' => null]
+            '_meta' => ['progressToken' => null],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -391,7 +393,7 @@ class ToolsCallHandlerTest extends TestCase
 
         $params = [
             'name' => 'image-tool',
-            'arguments' => []
+            'arguments' => [],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -401,7 +403,7 @@ class ToolsCallHandlerTest extends TestCase
                 [
                     'type' => 'image',
                     'data' => $base64Data,
-                    'mimeType' => 'image/png'
+                    'mimeType' => 'image/png',
                 ],
             ],
         ], $result);
@@ -430,7 +432,7 @@ class ToolsCallHandlerTest extends TestCase
 
         $params = [
             'name' => 'audio-tool',
-            'arguments' => []
+            'arguments' => [],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -440,7 +442,7 @@ class ToolsCallHandlerTest extends TestCase
                 [
                     'type' => 'audio',
                     'data' => $base64Data,
-                    'mimeType' => 'audio/wav'
+                    'mimeType' => 'audio/wav',
                 ],
             ],
         ], $result);
@@ -472,7 +474,7 @@ class ToolsCallHandlerTest extends TestCase
 
         $params = [
             'name' => 'resource-tool',
-            'arguments' => []
+            'arguments' => [],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -484,8 +486,8 @@ class ToolsCallHandlerTest extends TestCase
                     'resource' => [
                         'uri' => 'https://example.com/data.json',
                         'mimeType' => 'application/json',
-                        'text' => '{"message": "Resource content"}'
-                    ]
+                        'text' => '{"message": "Resource content"}',
+                    ],
                 ],
             ],
         ], $result);
@@ -493,13 +495,38 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_empty_arguments(): void
     {
-        $tool = new class implements StreamableToolInterface {
-            public function getName(): string { return 'empty-args-tool'; }
-            public function getDescription(): string { return 'Tool with empty args'; }
-            public function getInputSchema(): array { return ['type' => 'object', 'properties' => new \stdClass, 'required' => []]; }
-            public function getAnnotations(): ToolAnnotation { return new ToolAnnotation; }
-            public function execute(array $arguments): ToolResultInterface { return new TextToolResult('Empty args result'); }
-            public function isStreaming(): bool { return false; }
+        $tool = new class implements StreamableToolInterface
+        {
+            public function getName(): string
+            {
+                return 'empty-args-tool';
+            }
+
+            public function getDescription(): string
+            {
+                return 'Tool with empty args';
+            }
+
+            public function getInputSchema(): array
+            {
+                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+            }
+
+            public function getAnnotations(): ToolAnnotation
+            {
+                return new ToolAnnotation;
+            }
+
+            public function execute(array $arguments): ToolResultInterface
+            {
+                return new TextToolResult('Empty args result');
+            }
+
+            public function isStreaming(): bool
+            {
+                return false;
+            }
+
             public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void {}
         };
 
@@ -531,13 +558,13 @@ class ToolsCallHandlerTest extends TestCase
             'type' => 'object',
             'properties' => [
                 'message' => [
-                    'type' => 'string'
+                    'type' => 'string',
                 ],
                 'count' => [
-                    'type' => 'integer'
-                ]
+                    'type' => 'integer',
+                ],
             ],
-            'required' => []
+            'required' => [],
         ]);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn(new TextToolResult('Complex result'));
@@ -556,8 +583,8 @@ class ToolsCallHandlerTest extends TestCase
             'name' => 'complex-tool',
             'arguments' => [
                 'message' => 'test message',
-                'count' => 42
-            ]
+                'count' => 42,
+            ],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -602,7 +629,7 @@ class ToolsCallHandlerTest extends TestCase
         $params = [
             'name' => 'streaming-tool',
             'arguments' => [],
-            '_meta' => ['progressToken' => 12345]
+            '_meta' => ['progressToken' => 12345],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
@@ -616,7 +643,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_real_streaming_data_tool(): void
     {
-        $streamingTool = new StreamingDataTool();
+        $streamingTool = new StreamingDataTool;
 
         $this->toolRepository
             ->method('getTool')
@@ -633,8 +660,8 @@ class ToolsCallHandlerTest extends TestCase
             'arguments' => [
                 'message' => 'Test streaming',
                 'chunks' => 2,
-                'delay' => 100
-            ]
+                'delay' => 100,
+            ],
         ];
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);

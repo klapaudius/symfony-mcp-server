@@ -13,9 +13,9 @@ final class ResourceToolResult extends AbstractToolResult
     /**
      * Creates a new resource tool result.
      *
-     * @param string $uri The URI of the resource
-     * @param string $mimeType The MIME type of the resource (e.g., 'text/plain', 'application/json')
-     * @param string $value The text content of the resource
+     * @param  string  $uri  The URI of the resource
+     * @param  string  $mimeType  The MIME type of the resource (e.g., 'text/plain', 'application/json')
+     * @param  string  $value  The text content of the resource
      */
     public function __construct(private readonly string $uri, private readonly string $mimeType, string $value)
     {
@@ -34,8 +34,8 @@ final class ResourceToolResult extends AbstractToolResult
             $this->getKey() => [
                 'uri' => $this->uri,
                 'mimeType' => $this->mimeType,
-                "text" => $this->getValue(),
-            ]
+                'text' => $this->getValue(),
+            ],
         ];
     }
 }

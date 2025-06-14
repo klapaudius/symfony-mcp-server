@@ -31,7 +31,7 @@ final readonly class StreamableHttpController
         return new JsonResponse(
             [
                 'jsonrpc' => 2.0,
-                'error' => 'This endpoint does not support GET requests yet.'
+                'error' => 'This endpoint does not support GET requests yet.',
             ],
             Response::HTTP_METHOD_NOT_ALLOWED);
     }
@@ -48,7 +48,7 @@ final readonly class StreamableHttpController
             $input = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
             $this->logger?->debug('Received message from clientId:'.$clientId, ['message' => $input]);
 
-            $willStream = !isset($input['jsonrpc']) && isset($input[0]['jsonrpc']);
+            $willStream = ! isset($input['jsonrpc']) && isset($input[0]['jsonrpc']);
             $messages = $willStream ? $input : [$input];
 
             return new StreamedResponse(function () use ($clientId, $messages) {
@@ -62,6 +62,7 @@ final readonly class StreamableHttpController
             ]);
         } catch (JsonException|StreamableHttpTransportException $e) {
             $message = $e instanceof JsonException ? 'Parse error' : $e->getMessage();
+
             return new JsonResponse(['jsonrpc' => 2.0, 'error' => ['code' => -32700, 'message' => $message]], 400);
         }
     }

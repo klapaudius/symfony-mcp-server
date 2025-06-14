@@ -19,28 +19,28 @@ use Symfony\Component\Routing\RouterInterface;
 final class TransportFactory implements TransportFactoryInterface
 {
     private ?TransportInterface $transport = null;
+
     private ?string $protocolVersion = null;
 
     /**
      * Initializes the factory with required dependencies.
      *
-     * @param RouterInterface $router The router instance for generating endpoints.
-     * @param SseAdapterInterface|null $adapter Optional adapter for message persistence and retrieval.
-     * @param LoggerInterface|null $logger Optional logger for transport operations.
+     * @param  RouterInterface  $router  The router instance for generating endpoints.
+     * @param  SseAdapterInterface|null  $adapter  Optional adapter for message persistence and retrieval.
+     * @param  LoggerInterface|null  $logger  Optional logger for transport operations.
      */
     public function __construct(
-        private readonly RouterInterface      $router,
+        private readonly RouterInterface $router,
         private readonly ?SseAdapterInterface $adapter = null,
-        private readonly ?LoggerInterface     $logger = null,
-        private readonly bool                 $pingEnabled = false,
-        private readonly int                  $pingInterval = 10
+        private readonly ?LoggerInterface $logger = null,
+        private readonly bool $pingEnabled = false,
+        private readonly int $pingInterval = 10
     ) {}
 
     /**
      * Creates a transport instance based on the specified protocol version.
      *
-     * @param string $protocolVersion The MCP protocol version to use.
-     *
+     * @param  string  $protocolVersion  The MCP protocol version to use.
      * @return TransportInterface The created transport instance.
      *
      * @throws InvalidArgumentException If the protocol version is not supported.
@@ -84,9 +84,10 @@ final class TransportFactory implements TransportFactoryInterface
      */
     public function get(): TransportInterface
     {
-        if (null === $this->transport) {
+        if ($this->transport === null) {
             throw new TransportFactoryException('Transport must be initialized first. Please use create() method.');
         }
+
         return $this->transport;
     }
 
@@ -99,7 +100,7 @@ final class TransportFactory implements TransportFactoryInterface
     {
         return [
             MCPProtocolInterface::PROTOCOL_VERSION_SSE,
-            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP
+            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP,
         ];
     }
 

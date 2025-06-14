@@ -2,7 +2,6 @@
 
 namespace KLP\KlpMcpServer\Transports\Factory;
 
-
 use KLP\KlpMcpServer\Transports\TransportInterface;
 
 /**
@@ -15,8 +14,7 @@ interface TransportFactoryInterface
     /**
      * Creates a transport instance based on the specified protocol version.
      *
-     * @param string $protocolVersion The MCP protocol version to use.
-     *
+     * @param  string  $protocolVersion  The MCP protocol version to use.
      * @return TransportInterface The created transport instance.
      *
      * @throws \InvalidArgumentException If the protocol version is not supported.

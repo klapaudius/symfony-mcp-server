@@ -9,11 +9,13 @@ namespace KLP\KlpMcpServer\Services\ProgressService;
  * Progress notifications allow tracking long-running operations.
  *
  * @internal
+ *
  * @see https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
  */
 class ProgressNotifier implements ProgressNotifierInterface
 {
     private array $handlers = [];
+
     private int $lastProgress = -1;
 
     public function __construct(
@@ -26,16 +28,16 @@ class ProgressNotifier implements ProgressNotifierInterface
     /**
      * Sends a progress notification to the client.
      *
-     * @param float|int $progress Current progress value (must increase with each notification)
-     * @param float|int|null $total Optional total value for the operation
-     * @param string|null $message Optional human-readable progress message
+     * @param  float|int  $progress  Current progress value (must increase with each notification)
+     * @param  float|int|null  $total  Optional total value for the operation
+     * @param  string|null  $message  Optional human-readable progress message
      *
      * @throws ProgressTokenException If the progress doesn't increase
      */
     public function sendProgress(
         float|int $progress,
         float|int|null $total = null,
-        string|null $message = null
+        ?string $message = null
     ): void {
 
         // Validate that progress increases
@@ -49,7 +51,7 @@ class ProgressNotifier implements ProgressNotifierInterface
             'params' => [
                 'progressToken' => $this->progressToken,
                 'progress' => $progress,
-            ]
+            ],
         ];
 
         if ($total !== null) {

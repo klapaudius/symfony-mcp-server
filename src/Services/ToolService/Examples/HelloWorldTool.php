@@ -43,7 +43,7 @@ class HelloWorldTool implements StreamableToolInterface
     {
         $name = $arguments['name'] ?? 'MCP';
 
-        return new  TextToolResult("Hello, HelloWorld `{$name}` developer.");
+        return new TextToolResult("Hello, HelloWorld `{$name}` developer.");
     }
 
     public function isStreaming(): bool

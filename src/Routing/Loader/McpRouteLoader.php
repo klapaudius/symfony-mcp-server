@@ -15,7 +15,9 @@ use Symfony\Component\Routing\RouteCollection;
 class McpRouteLoader implements LoaderInterface
 {
     private array $enabledProviders = [];
+
     private string $defaultPath = 'mcp';
+
     private bool $loaded = false;
 
     public function setEnabledProviders(array $providers): void
@@ -28,18 +30,18 @@ class McpRouteLoader implements LoaderInterface
         $this->defaultPath = $defaultPath;
     }
 
-    public function load($resource, string|null $type = null): RouteCollection
+    public function load($resource, ?string $type = null): RouteCollection
     {
         if ($this->loaded) {
             throw new \RuntimeException('MCP routes already loaded');
         }
 
-        $routes = new RouteCollection();
+        $routes = new RouteCollection;
 
         // StreamableHTTP routes
         if ($this->isProviderEnabled('streamable_http')) {
             $routes->add('klp_mcp_server_streamable_http', new Route(
-                '/' . $this->defaultPath,
+                '/'.$this->defaultPath,
                 ['_controller' => 'klp_mcp_server.controller.streamable_http::handle']
             ));
         }
@@ -47,12 +49,12 @@ class McpRouteLoader implements LoaderInterface
         // SSE routes
         if ($this->isProviderEnabled('sse')) {
             $routes->add('klp_mcp_server_sse', new Route(
-                '/' . $this->defaultPath . '/sse',
+                '/'.$this->defaultPath.'/sse',
                 ['_controller' => 'klp_mcp_server.controller.sse::handle']
             ));
 
             $routes->add('klp_mcp_server_sse_message', new Route(
-                '/' . $this->defaultPath . '/messages',
+                '/'.$this->defaultPath.'/messages',
                 ['_controller' => 'klp_mcp_server.controller.message::handle'],
                 [],
                 [],
@@ -63,19 +65,21 @@ class McpRouteLoader implements LoaderInterface
         }
 
         $this->loaded = true;
+
         return $routes;
     }
 
-    public function supports($resource, string|null $type = null): bool
+    public function supports($resource, ?string $type = null): bool
     {
-        return 'mcp' === $type;
+        return $type === 'mcp';
     }
 
     public function getResolver(): LoaderResolverInterface
     {
         // Return a dummy resolver as it's required by the interface
-        return new class implements LoaderResolverInterface {
-            public function resolve($resource, string|null $type = null): LoaderInterface|false
+        return new class implements LoaderResolverInterface
+        {
+            public function resolve($resource, ?string $type = null): LoaderInterface|false
             {
                 return false;
             }
@@ -99,6 +103,6 @@ class McpRouteLoader implements LoaderInterface
 
     private function isProviderEnabled(string $provider): bool
     {
-        return in_array('klp_mcp_server.provider.' . $provider, $this->enabledProviders, true);
+        return in_array('klp_mcp_server.provider.'.$provider, $this->enabledProviders, true);
     }
 }

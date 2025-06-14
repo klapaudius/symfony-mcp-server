@@ -14,7 +14,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://example.com/resource.json';
         $mimeType = 'application/json';
         $value = '{"key": "value"}';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $this->assertInstanceOf(ResourceToolResult::class, $result);
@@ -25,7 +25,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://example.com/resource.json';
         $mimeType = 'application/json';
         $value = '{"key": "value"}';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -48,7 +48,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'file:///path/to/file.txt';
         $mimeType = 'text/plain';
         $value = 'This is plain text content';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -65,7 +65,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://api.example.com/data.xml';
         $mimeType = 'application/xml';
         $value = '<?xml version="1.0"?><root><item>data</item></root>';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -82,7 +82,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://example.com/empty.txt';
         $mimeType = 'text/plain';
         $value = '';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -99,7 +99,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'file:///tmp/multiline.txt';
         $mimeType = 'text/plain';
         $value = "Line 1\nLine 2\nLine 3\n\nLine 5";
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -116,7 +116,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://example.com/special-chars.json';
         $mimeType = 'application/json';
         $value = '{"special": "chars !@#$%^&*()"}';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -132,7 +132,7 @@ class ResourceToolResultTest extends TestCase
         $uri = 'https://api.example.com/complex.json';
         $mimeType = 'application/json';
         $value = '{"array":[1,2,3],"object":{"nested":"value"},"boolean":true,"null":null}';
-        
+
         $result = new ResourceToolResult($uri, $mimeType, $value);
 
         $sanitizedResult = $result->getSanitizedResult();

@@ -30,7 +30,7 @@ class TestMcpToolCommand extends Command
     public function displayResult(mixed $result, array $sentNotifications = [], ?StreamableToolInterface $tool = null): void
     {
         // Display progress notifications if any were sent
-        if (!empty($sentNotifications)) {
+        if (! empty($sentNotifications)) {
             $this->io->newLine();
             $this->io->section('Progress Notifications');
             $this->io->text(sprintf('Total notifications sent: %d', count($sentNotifications)));

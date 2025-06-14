@@ -45,7 +45,7 @@ final class StreamableHttpTransport extends AbstractTransport implements Streama
     public function isConnected(): bool
     {
         $hasMessages = $this->adapter->hasMessages($this->clientId);
-        $this->logger?->debug('Streamable HTTP Transport::isConnected: hasMessages: '.($hasMessages ? 'true' : 'false' ));
+        $this->logger?->debug('Streamable HTTP Transport::isConnected: hasMessages: '.($hasMessages ? 'true' : 'false'));
 
         return $hasMessages && parent::isConnected();
     }
@@ -95,7 +95,7 @@ final class StreamableHttpTransport extends AbstractTransport implements Streama
         if ($messageString === false) {
             throw new StreamableHttpTransportException('Failed to JSON encode message for pushing: '.json_last_error_msg());
         }
-        $this->logger?->debug('Streamable HTTP Transport::pushMessage: clientId: '.$clientId . " message: $messageString");
+        $this->logger?->debug('Streamable HTTP Transport::pushMessage: clientId: '.$clientId." message: $messageString");
 
         $this->adapter->pushMessage(clientId: $clientId, message: $messageString);
 

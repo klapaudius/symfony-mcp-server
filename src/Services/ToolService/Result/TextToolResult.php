@@ -13,7 +13,7 @@ final class TextToolResult extends AbstractToolResult
     /**
      * Creates a new text tool result.
      *
-     * @param string $value The text content to be returned
+     * @param  string  $value  The text content to be returned
      */
     public function __construct(string $value)
     {

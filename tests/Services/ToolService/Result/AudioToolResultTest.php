@@ -13,7 +13,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ4AAAC';
         $mimeType = 'audio/wav';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $this->assertInstanceOf(AudioToolResult::class, $result);
@@ -23,7 +23,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ4AAAC';
         $mimeType = 'audio/wav';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -41,7 +41,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA';
         $mimeType = 'audio/mpeg';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -56,7 +56,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'T2dnUwACAAAAAAAAAABMQW1lIDMuMTAwAAAAAAAAAAAAAAA';
         $mimeType = 'audio/ogg';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -71,7 +71,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'ZnR5cE00QSAAAAAAaXNvbWlzb21tcDQxAAAAAWlsbWRkYXRh';
         $mimeType = 'audio/aac';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -86,7 +86,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = '';
         $mimeType = 'audio/wav';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();
@@ -101,7 +101,7 @@ class AudioToolResultTest extends TestCase
     {
         $base64Data = 'VGVzdCBhdWRpbyBkYXRh';
         $mimeType = 'audio/flac';
-        
+
         $result = new AudioToolResult($base64Data, $mimeType);
 
         $sanitizedResult = $result->getSanitizedResult();

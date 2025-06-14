@@ -13,27 +13,27 @@ class AbstractToolResultTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->toolResult = new ConcreteToolResult();
+        $this->toolResult = new ConcreteToolResult;
     }
 
     public function test_type_setter_and_getter(): void
     {
         $this->toolResult->setTestType('custom_type');
-        
+
         $this->assertEquals('custom_type', $this->toolResult->getTestType());
     }
 
     public function test_key_setter_and_getter(): void
     {
         $this->toolResult->setTestKey('custom_key');
-        
+
         $this->assertEquals('custom_key', $this->toolResult->getTestKey());
     }
 
     public function test_value_setter_and_getter(): void
     {
         $this->toolResult->setTestValue('custom_value');
-        
+
         $this->assertEquals('custom_value', $this->toolResult->getTestValue());
     }
 
@@ -42,15 +42,15 @@ class AbstractToolResultTest extends TestCase
         $this->toolResult->setTestType('type1');
         $this->toolResult->setTestKey('key1');
         $this->toolResult->setTestValue('value1');
-        
+
         $this->assertEquals('type1', $this->toolResult->getTestType());
         $this->assertEquals('key1', $this->toolResult->getTestKey());
         $this->assertEquals('value1', $this->toolResult->getTestValue());
-        
+
         $this->toolResult->setTestType('type2');
         $this->toolResult->setTestKey('key2');
         $this->toolResult->setTestValue('value2');
-        
+
         $this->assertEquals('type2', $this->toolResult->getTestType());
         $this->assertEquals('key2', $this->toolResult->getTestKey());
         $this->assertEquals('value2', $this->toolResult->getTestValue());
@@ -61,7 +61,7 @@ class AbstractToolResultTest extends TestCase
         $this->toolResult->setTestType('');
         $this->toolResult->setTestKey('');
         $this->toolResult->setTestValue('');
-        
+
         $this->assertEquals('', $this->toolResult->getTestType());
         $this->assertEquals('', $this->toolResult->getTestKey());
         $this->assertEquals('', $this->toolResult->getTestValue());
@@ -70,11 +70,11 @@ class AbstractToolResultTest extends TestCase
     public function test_properties_handle_special_characters(): void
     {
         $specialChars = '!@#$%^&*()_+{}|:"<>?[]\\;\',./"';
-        
+
         $this->toolResult->setTestType($specialChars);
         $this->toolResult->setTestKey($specialChars);
         $this->toolResult->setTestValue($specialChars);
-        
+
         $this->assertEquals($specialChars, $this->toolResult->getTestType());
         $this->assertEquals($specialChars, $this->toolResult->getTestKey());
         $this->assertEquals($specialChars, $this->toolResult->getTestValue());
@@ -85,9 +85,9 @@ class AbstractToolResultTest extends TestCase
         $this->toolResult->setTestType('test_type');
         $this->toolResult->setTestKey('test_key');
         $this->toolResult->setTestValue('test_value');
-        
+
         $result = $this->toolResult->getSanitizedResult();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('type', $result);
         $this->assertArrayHasKey('test_key', $result);

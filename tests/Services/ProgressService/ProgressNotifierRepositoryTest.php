@@ -16,7 +16,9 @@ use PHPUnit\Framework\TestCase;
 class ProgressNotifierRepositoryTest extends TestCase
 {
     private TransportFactoryInterface|MockObject $transportFactory;
+
     private TransportInterface|MockObject $transport;
+
     private ProgressNotifierRepository $repository;
 
     protected function setUp(): void
@@ -114,14 +116,14 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_unregister_token_with_null_does_nothing(): void
     {
         $this->repository->unregisterToken(null);
-        
+
         $this->assertCount(0, $this->repository->getActiveTokens());
     }
 
     public function test_unregister_non_existent_token_does_nothing(): void
     {
         $this->repository->unregisterToken('non-existent-token');
-        
+
         $this->assertCount(0, $this->repository->getActiveTokens());
     }
 
@@ -133,7 +135,7 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_get_active_tokens_returns_empty_array_initially(): void
     {
         $activeTokens = $this->repository->getActiveTokens();
-        
+
         $this->assertIsArray($activeTokens);
         $this->assertCount(0, $activeTokens);
     }
@@ -154,7 +156,7 @@ class ProgressNotifierRepositoryTest extends TestCase
         $this->repository->registerToken($token3, 'client-3');
 
         $activeTokens = $this->repository->getActiveTokens();
-        
+
         $this->assertCount(3, $activeTokens);
         $this->assertContains($token1, $activeTokens);
         $this->assertContains($token2, $activeTokens);
@@ -177,8 +179,8 @@ class ProgressNotifierRepositoryTest extends TestCase
                 'progressToken' => $progressToken,
                 'progress' => 50,
                 'total' => 100,
-                'message' => 'Test message'
-            ]
+                'message' => 'Test message',
+            ],
         ];
 
         $this->transport
@@ -197,8 +199,8 @@ class ProgressNotifierRepositoryTest extends TestCase
             'method' => 'notifications/progress',
             'params' => [
                 'progressToken' => 'inactive-token',
-                'progress' => 50
-            ]
+                'progress' => 50,
+            ],
         ];
 
         $this->expectException(ProgressTokenException::class);
@@ -228,13 +230,13 @@ class ProgressNotifierRepositoryTest extends TestCase
         $message1 = [
             'jsonrpc' => '2.0',
             'method' => 'notifications/progress',
-            'params' => ['progressToken' => $token1, 'progress' => 25]
+            'params' => ['progressToken' => $token1, 'progress' => 25],
         ];
 
         $message2 = [
             'jsonrpc' => '2.0',
             'method' => 'notifications/progress',
-            'params' => ['progressToken' => $token2, 'progress' => 75]
+            'params' => ['progressToken' => $token2, 'progress' => 75],
         ];
 
         $this->transport

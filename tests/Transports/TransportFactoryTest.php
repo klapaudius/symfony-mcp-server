@@ -18,8 +18,11 @@ use Symfony\Component\Routing\RouterInterface;
 class TransportFactoryTest extends TestCase
 {
     private RouterInterface|MockObject $router;
+
     private SseAdapterInterface|MockObject $adapter;
+
     private LoggerInterface|MockObject $logger;
+
     private TransportFactory $factory;
 
     protected function setUp(): void
@@ -57,7 +60,7 @@ class TransportFactoryTest extends TestCase
 
         // Assert
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unsupported protocol version: ' . $unsupportedVersion);
+        $this->expectExceptionMessage('Unsupported protocol version: '.$unsupportedVersion);
 
         // Act
         $this->factory->create($unsupportedVersion);

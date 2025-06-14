@@ -7,6 +7,4 @@ use Exception;
 /**
  * Exception thrown by the Streamable HTTP Transport.
  */
-class StreamableHttpTransportException extends Exception
-{
-}
+class StreamableHttpTransportException extends Exception {}

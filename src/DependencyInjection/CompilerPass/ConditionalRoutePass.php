@@ -6,7 +6,6 @@ namespace KLP\KlpMcpServer\DependencyInjection\CompilerPass;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Compiler pass to conditionally register routes based on enabled server providers
@@ -15,7 +14,7 @@ class ConditionalRoutePass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasParameter('klp_mcp_server.providers')) {
+        if (! $container->hasParameter('klp_mcp_server.providers')) {
             return;
         }
 

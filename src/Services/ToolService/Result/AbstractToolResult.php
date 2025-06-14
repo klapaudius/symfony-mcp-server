@@ -7,6 +7,7 @@ namespace KLP\KlpMcpServer\Services\ToolService\Result;
  * This class serves as a base for defining specific tool results.
  *
  * @internal
+ *
  * @see https://modelcontextprotocol.io/specification/2025-03-26/server/tools
  */
 abstract class AbstractToolResult implements ToolResultInterface
@@ -39,7 +40,7 @@ abstract class AbstractToolResult implements ToolResultInterface
     /**
      * Sets the type of the tool result.
      *
-     * @param string $type The result type to set
+     * @param  string  $type  The result type to set
      */
     protected function setType(string $type): void
     {
@@ -59,7 +60,7 @@ abstract class AbstractToolResult implements ToolResultInterface
     /**
      * Sets the key identifier for the result data.
      *
-     * @param string $key The result key to set
+     * @param  string  $key  The result key to set
      */
     protected function setKey(string $key): void
     {
@@ -79,7 +80,7 @@ abstract class AbstractToolResult implements ToolResultInterface
     /**
      * Sets the value content of the tool result.
      *
-     * @param string $value The result value to set
+     * @param  string  $value  The result value to set
      */
     protected function setValue(string $value): void
     {

@@ -19,6 +19,7 @@ use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 class ToolsCallHandler implements RequestHandler
 {
     private ToolRepository $toolRepository;
+
     private ProgressNotifierRepository $progressNotifierRepository;
 
     public function __construct(ToolRepository $toolRepository, ProgressNotifierRepository $progressNotifierRepository)
@@ -57,11 +58,11 @@ class ToolsCallHandler implements RequestHandler
         }
 
         $arguments = $params['arguments'] ?? [];
-        $progressToken = $params["_meta"]['progressToken'] ?? null;
+        $progressToken = $params['_meta']['progressToken'] ?? null;
 
         ToolParamsValidator::validate($tool->getInputSchema(), $arguments);
 
-        if ( $tool instanceof StreamableToolInterface
+        if ($tool instanceof StreamableToolInterface
             && $tool->isStreaming()
             && $progressToken
         ) {
@@ -79,9 +80,9 @@ class ToolsCallHandler implements RequestHandler
                     '1.2',
                     sprintf(
                         'The return value of the "%s" method must be an instance of "%s", please use one of this classes instead: "%s".',
-                        get_class($tool)."::execute",
+                        get_class($tool).'::execute',
                         ToolResultInterface::class,
-                        join(', ', [
+                        implode(', ', [
                             TextToolResult::class,
                             ImageToolResult::class,
                             AudioToolResult::class,
@@ -91,6 +92,7 @@ class ToolsCallHandler implements RequestHandler
 
                 $result = new TextToolResult(is_string($result) ? $result : json_encode($result));
             }
+
             return [
                 'content' => [
                     $result->getSanitizedResult(),

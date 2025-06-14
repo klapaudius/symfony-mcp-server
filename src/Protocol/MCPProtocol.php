@@ -25,6 +25,7 @@ use KLP\KlpMcpServer\Utils\DataUtil;
  * MCPProtocol
  *
  * @internal
+ *
  * @see https://modelcontextprotocol.io/docs/concepts/architecture
  */
 final class MCPProtocol implements MCPProtocolInterface
@@ -45,9 +46,7 @@ final class MCPProtocol implements MCPProtocolInterface
      * @param  TransportFactoryInterface  $transportFactory  The transport factory to use for creating transports.
      * @return void
      */
-    public function __construct(private readonly TransportFactoryInterface $transportFactory)
-    {
-    }
+    public function __construct(private readonly TransportFactoryInterface $transportFactory) {}
 
     /**
      * Establishes a connection and processes incoming messages from the transport layer.
@@ -259,6 +258,7 @@ final class MCPProtocol implements MCPProtocolInterface
                 $result[] = json_decode($message);
             }
         }
+
         return $result;
     }
 
