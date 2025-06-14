@@ -90,7 +90,7 @@ abstract class AbstractToolResult implements ToolResultInterface
     /**
      * Returns the sanitized result array formatted according to MCP specification.
      *
-     * @return array<string, mixed> The sanitized result data
+     * @return array The sanitized result data
      */
     abstract public function getSanitizedResult(): array;
 }

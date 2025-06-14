@@ -14,7 +14,7 @@ interface ToolResultInterface
      * This method must return a properly formatted array that conforms to the
      * Model Context Protocol specification for tool results.
      *
-     * @return array<string, mixed> The sanitized result data
+     * @return array The sanitized result data
      */
     public function getSanitizedResult(): array;
 }

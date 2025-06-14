@@ -8,6 +8,7 @@ use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\ToolService\Result\AudioToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
@@ -92,11 +93,12 @@ class ToolsCallHandler implements RequestHandler
 
                 $result = new TextToolResult(is_string($result) ? $result : json_encode($result));
             }
+            $content = $result instanceof CollectionToolResult
+                ? $result->getSanitizedResult()
+                : [ $result->getSanitizedResult() ];
 
             return [
-                'content' => [
-                    $result->getSanitizedResult(),
-                ],
+                'content' => $content,
             ];
         } else {
             return [
