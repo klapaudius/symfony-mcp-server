@@ -13,7 +13,7 @@ class CollectionToolResultTest extends TestCase
 {
     public function test_constructor_creates_empty_collection(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         $this->assertInstanceOf(CollectionToolResult::class, $collection);
         $this->assertInstanceOf(ToolResultInterface::class, $collection);
@@ -21,7 +21,7 @@ class CollectionToolResultTest extends TestCase
 
     public function test_get_sanitized_result_returns_empty_array_when_no_items(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         $result = $collection->getSanitizedResult();
 
@@ -31,7 +31,7 @@ class CollectionToolResultTest extends TestCase
 
     public function test_add_item_with_single_text_result(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
         $textResult = new TextToolResult('Test text');
 
         $collection->addItem($textResult);
@@ -41,13 +41,13 @@ class CollectionToolResultTest extends TestCase
         $this->assertIsArray($result);
         $this->assertCount(1, $result);
         $this->assertEquals([
-            ['type' => 'text', 'text' => 'Test text']
+            ['type' => 'text', 'text' => 'Test text'],
         ], $result);
     }
 
     public function test_add_multiple_items_of_same_type(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
         $textResult1 = new TextToolResult('First text');
         $textResult2 = new TextToolResult('Second text');
         $textResult3 = new TextToolResult('Third text');
@@ -63,13 +63,13 @@ class CollectionToolResultTest extends TestCase
         $this->assertEquals([
             ['type' => 'text', 'text' => 'First text'],
             ['type' => 'text', 'text' => 'Second text'],
-            ['type' => 'text', 'text' => 'Third text']
+            ['type' => 'text', 'text' => 'Third text'],
         ], $result);
     }
 
     public function test_add_multiple_items_of_different_types(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         // Create mock for different result types since we need to test mixed types
         $textResult = new TextToolResult('Test text');
@@ -79,7 +79,7 @@ class CollectionToolResultTest extends TestCase
         $imageResult->method('getSanitizedResult')->willReturn([
             'type' => 'image',
             'data' => 'base64imagedata',
-            'mimeType' => 'image/png'
+            'mimeType' => 'image/png',
         ]);
 
         // Mock audio result
@@ -87,7 +87,7 @@ class CollectionToolResultTest extends TestCase
         $audioResult->method('getSanitizedResult')->willReturn([
             'type' => 'audio',
             'data' => 'base64audiodata',
-            'mimeType' => 'audio/mpeg'
+            'mimeType' => 'audio/mpeg',
         ]);
 
         $collection->addItem($textResult);
@@ -101,14 +101,14 @@ class CollectionToolResultTest extends TestCase
         $this->assertEquals([
             ['type' => 'text', 'text' => 'Test text'],
             ['type' => 'image', 'data' => 'base64imagedata', 'mimeType' => 'image/png'],
-            ['type' => 'audio', 'data' => 'base64audiodata', 'mimeType' => 'audio/mpeg']
+            ['type' => 'audio', 'data' => 'base64audiodata', 'mimeType' => 'audio/mpeg'],
         ], $result);
     }
 
     public function test_nested_collections_will_throw_exception(): void
     {
-        $outerCollection = new CollectionToolResult();
-        $innerCollection = new CollectionToolResult();
+        $outerCollection = new CollectionToolResult;
+        $innerCollection = new CollectionToolResult;
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('CollectionToolResult cannot contain other CollectionToolResult');
@@ -118,7 +118,7 @@ class CollectionToolResultTest extends TestCase
 
     public function test_preserve_item_order(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         // Add items in specific order
         for ($i = 1; $i <= 5; $i++) {
@@ -132,22 +132,23 @@ class CollectionToolResultTest extends TestCase
 
         // Verify order is preserved
         for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals("Item " . ($i + 1), $result[$i]['text']);
+            $this->assertEquals('Item '.($i + 1), $result[$i]['text']);
         }
     }
 
     public function test_handle_custom_tool_result_implementation(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         // Create a custom implementation of ToolResultInterface
-        $customResult = new class implements ToolResultInterface {
+        $customResult = new class implements ToolResultInterface
+        {
             public function getSanitizedResult(): array
             {
                 return [
                     'type' => 'custom',
                     'customField' => 'customValue',
-                    'data' => ['nested' => 'structure']
+                    'data' => ['nested' => 'structure'],
                 ];
             }
         };
@@ -162,14 +163,14 @@ class CollectionToolResultTest extends TestCase
             [
                 'type' => 'custom',
                 'customField' => 'customValue',
-                'data' => ['nested' => 'structure']
-            ]
+                'data' => ['nested' => 'structure'],
+            ],
         ], $result);
     }
 
     public function test_large_collection_performance(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
         $itemCount = 1000;
 
         // Add many items
@@ -190,7 +191,7 @@ class CollectionToolResultTest extends TestCase
 
     public function test_handle_empty_string_values(): void
     {
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         $collection->addItem(new TextToolResult(''));
         $collection->addItem(new TextToolResult('Non-empty'));
@@ -203,7 +204,7 @@ class CollectionToolResultTest extends TestCase
         $this->assertEquals([
             ['type' => 'text', 'text' => ''],
             ['type' => 'text', 'text' => 'Non-empty'],
-            ['type' => 'text', 'text' => '']
+            ['type' => 'text', 'text' => ''],
         ], $result);
     }
 }

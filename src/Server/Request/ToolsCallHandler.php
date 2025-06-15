@@ -95,7 +95,7 @@ class ToolsCallHandler implements RequestHandler
             }
             $content = $result instanceof CollectionToolResult
                 ? $result->getSanitizedResult()
-                : [ $result->getSanitizedResult() ];
+                : [$result->getSanitizedResult()];
 
             return [
                 'content' => $content,

@@ -4,11 +4,11 @@ namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -19,13 +19,14 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class ProfileGeneratorTool implements StreamableToolInterface
 {
     private string $baseDir;
-    private ProgressNotifierInterface $progressNotifier;
 
+    private ProgressNotifierInterface $progressNotifier;
 
     public function __construct(KernelInterface $kernel)
     {
         $this->baseDir = $kernel->getProjectDir().'/vendor/klapaudius/symfony-mcp-server/docs';
     }
+
     public function getName(): string
     {
         return 'profile-generator';
@@ -56,7 +57,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation();
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): ToolResultInterface
@@ -64,7 +65,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
         $name = $arguments['name'] ?? 'Unknown User';
         $role = $arguments['role'] ?? 'User';
 
-        $collection = new CollectionToolResult();
+        $collection = new CollectionToolResult;
 
         // Generate text profile
         $this->progressNotifier->sendProgress(
@@ -130,6 +131,6 @@ TEXT;
      */
     private function generateProfileId(string $name): string
     {
-        return 'PROF-' . strtoupper(substr(md5($name . time()), 0, 8));
+        return 'PROF-'.strtoupper(substr(md5($name.time()), 0, 8));
     }
 }

@@ -6,8 +6,6 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
-use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
-use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -16,6 +14,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class ProfileGeneratorToolTest extends TestCase
 {
     private ProfileGeneratorTool $tool;
+
     private string $mockImagePath;
 
     protected function setUp(): void
@@ -27,7 +26,7 @@ class ProfileGeneratorToolTest extends TestCase
         $this->mockImagePath = '/tmp/test-project/vendor/klapaudius/symfony-mcp-server/docs/assets/avatar_sample.jpg';
 
         $dir = dirname($this->mockImagePath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
 
