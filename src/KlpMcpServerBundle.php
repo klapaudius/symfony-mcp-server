@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer;
 
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ConditionalRoutePass;
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\PromptsDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ResourcesDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -15,6 +16,7 @@ class KlpMcpServerBundle extends Bundle
         parent::build($container);
         $container->addCompilerPass(new ToolsDefinitionCompilerPass);
         $container->addCompilerPass(new ResourcesDefinitionCompilerPass);
+        $container->addCompilerPass(new PromptsDefinitionCompilerPass);
         $container->addCompilerPass(new ConditionalRoutePass);
     }
 }

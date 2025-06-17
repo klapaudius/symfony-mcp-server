@@ -19,7 +19,29 @@ interface ServerCapabilitiesInterface
      *
      * @see https://modelcontextprotocol.io/docs/concepts/tools
      */
-    public function withTools(?array $config = []): \KLP\KlpMcpServer\Server\ServerCapabilities;
+    public function withTools(?array $config = []): self;
+
+    /**
+     * Enables the resources capability for the server instance.
+     * Allows specifying optional configuration details for the resources feature.
+     *
+     * @param  array|null  $config  Optional configuration data specific to the resources capability.
+     *                              Defaults to an empty array if not provided.
+     *
+     * @see https://modelcontextprotocol.io/docs/concepts/resources
+     */
+    public function withResources(?array $config = []): self;
+
+    /**
+     * Enables the prompts capability for the server instance.
+     * Allows specifying optional configuration details for the prompts feature.
+     *
+     * @param  array|null  $config  Optional configuration data specific to the prompts capability.
+     *                              Defaults to an empty array if not provided.
+     *
+     * @see https://modelcontextprotocol.io/docs/concepts/prompts
+     */
+    public function withPrompts(?array $config = []): self;
 
     /**
      * Converts the server capabilities configuration into an array format suitable for JSON serialization.

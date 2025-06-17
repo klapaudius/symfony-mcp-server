@@ -82,6 +82,11 @@
         <service id="klp_mcp_server.resource_repository" class="KLP\KlpMcpServer\Services\ResourceService\ResourceRepository">
             <argument type="service" id="service_container" on-invalid="null" />
         </service>
+
+        <!-- Prompt services -->
+        <service id="klp_mcp_server.prompt_repository" class="KLP\KlpMcpServer\Services\PromptService\PromptRepository">
+            <argument type="service" id="service_container" on-invalid="null" />
+        </service>
     </services>
 
 </container>

@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests;
 
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ConditionalRoutePass;
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\PromptsDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ResourcesDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use KLP\KlpMcpServer\KlpMcpServerBundle;
@@ -25,10 +26,11 @@ class KlpMcpServerBundleTest extends TestCase
         $invocations = [
             ToolsDefinitionCompilerPass::class,
             ResourcesDefinitionCompilerPass::class,
+            PromptsDefinitionCompilerPass::class,
             ConditionalRoutePass::class,
         ];
         $containerBuilder
-            ->expects($matcher = $this->exactly(3))
+            ->expects($matcher = $this->exactly(4))
             ->method('addCompilerPass')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertInstanceOf($invocations[$matcher->numberOfInvocations() - 1], $argument);

@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\DependencyInjection;
 
 use KLP\KlpMcpServer\DependencyInjection\KlpMcpServerExtension;
+use KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt;
 use KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource;
 use KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
@@ -58,7 +59,7 @@ class KlpMcpServerExtensionTest extends TestCase
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
             'resources' => [HelloWorldResource::class],
             'resources_templates' => [McpDocumentationResource::class],
-            //            'prompts' => ['prompt1', 'prompt2'],
+            'prompts' => [],
         ];
 
         $this->extension->load([$configs], $this->container);
@@ -79,7 +80,7 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
         $this->assertEquals([HelloWorldResource::class], $this->container->getParameter('klp_mcp_server.resources'));
         $this->assertEquals([McpDocumentationResource::class], $this->container->getParameter('klp_mcp_server.resources_templates'));
-        //        $this->assertEquals(['prompt1', 'prompt2'], $this->container->getParameter('klp_mcp_server.prompts'));
+        $this->assertEquals([], $this->container->getParameter('klp_mcp_server.prompts'));
     }
 
     /**
@@ -113,6 +114,7 @@ class KlpMcpServerExtensionTest extends TestCase
                 ],
             ],
             'tools' => [HelloWorldTool::class, VersionCheckTool::class],
+            'prompts' => [HelloWorldPrompt::class],
             'resources' => [HelloWorldResource::class],
             'resources_templates' => [McpDocumentationResource::class],
         ];
@@ -134,7 +136,27 @@ class KlpMcpServerExtensionTest extends TestCase
         $this->assertEquals(200, $this->container->getParameter('klp_mcp_server.adapters.cache.ttl'));
         $this->assertEquals([HelloWorldTool::class, VersionCheckTool::class], $this->container->getParameter('klp_mcp_server.tools'));
         $this->assertEquals([HelloWorldResource::class], $this->container->getParameter('klp_mcp_server.resources'));
+        $this->assertEquals([HelloWorldPrompt::class], $this->container->getParameter('klp_mcp_server.prompts'));
         $this->assertEquals([McpDocumentationResource::class], $this->container->getParameter('klp_mcp_server.resources_templates'));
+    }
+
+    /**
+     * Tests that prompts parameter is correctly set
+     */
+    public function test_load_sets_prompts_parameter(): void
+    {
+        $configs = [
+            'prompts' => [
+                HelloWorldPrompt::class,
+            ],
+        ];
+
+        $this->extension->load([$configs], $this->container);
+
+        $this->assertEquals(
+            [HelloWorldPrompt::class],
+            $this->container->getParameter('klp_mcp_server.prompts')
+        );
     }
 
     /**

@@ -7,6 +7,8 @@ use KLP\KlpMcpServer\Data\Resources\InitializeResource;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -48,7 +50,23 @@ interface MCPServerInterface
      *
      * @param  ToolRepository  $toolRepository  The repository containing available tools.
      */
-    public function registerToolRepository(ToolRepository $toolRepository): \KLP\KlpMcpServer\Server\MCPServer;
+    public function registerToolRepository(ToolRepository $toolRepository): self;
+
+    /**
+     * Registers the necessary request handlers for MCP Resources functionality.
+     * This typically includes handlers for 'resources/list' and 'resources/read'.
+     *
+     * @param  ResourceRepository  $resourceRepository  The repository containing available resources.
+     */
+    public function registerResourceRepository(ResourceRepository $resourceRepository): self;
+
+    /**
+     * Registers the necessary request handlers for MCP Prompts functionality.
+     * This typically includes handlers for 'prompts/list' and 'prompts/get'.
+     *
+     * @param  PromptRepository  $promptRepository  The repository containing available prompts.
+     */
+    public function registerPromptRepository(PromptRepository $promptRepository): self;
 
     /**
      * Initiates the connection process via the protocol handler.

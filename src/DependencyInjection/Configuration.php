@@ -26,6 +26,7 @@ class Configuration implements ConfigurationInterface
 
                 // Server Information
             ->arrayNode('server')
+            ->addDefaultsIfNotSet()
             ->children()
             ->scalarNode('name')
             ->defaultValue('KLP MCP Server')
@@ -46,6 +47,7 @@ class Configuration implements ConfigurationInterface
 
                 // ping feature
             ->arrayNode('ping')
+            ->addDefaultsIfNotSet()
             ->children()
             ->booleanNode('enabled')
             ->defaultFalse()
@@ -111,11 +113,15 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
-                // Prompts Comming Next
-//            ->arrayNode('prompts')
-//            ->prototype('scalar')
-//            ->end()
-//            ->end()
+                // Prompts
+            ->arrayNode('prompts')
+            ->prototype('scalar')
+            ->validate()
+            ->ifTrue(static fn ($v) => ! class_exists($v))
+            ->thenInvalid('The prompt "%s" must be a valid fully qualified class name.')
+            ->end()
+            ->end()
+            ->end()
 
                 // Resources
             ->arrayNode('resources')
