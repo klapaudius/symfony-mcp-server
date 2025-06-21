@@ -59,6 +59,7 @@ final readonly class StreamableHttpController
                 'Content-Type' => 'text/event-stream',
                 'Cache-Control' => 'no-cache, private',
                 'X-Accel-Buffering' => 'no',
+                "Mcp-Session-Id" => $clientId,
             ]);
         } catch (JsonException|StreamableHttpTransportException $e) {
             $message = $e instanceof JsonException ? 'Parse error' : $e->getMessage();

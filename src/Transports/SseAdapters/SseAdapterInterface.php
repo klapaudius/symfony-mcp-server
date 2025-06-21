@@ -87,4 +87,24 @@ interface SseAdapterInterface
      * @throws SseAdapterException If the timestamp cannot be retrieved
      */
     public function getLastPongResponseTimestamp(string $clientId): ?int;
+
+    /**
+     * Store sampling capability information for a specific client
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @param  bool  $hasSamplingCapability  Whether the client supports sampling
+     *
+     * @throws SseAdapterException If the sampling capability cannot be stored
+     */
+    public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void;
+
+    /**
+     * Check if a specific client has sampling capability
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @return bool True if the client supports sampling, false otherwise
+     *
+     * @throws SseAdapterException If the sampling capability cannot be retrieved
+     */
+    public function hasSamplingCapability(string $clientId): bool;
 }

@@ -12,6 +12,8 @@ class CachePoolAdapter implements SseAdapterInterface
 
     private const DEFAULT_MESSAGE_TTL = 100;
 
+    private const SAMPLING_KEY_SUFFIX = '|sampling';
+
     /**
      * Key prefix for SSE messages
      */
@@ -139,5 +141,35 @@ class CachePoolAdapter implements SseAdapterInterface
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
         return $this->cache->getItem($this->generateQueueKey($clientId).'|last_pong')->get();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void
+    {
+        try {
+            $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
+            $cacheItem->set($hasSamplingCapability);
+            $cacheItem->expiresAfter(60*60*24);
+            $this->cache->save($cacheItem);
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to store sampling capability: '.$e->getMessage());
+            throw new SseAdapterException('Failed to store sampling capability', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasSamplingCapability(string $clientId): bool
+    {
+        try {
+            $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
+            return $cacheItem->get() ?? false;
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to retrieve sampling capability: '.$e->getMessage());
+            throw new SseAdapterException('Failed to retrieve sampling capability', 0, $e);
+        }
     }
 }

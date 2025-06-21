@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\Transports\SseAdapters;
 
 use KLP\KlpMcpServer\Transports\SseAdapters\CachePoolAdapter;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -568,5 +569,184 @@ class CachePoolAdapterTest extends TestCase
             ->with($this->cacheItemMock);
 
         $this->adapter->storeLastPongResponseTimestamp($clientId);
+    }
+
+    /**
+     * Tests that storeSamplingCapability stores true sampling capability in the cache.
+     */
+    public function test_store_sampling_capability_stores_true_value(): void
+    {
+        $clientId = 'client123';
+        $hasSamplingCapability = true;
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with($hasSamplingCapability);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(86400);
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->cacheItemMock);
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that storeSamplingCapability stores false sampling capability in the cache.
+     */
+    public function test_store_sampling_capability_stores_false_value(): void
+    {
+        $clientId = 'client456';
+        $hasSamplingCapability = false;
+        $queueKey = 'test_prefix_|client|client456|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with($hasSamplingCapability);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(86400);
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->cacheItemMock);
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that storeSamplingCapability handles InvalidArgumentException and throws SseAdapterException.
+     */
+    public function test_store_sampling_capability_handles_invalid_argument_exception(): void
+    {
+        $clientId = 'client789';
+        $hasSamplingCapability = true;
+        $queueKey = 'test_prefix_|client|client789|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to store sampling capability'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to store sampling capability');
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns true when the client has sampling capability.
+     */
+    public function test_has_sampling_capability_returns_true_when_capability_exists(): void
+    {
+        $clientId = 'client123';
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(true);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns false when the client has no sampling capability stored.
+     */
+    public function test_has_sampling_capability_returns_false_when_capability_is_false(): void
+    {
+        $clientId = 'client456';
+        $queueKey = 'test_prefix_|client|client456|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(false);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns false when no sampling capability is stored (cache miss).
+     */
+    public function test_has_sampling_capability_returns_false_on_cache_miss(): void
+    {
+        $clientId = 'client789';
+        $queueKey = 'test_prefix_|client|client789|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(null);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability handles InvalidArgumentException and throws SseAdapterException.
+     */
+    public function test_has_sampling_capability_handles_invalid_argument_exception(): void
+    {
+        $clientId = 'client123';
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to retrieve sampling capability'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to retrieve sampling capability');
+
+        $this->adapter->hasSamplingCapability($clientId);
     }
 }

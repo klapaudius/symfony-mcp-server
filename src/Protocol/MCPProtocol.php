@@ -262,6 +262,11 @@ final class MCPProtocol implements MCPProtocolInterface
         return $result;
     }
 
+    public function setClientSamplingCapability(bool $hasSamplingCapability): void
+    {
+        $this->transport->setClientSamplingCapability($hasSamplingCapability);
+    }
+
     public function setProtocolVersion(string $version): void
     {
         $this->initTransport($version);

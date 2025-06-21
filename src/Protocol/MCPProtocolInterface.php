@@ -41,4 +41,6 @@ interface MCPProtocolInterface
     public function getResponseResult(string $clientId): array;
 
     public function getClientId(): string;
+
+    public function setClientSamplingCapability(bool $hasSamplingCapability): void;
 }

@@ -206,6 +206,8 @@ final class MCPServer implements MCPServerInterface
         $this->initialized = true;
 
         $protocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+        $hasSamplingCapability = isset($data->capabilities['sampling']);
+        $this->protocol->setClientSamplingCapability($hasSamplingCapability);
 
         return new InitializeResource(
             $this->serverInfo['name'],

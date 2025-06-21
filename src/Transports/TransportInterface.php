@@ -104,4 +104,12 @@ interface TransportInterface
      * @return string The client ID.
      */
     public function getClientId(): string;
+
+    /**
+     * Sets the client sampling capability status.
+     *
+     * @param bool $hasSamplingCapability Indicates whether the client has sampling capability.
+     * @return void
+     */
+    public function setClientSamplingCapability(bool $hasSamplingCapability): void;
 }

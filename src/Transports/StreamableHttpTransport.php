@@ -120,4 +120,9 @@ final class StreamableHttpTransport extends AbstractTransport implements Streama
         ini_set('zlib.output_compression', false);
         ini_set('zlib.default_socket_timeout', 5);
     }
+
+    public function setClientSamplingCapability(bool $hasSamplingCapability): void
+    {
+        $this->getAdapter()->storeSamplingCapability($this->getClientId(), $hasSamplingCapability);;
+    }
 }

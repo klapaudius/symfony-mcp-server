@@ -358,4 +358,6 @@ abstract class AbstractTransport implements TransportInterface
      * @return string The transport name.
      */
     abstract protected function getTransportName(): string;
+
+    abstract public function setClientSamplingCapability(bool $hasSamplingCapability): void;
 }

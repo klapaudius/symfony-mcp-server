@@ -429,6 +429,10 @@ class MCPServerTest extends TestCase
             ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
+        $mockProtocol->expects($this->once())
+            ->method('setClientSamplingCapability')
+            ->with(false);
+
         $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
         $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
         $initializeData = new InitializeData('2.0', ['mock-capability' => true]);
@@ -452,6 +456,10 @@ class MCPServerTest extends TestCase
         $mockProtocol = $this->createMock(MCPProtocolInterface::class);
         $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
         $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
+
+        $mockProtocol->expects($this->once())
+            ->method('setClientSamplingCapability')
+            ->with(false);
 
         $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
         $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
@@ -486,9 +494,44 @@ class MCPServerTest extends TestCase
             ->method('toInitializeMessage')
             ->willReturn(['mock-capability' => true]);
 
+        $mockProtocol->expects($this->once())
+            ->method('setClientSamplingCapability')
+            ->with(false);
+
         $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
         $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
         $initializeData = new InitializeData('2024-11-05', ['mock-capability' => true]);
+
+        // Act
+        $initializeResource = $server->initialize($initializeData);
+
+        // Assert
+        $this->assertInstanceOf(InitializeResource::class, $initializeResource);
+        $this->assertEquals('2024-11-05', $initializeResource->protocolVersion);
+        $this->assertSame(['mock-capability' => true], $initializeResource->capabilities);
+        $this->assertEquals($serverInfo, $initializeResource->serverInfo);
+    }
+
+    /**
+     * Tests that the initialize method correctly sets client sampling capability when enabled
+     */
+    public function test_initialize_sets_client_sampling_capability_when_enabled(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+        $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
+        $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
+        $mockCapabilities->expects($this->once())
+            ->method('toInitializeMessage')
+            ->willReturn(['mock-capability' => true]);
+
+        $mockProtocol->expects($this->once())
+            ->method('setClientSamplingCapability')
+            ->with(true);
+
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
+        $initializeData = new InitializeData('2024-11-05', ['sampling' => []]);
 
         // Act
         $initializeResource = $server->initialize($initializeData);

@@ -24,6 +24,8 @@ final class RedisAdapter implements SseAdapterInterface
 
     private const FAILED_TO_INITIALIZE = 'Failed to initialize Redis SSE Adapter: ';
 
+    private const SAMPLING_KEY_SUFFIX = ':sampling';
+
     /**
      * Redis connection instance
      */
@@ -210,6 +212,46 @@ final class RedisAdapter implements SseAdapterInterface
     }
 
     /**
+     * Store sampling capability information for a specific client
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @param  bool  $hasSamplingCapability  Whether the client supports sampling
+     *
+     * @throws SseAdapterException If the sampling capability cannot be stored
+     */
+    public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void
+    {
+        $this->executeRedisCommand(
+            function () use ($clientId, $hasSamplingCapability) {
+                $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+                $this->redis->set($key, $hasSamplingCapability ? '1' : '0');
+                $this->setKeyExpiration($key, 60*60*24);
+            },
+            'Failed to store sampling capability'
+        );
+    }
+
+    /**
+     * Check if a specific client has sampling capability
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @return bool True if the client supports sampling, false otherwise
+     *
+     * @throws SseAdapterException If the sampling capability cannot be retrieved
+     */
+    public function hasSamplingCapability(string $clientId): bool
+    {
+        try {
+            $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+            $capability = $this->redis->get($key);
+
+            return $capability === '1';
+        } catch (Exception $e) {
+            $this->logAndThrow('Failed to retrieve sampling capability: '.$e->getMessage(), $e);
+        }
+    }
+
+    /**
      * Get the Redis key for a client's message queue
      *
      * @param  string  $clientId  The client ID
@@ -224,10 +266,13 @@ final class RedisAdapter implements SseAdapterInterface
      * Set the expiration time for the specified key in Redis
      *
      * @param  string  $key  The key for which the expiration time will be set
+     * @param  int|null  $customTtl  The custom expiration time in seconds (defaults to the message TTL)
+     *
+     * @see https://redis.io/commands/expire
      */
-    private function setKeyExpiration(string $key): void
+    private function setKeyExpiration(string $key, ?int $customTtl = null): void
     {
-        $this->redis->expire($key, $this->messageTtl);
+        $this->redis->expire($key, $customTtl ?? $this->messageTtl);
     }
 
     /**
