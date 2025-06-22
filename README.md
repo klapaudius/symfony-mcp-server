@@ -75,6 +75,8 @@ Key benefits:
             - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
+        prompts:
+            - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
         resources:
             - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
         resources_templates:
@@ -168,7 +170,59 @@ This helps you rapidly develop and debug tools by:
 
 **For deep diving into tools creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
 
-### Visualizing MCP Tools with Inspector
+### Creating and Adding Custom Prompts
+
+The package provides convenient commands to generate new prompts:
+
+```bash
+php bin/console make:mcp-prompt MyCustomPrompt
+```
+
+This command:
+
+- Handles various input formats (spaces, hyphens, mixed case)
+- Automatically converts the name to the proper kebab-case format
+- Creates a properly structured prompt class in `src/MCP/Prompts`
+- Offers to automatically register the prompt in your configuration
+
+You can also manually create and register prompts in `config/packages/klp_mcp_server.yaml`:
+
+```php
+use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
+use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
+
+class MyCustomPrompt implements PromptInterface
+{
+    // Prompt implementation
+}
+```
+
+### Testing MCP Prompts
+
+The package includes a command for testing your MCP prompts without needing a real MCP client:
+
+```bash
+# Test a specific prompt interactively
+php bin/console mcp:test-prompt MyCustomPrompt
+
+# List all available prompts
+php bin/console mcp:test-prompt --list
+
+# Test with specific arguments
+php bin/console mcp:test-prompt MyCustomPrompt --arguments='{"topic":"AI","tone":"professional"}'
+```
+
+This helps you rapidly develop and debug prompts by:
+
+- Showing the prompt's argument schema and validating inputs
+- Executing the prompt with your provided arguments
+- Displaying formatted message results with proper role assignments
+- Supporting complex argument types including objects and arrays
+- Demonstrating multi-modal content (text, images, audio, resources)
+
+**For deep diving into prompts creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**
+
+### Visualizing with Inspector
 
 You can also use the Model Context Protocol Inspector to visualize and test your MCP tools:
 
@@ -193,7 +247,7 @@ This will typically open a web interface at `localhost:6274`. To test your MCP s
 | 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`                                   |
 |                              | `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.  |
 
-3. Connect and explore available tools visually
+3. Connect and explore available items visually
 
 ## Advanced Features
 
@@ -298,7 +352,7 @@ We are committed to actively pursuing the following key initiatives to enhance t
 - **Core Features:**
   - ✅ Resources implementation compliant with MCP specification.
   - ✅ Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
-  - ⏳️ Prompts implementation compliant with MCP specification.
+  - ✅ Prompts implementation compliant with MCP specification.
 - **Additional Adaptaters:**
   - Support for more Pub/Sub adapters (e.g., RabbitMQ).
 
