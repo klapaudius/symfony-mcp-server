@@ -27,7 +27,7 @@ final class AudioPromptMessage extends AbstractPromptMessage
     /**
      * {@inheritDoc}
      */
-    public function getSanitizedMessage(array $arguments = []): array
+    public function getSanitizedMessage(): array
     {
         return [
             'role' => $this->getRole(),

@@ -97,11 +97,8 @@ abstract class AbstractPromptMessage implements PromptMessageInterface
      *
      * @return string The message value
      */
-    protected function getValue(array $arguments = []): string
+    protected function getValue(): string
     {
-        foreach ($arguments as $key => $value) {
-            $this->value = str_replace("{{{$key}}}", $value ?? '', $this->value);
-        }
         return $this->value;
     }
 
@@ -120,8 +117,7 @@ abstract class AbstractPromptMessage implements PromptMessageInterface
      * This method receives the actual argument values and should return
      * the formatted prompt message.
      *
-     * @param array<string, mixed> $arguments The argument values provided by the user
      * @return array<int, array{role: string, content: array{type: string, text?: string, resource?: array{uri: string}}}>
      */
-    abstract public function getSanitizedMessage(array $arguments = []): array;
+    abstract public function getSanitizedMessage(): array;
 }

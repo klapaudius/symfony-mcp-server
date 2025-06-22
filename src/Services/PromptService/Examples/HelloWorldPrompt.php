@@ -45,13 +45,14 @@ class HelloWorldPrompt implements PromptInterface
     /**
      * Get the prompt messages with resolved arguments.
      */
-    public function getMessages(): CollectionPromptMessage
+    public function getMessages(array $arguments = []): CollectionPromptMessage
     {
+        $name = $arguments['name'] ?? 'World';
         return (new CollectionPromptMessage())
             ->addMessage(
                 new TextPromptMessage(
                     PromptMessageInterface::ROLE_USER,
-                    'Hello, {{name}}! This is an example MCP prompt.'
+                    "Hello, {$name}! This is an example MCP prompt."
                 )
             );
     }

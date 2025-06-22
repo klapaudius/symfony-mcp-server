@@ -13,7 +13,7 @@ use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
  */
 final class CollectionPromptMessage
 {
-    private array $messages = [];
+    public function __construct( private array $messages = [] ) {}
 
     public function addMessage(PromptMessageInterface $message): self
     {
@@ -25,11 +25,11 @@ final class CollectionPromptMessage
     /**
      * {@inheritDoc}
      */
-    final public function getSanitizedMessages(array $arguments = []): array
+    final public function getSanitizedMessages(): array
     {
         $result = [];
         foreach ($this->messages as $message) {
-            $result[] = $message->getSanitizedMessage($arguments);
+            $result[] = $message->getSanitizedMessage();
         }
 
         return $result;

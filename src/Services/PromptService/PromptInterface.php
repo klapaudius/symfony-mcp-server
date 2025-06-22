@@ -32,8 +32,9 @@ interface PromptInterface
 
     /**
      * Retrieve the collection of messages associated with the prompt.
+     * @param array<string, mixed> $arguments The argument values provided by the user
      *
      * @return CollectionPromptMessage The collection of prompt messages.
      */
-    public function getMessages(): CollectionPromptMessage;
+    public function getMessages(array $arguments = []): CollectionPromptMessage;
 }

@@ -43,7 +43,7 @@ class PromptsGetHandler implements RequestHandler
 
         return [
             'description' => $prompt->getDescription(),
-            'messages' => $prompt->getMessages()->getSanitizedMessages($arguments),
+            'messages' => $prompt->getMessages($arguments)->getSanitizedMessages(),
         ];
     }
 }

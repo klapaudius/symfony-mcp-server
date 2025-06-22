@@ -28,7 +28,7 @@ final class ResourcePromptMessage extends AbstractPromptMessage
     /**
      * {@inheritDoc}
      */
-    public function getSanitizedMessage(array $arguments = []): array
+    public function getSanitizedMessage(): array
     {
         return [
             'role' => $this->getRole(),
@@ -37,7 +37,7 @@ final class ResourcePromptMessage extends AbstractPromptMessage
                 $this->getKey() => [
                     'uri' => $this->uri,
                     'mimeType' => $this->mimeType,
-                    'text' => $this->getValue($arguments),
+                    'text' => $this->getValue(),
                 ],
             ],
         ];
