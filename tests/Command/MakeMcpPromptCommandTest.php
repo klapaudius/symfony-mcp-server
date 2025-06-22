@@ -308,7 +308,7 @@ YAML;
             ->with($this->callback(function ($path, $content = null) use ($invocations, $matcher) {
                 $invocationIndex = $matcher->numberOfInvocations() - 1;
                 $this->assertEquals($path, $invocations[$invocationIndex]);
-                
+
                 if ($invocationIndex === 1 && $content !== null) {
                     // Verify the empty array is replaced with actual prompts
                     $this->assertStringNotContainsString('prompts: []', $content);
@@ -385,7 +385,6 @@ YAML;
     {
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('getClassName');
-        $method->setAccessible(true);
 
         $testCases = [
             'test-prompt' => 'TestPrompt',
@@ -405,7 +404,7 @@ YAML;
         foreach ($testCases as $input => $expected) {
             $commandTester = new CommandTester($this->command);
             $commandTester->execute(['name' => $input]);
-            
+
             $result = $method->invoke($this->command);
             $this->assertEquals($expected, $result, "Failed for input: {$input}");
         }
@@ -418,7 +417,6 @@ YAML;
     {
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('buildClass');
-        $method->setAccessible(true);
 
         $stubContent = file_get_contents(__DIR__.'/../../src/stubs/prompt.stub');
         $this->filesystem
@@ -441,7 +439,6 @@ YAML;
     {
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('buildClass');
-        $method->setAccessible(true);
 
         $stubContent = file_get_contents(__DIR__.'/../../src/stubs/prompt.stub');
         $this->filesystem
@@ -469,7 +466,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -490,7 +486,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -509,7 +504,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -528,7 +522,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -542,7 +535,6 @@ YAML;
     {
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('kebab');
-        $method->setAccessible(true);
 
         $testCases = [
             'TestPrompt' => 'test-prompt',
@@ -567,7 +559,6 @@ YAML;
     {
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('studly');
-        $method->setAccessible(true);
 
         $testCases = [
             'test-prompt' => 'TestPrompt',
