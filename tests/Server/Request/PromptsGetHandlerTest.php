@@ -91,39 +91,4 @@ class PromptsGetHandlerTest extends TestCase
             ['role' => 'user', 'content' => ['type' => 'text', 'text' => 'Hello']]
         ], $result['messages']);
     }
-
-    public function test_execute_returns_prompt_messages_with_arguments(): void
-    {
-        $arguments = ['arg1' => 'value1', 'arg2' => 'value2'];
-
-        $collection = new CollectionPromptMessage();
-        $collection->addMessage(new TextPromptMessage('user', 'Hello {{arg1}} and {{arg2}}'));
-
-        $prompt = $this->createMock(PromptInterface::class);
-        $prompt->expects($this->once())
-            ->method('getDescription')
-            ->willReturn('Test prompt with args');
-        $prompt->expects($this->once())
-            ->method('getMessages')
-            ->willReturn($collection);
-
-        $this->promptRepository->expects($this->once())
-            ->method('getPrompt')
-            ->with('test-prompt')
-            ->willReturn($prompt);
-
-        $result = $this->handler->execute(
-            'prompts/get',
-            'client-123',
-            'msg-456',
-            ['name' => 'test-prompt', 'arguments' => $arguments]
-        );
-
-        $this->assertArrayHasKey('description', $result);
-        $this->assertEquals('Test prompt with args', $result['description']);
-        $this->assertArrayHasKey('messages', $result);
-        $this->assertEquals([
-            ['role' => 'user', 'content' => ['type' => 'text', 'text' => 'Hello value1 and value2']]
-        ], $result['messages']);
-    }
 }

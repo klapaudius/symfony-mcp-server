@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Symfony bundle that enables developers to seamlessly add a Model Context Protocol (MCP) server to their Symfony applications. The main goal is to provide a production-ready implementation following the official MCP specifications at https://modelcontextprotocol.io/specification/2025-03-26.
 
-The bundle allows Symfony applications to expose tools and resources that can be consumed by Large Language Models (LLMs) through secure transport protocols (SSE and StreamableHTTP), avoiding the security risks of STDIO transport in enterprise environments.
+The bundle allows Symfony applications to expose tools, resources, and prompts that can be consumed by Large Language Models (LLMs) through secure transport protocols (SSE and StreamableHTTP), avoiding the security risks of STDIO transport in enterprise environments.
 
 ## Commands
 
@@ -54,6 +54,7 @@ This is a Symfony bundle that implements the Model Context Protocol (MCP) server
 - **Dual Transport Support**: Both SSE (Server-Sent Events) and StreamableHTTP protocols
 - **Tool System**: Extensible framework for creating MCP tools that LLMs can invoke
 - **Resource System**: Management of resources that can be exposed to LLM clients
+- **Prompt System**: Pre-defined conversation starters and templates for LLM interactions
 - **Progress Notifications**: Real-time progress updates for long-running operations
 
 ### Key Components
@@ -69,9 +70,16 @@ This is a Symfony bundle that implements the Model Context Protocol (MCP) server
 - **ToolResultInterface**: Abstraction for different result types (Text, Image, Audio, Resource)
 - **ProgressNotifier**: System for sending real-time progress updates during tool execution
 
+#### Prompt System
+- **PromptInterface**: Core interface for creating prompts
+- **PromptMessageInterface**: Base interface for different message types
+- **Message Types**: TextPromptMessage, ImagePromptMessage, AudioPromptMessage, ResourcePromptMessage
+- **CollectionPromptMessage**: Container for multiple prompt messages
+- **PromptRepository**: Manages and retrieves available prompts
+
 #### Request Handlers
 - Located in `src/Server/Request/`: Handle different MCP protocol methods
-- Each handler implements specific MCP operations (initialize, tools/list, tools/call, etc.)
+- Each handler implements specific MCP operations (initialize, tools/list, tools/call, resources/list, resources/read, prompts/list, prompts/get, etc.)
 
 #### Protocol Implementation
 - **MCPProtocol**: Core protocol implementation handling request/response flow
@@ -80,7 +88,7 @@ This is a Symfony bundle that implements the Model Context Protocol (MCP) server
 
 ### Configuration
 - Main config: `config/packages/klp_mcp_server.yaml`
-- Tools and resources are registered in configuration
+- Tools, resources, and prompts are registered in configuration
 - Supports multiple adapters for SSE transport
 
 ## Important Notes

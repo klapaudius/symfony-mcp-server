@@ -144,7 +144,7 @@ class TestPrompt1 implements PromptInterface
         return [];
     }
 
-    public function getMessages(): CollectionPromptMessage
+    public function getMessages(array $arguments = []): CollectionPromptMessage
     {
         return (new CollectionPromptMessage())
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 1'));
@@ -168,7 +168,7 @@ class TestPrompt2 implements PromptInterface
         return [];
     }
 
-    public function getMessages(): CollectionPromptMessage
+    public function getMessages(array $arguments = []): CollectionPromptMessage
     {
         return (new CollectionPromptMessage())
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 2'));
@@ -192,7 +192,7 @@ class TestPrompt3 implements PromptInterface
         return [];
     }
 
-    public function getMessages(): CollectionPromptMessage
+    public function getMessages(array $arguments = []): CollectionPromptMessage
     {
         return (new CollectionPromptMessage())
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 3'));

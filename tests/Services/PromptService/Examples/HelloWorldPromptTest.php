@@ -65,14 +65,14 @@ class HelloWorldPromptTest extends TestCase
 
         $this->assertArrayHasKey('text', $message['content']);
         $this->assertEquals(
-            'Hello, {{name}}! This is an example MCP prompt.',
+            'Hello, World! This is an example MCP prompt.',
             $message['content']['text']
         );
     }
 
     public function test_get_messages_returns_personalized_greeting_with_name_argument(): void
     {
-        $messages = $this->prompt->getMessages()->getSanitizedMessages(['name' => 'Alice']);
+        $messages = $this->prompt->getMessages(['name' => 'Alice'])->getSanitizedMessages();
 
         $this->assertIsArray($messages);
         $this->assertCount(1, $messages);
@@ -96,11 +96,11 @@ class HelloWorldPromptTest extends TestCase
 
     public function test_get_messages_ignores_extra_arguments(): void
     {
-        $messages = $this->prompt->getMessages()->getSanitizedMessages([
+        $messages = $this->prompt->getMessages([
             'name' => 'Bob',
             'extra' => 'ignored',
             'another' => 'also ignored'
-        ]);
+        ])->getSanitizedMessages();
 
         $this->assertIsArray($messages);
         $this->assertCount(1, $messages);
@@ -114,7 +114,7 @@ class HelloWorldPromptTest extends TestCase
 
     public function test_get_messages_handles_empty_name(): void
     {
-        $messages = $this->prompt->getMessages()->getSanitizedMessages(['name' => '']);
+        $messages = $this->prompt->getMessages(['name' => ''])->getSanitizedMessages();
 
         $this->assertIsArray($messages);
         $this->assertCount(1, $messages);
@@ -128,14 +128,14 @@ class HelloWorldPromptTest extends TestCase
 
     public function test_get_messages_handles_null_name(): void
     {
-        $messages = $this->prompt->getMessages()->getSanitizedMessages(['name' => null]);
+        $messages = $this->prompt->getMessages(['name' => null])->getSanitizedMessages();
 
         $this->assertIsArray($messages);
         $this->assertCount(1, $messages);
 
         $message = $messages[0];
         $this->assertEquals(
-            'Hello, ! This is an example MCP prompt.',
+            'Hello, World! This is an example MCP prompt.',
             $message['content']['text']
         );
     }
