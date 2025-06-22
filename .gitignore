@@ -31,3 +31,4 @@ testbench.yaml
 /coverage
 /phpunit.coverage.xml
 /docker/.env
+/docs/private/
