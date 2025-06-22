@@ -74,9 +74,12 @@ klp_mcp_server:
         - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
 
     # Prompts List
-    # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/prompts
-    # prompts: []
+    # List of prompts supported by the MCP server. These values are used when
+    # generating the prompt list for the client.
+    # Register your prompts here
+    prompts:
+      - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
 
     # Resources List
     # https://modelcontextprotocol.io/docs/concepts/resources
