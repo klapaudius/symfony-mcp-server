@@ -1,0 +1,58 @@
+<?php
+
+namespace {{ namespace }};
+
+use KLP\KlpMcpServer\Services\PromptService\Message\CollectionPromptMessage;
+use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
+use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
+use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
+
+/**
+ * Example prompt implementation demonstrating the MCP prompt system.
+ */
+class {{ className }} implements PromptInterface
+{
+    /**
+     * Get the unique name of the prompt.
+     */
+    public function getName(): string
+    {
+        return '{{ toolName }}';
+    }
+
+    /**
+     * Get the human-readable description of what this prompt does.
+     */
+    public function getDescription(): string
+    {
+        return 'Description of {{ className }}';
+    }
+
+    /**
+     * Get the list of arguments this prompt accepts.
+     */
+    public function getArguments(): array
+    {
+        return [
+            [
+                'name' => 'property1',
+                'description' => 'The property1 description',
+                'required' => false,
+            ],
+        ];
+    }
+
+    /**
+     * Get the prompt messages with resolved arguments.
+     */
+    public function getMessages(array $arguments = []): CollectionPromptMessage
+    {
+        $property1 = $arguments['property1'] ?? 'default';
+        return (new CollectionPromptMessage([
+            new TextPromptMessage(
+                PromptMessageInterface::ROLE_USER,
+                "The property1 value is {$property1}!"
+            )
+        ]));
+    }
+}
