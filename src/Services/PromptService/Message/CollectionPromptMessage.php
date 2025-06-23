@@ -2,9 +2,6 @@
 
 namespace KLP\KlpMcpServer\Services\PromptService\Message;
 
-use KLP\KlpMcpServer\Services\PromptService\Message\AbstractPromptMessage;
-use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
-
 /**
  * Represents a text result from a tool operation.
  *
@@ -13,7 +10,7 @@ use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
  */
 final class CollectionPromptMessage
 {
-    public function __construct( private array $messages = [] ) {}
+    public function __construct(private array $messages = []) {}
 
     public function addMessage(PromptMessageInterface $message): self
     {
@@ -22,9 +19,6 @@ final class CollectionPromptMessage
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     final public function getSanitizedMessages(): array
     {
         $result = [];

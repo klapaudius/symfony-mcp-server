@@ -5,8 +5,8 @@ namespace KLP\KlpMcpServer\Tests\Command;
 use KLP\KlpMcpServer\Command\TestMcpPromptCommand;
 use KLP\KlpMcpServer\Exceptions\TestMcpPromptCommandException;
 use KLP\KlpMcpServer\Services\PromptService\Message\CollectionPromptMessage;
-use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
 use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
+use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
 use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use PHPUnit\Framework\Attributes\Small;
@@ -139,6 +139,7 @@ class TestMcpPromptCommandTest extends TestCase
                 } elseif ($callCount === 2) {
                     return $text === 'This prompt accepts no arguments.';
                 }
+
                 return false;
             }));
 
@@ -189,6 +190,7 @@ class TestMcpPromptCommandTest extends TestCase
             ->method('text')
             ->with($this->callback(function ($text) use (&$expectedTexts) {
                 $expected = array_shift($expectedTexts);
+
                 return $text === $expected;
             }));
 
@@ -488,6 +490,7 @@ class TestMcpPromptCommandTest extends TestCase
         $this->ioMock->expects($this->exactly(2))->method('section')
             ->with($this->callback(function ($text) use (&$sectionCalls) {
                 $sectionCalls++;
+
                 return $sectionCalls === 1 ? $text === 'Arguments Used' : $text === 'Generated Messages';
             }));
         $this->ioMock->expects($this->exactly(2))->method('newLine');
@@ -514,6 +517,7 @@ class TestMcpPromptCommandTest extends TestCase
                     case 8:
                         return $text === ['Content:', 'AI is artificial intelligence...'];
                 }
+
                 return false;
             }));
 
@@ -582,6 +586,7 @@ class TestMcpPromptCommandTest extends TestCase
                     case 4:
                         return $text === ['Image Data: base64-encoded-image-data', 'MIME Type: image/png'];
                 }
+
                 return false;
             }));
 
@@ -627,6 +632,7 @@ class TestMcpPromptCommandTest extends TestCase
                     case 4:
                         return $text === ['Resource URI: file:///path/to/resource.txt', 'Text: Resource content', 'MIME Type: text/plain'];
                 }
+
                 return false;
             }));
 
@@ -663,6 +669,7 @@ class TestMcpPromptCommandTest extends TestCase
                     case 3:
                         return $text === ['Raw message:', json_encode(['role' => 'user'], JSON_PRETTY_PRINT)];
                 }
+
                 return false;
             }));
 
@@ -680,7 +687,7 @@ class TestMcpPromptCommandTest extends TestCase
         $promptMock->method('getArguments')->willReturn([]);
 
         $textMessage = new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Hello');
-        $collectionMessage = new CollectionPromptMessage();
+        $collectionMessage = new CollectionPromptMessage;
         $collectionMessage->addMessage($textMessage);
 
         $promptMock->method('getMessages')->willReturn($collectionMessage);
@@ -720,7 +727,7 @@ class TestMcpPromptCommandTest extends TestCase
                 $textCallCount++;
                 if ($textCallCount === 1) {
                     // First call from displaySchema
-                    return is_array($text) && 
+                    return is_array($text) &&
                            str_starts_with($text[0], 'Testing prompt: test-prompt (') &&
                            $text[1] === 'Description: Test prompt';
                 } elseif ($textCallCount === 2) {
@@ -728,13 +735,14 @@ class TestMcpPromptCommandTest extends TestCase
                     return $text === 'This prompt accepts no arguments.';
                 } elseif ($textCallCount === 3) {
                     // Third call - executing prompt with arguments
-                    return is_array($text) && 
+                    return is_array($text) &&
                            $text[0] === 'Executing prompt with arguments:' &&
                            $text[1] === '[]';
                 } elseif ($textCallCount === 4) {
                     // Fourth call from error stack trace
-                    return is_array($text) && $text[0] === 'Stack trace:' && !empty($text[1]);
+                    return is_array($text) && $text[0] === 'Stack trace:' && ! empty($text[1]);
                 }
+
                 return false;
             }));
         $this->ioMock->expects($this->once())->method('newLine');
@@ -788,7 +796,7 @@ class TestMcpPromptCommandTest extends TestCase
                 'required' => true,
             ],
         ]);
-        
+
         $this->promptRepositoryMock->method('getPrompt')->willReturn($promptMock);
 
         // Instead of creating an actual CollectionPromptMessage,
@@ -807,17 +815,18 @@ class TestMcpPromptCommandTest extends TestCase
                 } elseif ($errorCalls === 2) {
                     return $text === 'Error executing prompt: Test error during prompt execution';
                 }
+
                 return false;
             }));
-        
+
         // Use willReturnCallback to handle multiple text() calls
         $this->ioMock->method('text');
         $this->ioMock->method('newLine');
-        
+
         // When askForArguments is called, user provides empty value for required field
         $this->ioMock->expects($this->once())->method('ask')->with('Value')->willReturn('');
         $this->ioMock->expects($this->once())->method('warning')->with('Required field skipped. Using empty string.');
-        
+
         $this->ioMock->method('section');
 
         $result = $this->command->execute($this->inputMock, $this->outputMock);

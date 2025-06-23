@@ -23,7 +23,7 @@ class PromptsGetHandler implements RequestHandler
 
     public function execute(string $method, string $clientId, string|int $messageId, ?array $params = null): array
     {
-        if (!isset($params['name']) || !is_string($params['name'])) {
+        if (! isset($params['name']) || ! is_string($params['name'])) {
             throw new JsonRpcErrorException(
                 message: 'Prompt name is required',
                 code: JsonRpcErrorCode::INVALID_PARAMS

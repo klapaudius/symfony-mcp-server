@@ -48,7 +48,8 @@ class HelloWorldPrompt implements PromptInterface
     public function getMessages(array $arguments = []): CollectionPromptMessage
     {
         $name = $arguments['name'] ?? 'World';
-        return (new CollectionPromptMessage())
+
+        return (new CollectionPromptMessage)
             ->addMessage(
                 new TextPromptMessage(
                     PromptMessageInterface::ROLE_USER,

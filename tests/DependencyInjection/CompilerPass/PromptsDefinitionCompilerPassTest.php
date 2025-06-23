@@ -4,8 +4,8 @@ namespace KLP\KlpMcpServer\Tests\DependencyInjection\CompilerPass;
 
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\PromptsDefinitionCompilerPass;
 use KLP\KlpMcpServer\Services\PromptService\Message\CollectionPromptMessage;
-use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
 use KLP\KlpMcpServer\Services\PromptService\Message\PromptMessageInterface;
+use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
 use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\Definition;
 class PromptsDefinitionCompilerPassTest extends TestCase
 {
     private PromptsDefinitionCompilerPass $compilerPass;
+
     private ContainerBuilder $container;
 
     protected function setUp(): void
@@ -146,7 +147,7 @@ class TestPrompt1 implements PromptInterface
 
     public function getMessages(array $arguments = []): CollectionPromptMessage
     {
-        return (new CollectionPromptMessage())
+        return (new CollectionPromptMessage)
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 1'));
     }
 }
@@ -170,7 +171,7 @@ class TestPrompt2 implements PromptInterface
 
     public function getMessages(array $arguments = []): CollectionPromptMessage
     {
-        return (new CollectionPromptMessage())
+        return (new CollectionPromptMessage)
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 2'));
     }
 }
@@ -194,7 +195,7 @@ class TestPrompt3 implements PromptInterface
 
     public function getMessages(array $arguments = []): CollectionPromptMessage
     {
-        return (new CollectionPromptMessage())
+        return (new CollectionPromptMessage)
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Test message 3'));
     }
 }

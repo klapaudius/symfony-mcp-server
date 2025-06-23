@@ -13,8 +13,8 @@ final class AudioPromptMessage extends AbstractPromptMessage
     /**
      * Creates a new audio prompt message.
      *
-     * @param string $base64EncodedData The audio data encoded in base64 format
-     * @param string $mimeType The MIME type of the audio (e.g., 'audio/mpeg', 'audio/wav')
+     * @param  string  $base64EncodedData  The audio data encoded in base64 format
+     * @param  string  $mimeType  The MIME type of the audio (e.g., 'audio/mpeg', 'audio/wav')
      */
     public function __construct(string $base64EncodedData, private readonly string $mimeType, string $role = PromptMessageInterface::ROLE_USER)
     {

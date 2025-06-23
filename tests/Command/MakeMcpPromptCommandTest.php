@@ -19,12 +19,12 @@ klp_mcp_server:
         - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
 YAML;
 
-    private static $configContentWithEmptyPrompts = <<<YAML
+    private static $configContentWithEmptyPrompts = <<<'YAML'
 klp_mcp_server:
     prompts: []
 YAML;
 
-    private static $configContentWithoutPrompts = <<<YAML
+    private static $configContentWithoutPrompts = <<<'YAML'
 klp_mcp_server:
     tools:
         - SomeTool
@@ -88,10 +88,11 @@ YAML;
         $this->filesystem
             ->expects($this->exactly(2))
             ->method('readFile')
-            ->willReturnCallback(function ($path) use ($stubPath, $stubContent, $configPath) {
+            ->willReturnCallback(function ($path) use ($stubContent) {
                 if (str_contains($path, 'stub')) {
                     return $stubContent;
                 }
+
                 return self::$configContent;
             });
 
@@ -245,10 +246,11 @@ YAML;
         $this->filesystem
             ->expects($this->exactly(2))
             ->method('readFile')
-            ->willReturnCallback(function ($path) use ($stubContent, $configPath) {
+            ->willReturnCallback(function ($path) use ($stubContent) {
                 if (str_contains($path, 'stub')) {
                     return $stubContent;
                 }
+
                 return self::$configContentWithoutPrompts;
             });
 
@@ -291,10 +293,11 @@ YAML;
         $this->filesystem
             ->expects($this->exactly(2))
             ->method('readFile')
-            ->willReturnCallback(function ($path) use ($stubContent, $configPath) {
+            ->willReturnCallback(function ($path) use ($stubContent) {
                 if (str_contains($path, 'stub')) {
                     return $stubContent;
                 }
+
                 return self::$configContentWithEmptyPrompts;
             });
 
@@ -357,10 +360,11 @@ YAML;
         $this->filesystem
             ->expects($this->exactly(2))
             ->method('readFile')
-            ->willReturnCallback(function ($path) use ($stubContent, $configPath) {
+            ->willReturnCallback(function ($path) use ($stubContent) {
                 if (str_contains($path, 'stub')) {
                     return $stubContent;
                 }
+
                 return self::$configContent;
             });
 

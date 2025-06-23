@@ -13,7 +13,7 @@ class HelloWorldPromptTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->prompt = new HelloWorldPrompt();
+        $this->prompt = new HelloWorldPrompt;
     }
 
     public function test_get_name_returns_correct_value(): void
@@ -99,7 +99,7 @@ class HelloWorldPromptTest extends TestCase
         $messages = $this->prompt->getMessages([
             'name' => 'Bob',
             'extra' => 'ignored',
-            'another' => 'also ignored'
+            'another' => 'also ignored',
         ])->getSanitizedMessages();
 
         $this->assertIsArray($messages);

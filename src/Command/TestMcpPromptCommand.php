@@ -38,7 +38,7 @@ class TestMcpPromptCommand extends Command
         $this->io->success('Prompt executed successfully!');
 
         // Display the arguments used
-        if (!empty($arguments)) {
+        if (! empty($arguments)) {
             $this->io->section('Arguments Used');
             $this->io->text(json_encode($arguments, JSON_PRETTY_PRINT));
         }
@@ -52,7 +52,7 @@ class TestMcpPromptCommand extends Command
 
             // Validate and display role
             $role = $message['role'] ?? self::NOT_SPECIFIED;
-            if (!in_array($role, self::VALID_ROLES, true)) {
+            if (! in_array($role, self::VALID_ROLES, true)) {
                 $this->io->error(sprintf('Invalid role "%s" detected. Valid roles are: %s', $role, implode(', ', self::VALID_ROLES)));
             }
 
@@ -73,14 +73,14 @@ class TestMcpPromptCommand extends Command
                     ]);
                 } elseif ($content['type'] === 'image' && isset($content['data'])) {
                     $this->io->text([
-                        'Image Data: ' . $content['data'],
-                        'MIME Type: ' . ($content['mimeType'] ?? self::NOT_SPECIFIED),
+                        'Image Data: '.$content['data'],
+                        'MIME Type: '.($content['mimeType'] ?? self::NOT_SPECIFIED),
                     ]);
                 } elseif ($content['type'] === 'resource' && isset($content['resource'])) {
                     $this->io->text([
-                        'Resource URI: ' . $content['resource']['uri'],
-                        'Text: ' . ($content['resource']['text'] ?? ''),
-                        'MIME Type: ' . ($content['resource']['mimeType'] ?? self::NOT_SPECIFIED),
+                        'Resource URI: '.$content['resource']['uri'],
+                        'Text: '.($content['resource']['text'] ?? ''),
+                        'MIME Type: '.($content['resource']['mimeType'] ?? self::NOT_SPECIFIED),
                     ]);
                 }
             } else {
@@ -174,14 +174,14 @@ EOT
     {
         // Get the prompt name from the argument or prompt for it
         $identifier = $this->input->getArgument('prompt') ?: $this->askForPrompt();
-        if (!$identifier) {
+        if (! $identifier) {
             throw new TestMcpPromptCommandException('No prompt specified.');
         }
 
         // Try to get the prompt from the repository
         $prompt = $this->promptRepository->getPrompt($identifier);
 
-        if (!$prompt) {
+        if (! $prompt) {
             throw new TestMcpPromptCommandException("Prompt '{$identifier}' not found.");
         }
 
@@ -258,7 +258,7 @@ EOT
             $this->io->text("Argument: {$name} {$description}");
 
             $default = '';
-            $value = $this->io->ask('Value' . ($default !== '' ? " (default: {$default})" : ''));
+            $value = $this->io->ask('Value'.($default !== '' ? " (default: {$default})" : ''));
 
             if ($value === '' && $required) {
                 $this->io->warning('Required field skipped. Using empty string.');
@@ -325,7 +325,7 @@ EOT
 
         foreach ($prompts as $prompt) {
             $name = $prompt->getName();
-            $choices[] = "{$name} (" . get_class($prompt) . ")";
+            $choices[] = "{$name} (".get_class($prompt).')';
             $promptNames[] = $name;
         }
 

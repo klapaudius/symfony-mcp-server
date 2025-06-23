@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PromptRepositoryTest extends TestCase
 {
     private ContainerInterface $container;
+
     private PromptRepository $repository;
 
     protected function setUp(): void
@@ -54,7 +55,7 @@ class PromptRepositoryTest extends TestCase
 
     public function test_register_throws_exception_for_invalid_prompt(): void
     {
-        $invalidPrompt = new \stdClass();
+        $invalidPrompt = new \stdClass;
 
         $this->container->expects($this->once())
             ->method('get')
@@ -62,7 +63,7 @@ class PromptRepositoryTest extends TestCase
             ->willReturn($invalidPrompt);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Prompt must implement the ' . PromptInterface::class);
+        $this->expectExceptionMessage('Prompt must implement the '.PromptInterface::class);
 
         $this->repository->register('InvalidClass');
     }
@@ -112,7 +113,7 @@ class PromptRepositoryTest extends TestCase
         $prompt1->method('getName')->willReturn('prompt1');
         $prompt1->method('getDescription')->willReturn('Description 1');
         $prompt1->method('getArguments')->willReturn([
-            ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true]
+            ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true],
         ]);
 
         $prompt2 = $this->createMock(PromptInterface::class);
@@ -130,8 +131,8 @@ class PromptRepositoryTest extends TestCase
             'name' => 'prompt1',
             'description' => 'Description 1',
             'arguments' => [
-                ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true]
-            ]
+                ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true],
+            ],
         ], $schemas[0]);
 
         $this->assertEquals([

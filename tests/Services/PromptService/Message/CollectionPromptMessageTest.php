@@ -16,7 +16,7 @@ class CollectionPromptMessageTest extends TestCase
 {
     public function test_constructor_creates_empty_collection(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
 
         $result = $collection->getSanitizedMessages();
         $this->assertIsArray($result);
@@ -25,7 +25,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_add_message_adds_text_message(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $textMessage = new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Hello World');
 
         $result = $collection->addMessage($textMessage);
@@ -38,14 +38,14 @@ class CollectionPromptMessageTest extends TestCase
             'role' => 'user',
             'content' => [
                 'type' => 'text',
-                'text' => 'Hello World'
-            ]
+                'text' => 'Hello World',
+            ],
         ], $messages[0]);
     }
 
     public function test_add_message_adds_multiple_messages(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $textMessage1 = new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'First message');
         $textMessage2 = new TextPromptMessage(PromptMessageInterface::ROLE_ASSISTANT, 'Second message');
 
@@ -58,22 +58,22 @@ class CollectionPromptMessageTest extends TestCase
             'role' => 'user',
             'content' => [
                 'type' => 'text',
-                'text' => 'First message'
-            ]
+                'text' => 'First message',
+            ],
         ], $messages[0]);
 
         $this->assertEquals([
             'role' => 'assistant',
             'content' => [
                 'type' => 'text',
-                'text' => 'Second message'
-            ]
+                'text' => 'Second message',
+            ],
         ], $messages[1]);
     }
 
     public function test_add_message_adds_image_message(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $base64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
         $imageMessage = new ImagePromptMessage($base64Data, 'image/png');
 
@@ -90,7 +90,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_add_message_adds_audio_message(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $base64Data = 'UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAAC+f+f+rgAAA==';
         $audioMessage = new AudioPromptMessage($base64Data, 'audio/wav');
 
@@ -107,7 +107,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_add_message_adds_resource_message(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $uri = 'file:///path/to/resource.txt';
         $mimeType = 'text/plain';
         $value = 'Resource content';
@@ -130,7 +130,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_get_sanitized_messages_with_mixed_message_types(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
 
         $textMessage = new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Here is the data:');
         $resourceMessage = new ResourcePromptMessage('file:///data.json', 'application/json', '{"status": "ok"}');
@@ -155,7 +155,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_get_sanitized_messages_preserves_order(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
 
         for ($i = 1; $i <= 5; $i++) {
             $collection->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, "Message {$i}"));
@@ -165,13 +165,13 @@ class CollectionPromptMessageTest extends TestCase
         $this->assertCount(5, $messages);
 
         for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals("Message " . ($i + 1), $messages[$i]['content']['text']);
+            $this->assertEquals('Message '.($i + 1), $messages[$i]['content']['text']);
         }
     }
 
     public function test_get_sanitized_messages_handles_empty_arguments(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $textMessage = new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'Hello {{name}}!');
 
         $collection->addMessage($textMessage);
@@ -183,7 +183,7 @@ class CollectionPromptMessageTest extends TestCase
 
     public function test_fluent_interface_chaining(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
 
         $result = $collection
             ->addMessage(new TextPromptMessage(PromptMessageInterface::ROLE_USER, 'First'))

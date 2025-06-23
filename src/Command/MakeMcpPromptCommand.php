@@ -26,7 +26,7 @@ class MakeMcpPromptCommand extends Command
      *
      * @return void
      */
-    public function __construct(private KernelInterface $kernel, private Filesystem|null $files = null)
+    public function __construct(private KernelInterface $kernel, private ?Filesystem $files = null)
     {
         parent::__construct();
         $this->files ??= new Filesystem;

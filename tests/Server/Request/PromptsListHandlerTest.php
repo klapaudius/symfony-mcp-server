@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 class PromptsListHandlerTest extends TestCase
 {
     private PromptRepository $promptRepository;
+
     private PromptsListHandler $handler;
 
     protected function setUp(): void
@@ -38,13 +39,13 @@ class PromptsListHandlerTest extends TestCase
                 'name' => 'prompt1',
                 'description' => 'Test prompt 1',
                 'arguments' => [
-                    ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true]
-                ]
+                    ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true],
+                ],
             ],
             [
                 'name' => 'prompt2',
-                'description' => 'Test prompt 2'
-            ]
+                'description' => 'Test prompt 2',
+            ],
         ];
 
         $this->promptRepository->expects($this->once())

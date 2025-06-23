@@ -151,7 +151,7 @@ class CachePoolAdapter implements SseAdapterInterface
         try {
             $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
             $cacheItem->set($hasSamplingCapability);
-            $cacheItem->expiresAfter(60*60*24);
+            $cacheItem->expiresAfter(60 * 60 * 24);
             $this->cache->save($cacheItem);
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to store sampling capability: '.$e->getMessage());
@@ -166,6 +166,7 @@ class CachePoolAdapter implements SseAdapterInterface
     {
         try {
             $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
+
             return $cacheItem->get() ?? false;
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to retrieve sampling capability: '.$e->getMessage());

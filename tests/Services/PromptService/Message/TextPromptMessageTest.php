@@ -26,8 +26,8 @@ class TextPromptMessageTest extends TestCase
             'role' => 'user',
             'content' => [
                 'type' => 'text',
-                'text' => 'Hello World'
-            ]
+                'text' => 'Hello World',
+            ],
         ];
 
         $this->assertEquals($expected, $result);
@@ -42,8 +42,8 @@ class TextPromptMessageTest extends TestCase
             'role' => 'assistant',
             'content' => [
                 'type' => 'text',
-                'text' => 'How can I help you?'
-            ]
+                'text' => 'How can I help you?',
+            ],
         ];
 
         $this->assertEquals($expected, $result);
@@ -58,8 +58,8 @@ class TextPromptMessageTest extends TestCase
             'role' => 'user',
             'content' => [
                 'type' => 'text',
-                'text' => 'Static message'
-            ]
+                'text' => 'Static message',
+            ],
         ];
 
         $this->assertEquals($expected, $result);

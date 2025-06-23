@@ -9,6 +9,7 @@ namespace KLP\KlpMcpServer\Services\PromptService\Message;
 interface PromptMessageInterface
 {
     const ROLE_USER = 'user';
+
     const ROLE_ASSISTANT = 'assistant';
 
     /**

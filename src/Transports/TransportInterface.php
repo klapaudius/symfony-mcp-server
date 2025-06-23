@@ -108,8 +108,7 @@ interface TransportInterface
     /**
      * Sets the client sampling capability status.
      *
-     * @param bool $hasSamplingCapability Indicates whether the client has sampling capability.
-     * @return void
+     * @param  bool  $hasSamplingCapability  Indicates whether the client has sampling capability.
      */
     public function setClientSamplingCapability(bool $hasSamplingCapability): void;
 }

@@ -225,7 +225,7 @@ final class RedisAdapter implements SseAdapterInterface
             function () use ($clientId, $hasSamplingCapability) {
                 $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
                 $this->redis->set($key, $hasSamplingCapability ? '1' : '0');
-                $this->setKeyExpiration($key, 60*60*24);
+                $this->setKeyExpiration($key, 60 * 60 * 24);
             },
             'Failed to store sampling capability'
         );

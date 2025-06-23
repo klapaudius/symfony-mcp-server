@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 class PromptsGetHandlerTest extends TestCase
 {
     private PromptRepository $promptRepository;
+
     private PromptsGetHandler $handler;
 
     protected function setUp(): void
@@ -66,7 +67,7 @@ class PromptsGetHandlerTest extends TestCase
 
     public function test_execute_returns_prompt_messages_without_arguments(): void
     {
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
         $collection->addMessage(new TextPromptMessage('user', 'Hello'));
 
         $prompt = $this->createMock(PromptInterface::class);
@@ -88,7 +89,7 @@ class PromptsGetHandlerTest extends TestCase
         $this->assertEquals('Test prompt description', $result['description']);
         $this->assertArrayHasKey('messages', $result);
         $this->assertEquals([
-            ['role' => 'user', 'content' => ['type' => 'text', 'text' => 'Hello']]
+            ['role' => 'user', 'content' => ['type' => 'text', 'text' => 'Hello']],
         ], $result['messages']);
     }
 }

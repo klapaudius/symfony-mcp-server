@@ -113,6 +113,6 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
 
     public function setClientSamplingCapability(bool $hasSamplingCapability): void
     {
-        $this->getAdapter()->storeSamplingCapability($this->getClientId(), $hasSamplingCapability);;
+        $this->getAdapter()->storeSamplingCapability($this->getClientId(), $hasSamplingCapability);
     }
 }

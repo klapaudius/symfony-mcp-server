@@ -120,7 +120,7 @@ class PromptRepository
             ];
 
             $arguments = $prompt->getArguments();
-            if (!empty($arguments)) {
+            if (! empty($arguments)) {
                 $schema['arguments'] = $arguments;
             }
 

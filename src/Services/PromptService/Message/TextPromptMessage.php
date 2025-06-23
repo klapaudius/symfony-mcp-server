@@ -13,7 +13,7 @@ final class TextPromptMessage extends AbstractPromptMessage
     /**
      * Creates a new text prompt message.
      *
-     * @param string $value The text content to be returned
+     * @param  string  $value  The text content to be returned
      */
     public function __construct(string $role, string $value)
     {
@@ -33,7 +33,7 @@ final class TextPromptMessage extends AbstractPromptMessage
             'content' => [
                 'type' => $this->getType(),
                 $this->getKey() => $this->getValue(),
-            ]
+            ],
         ];
     }
 }

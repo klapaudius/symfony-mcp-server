@@ -14,9 +14,9 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAAC+f+f+rgAAA==';
         $mimeType = 'audio/wav';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
-        
+
         $this->assertInstanceOf(PromptMessageInterface::class, $message);
     }
 
@@ -24,14 +24,14 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAAC+f+f+rgAAA==';
         $mimeType = 'audio/wav';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('role', $result);
         $this->assertArrayHasKey('content', $result);
-        
+
         $content = $result['content'];
         $this->assertArrayHasKey('type', $content);
         $this->assertEquals('audio', $content['type']);
@@ -45,7 +45,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = '//uQRAAAAWMSLwUIYd2VjGBhTlGCxKWvL0VVVVVV4+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+f+';
         $mimeType = 'audio/mpeg';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 
@@ -59,7 +59,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'T2dnUwACAAAAAAAAAAB8AQAAAAAAABaGrCEBHgF2b3JiaXMAAAAAAUAfAAAAAAAAgLsAAAAAAAC4AU9nZ1MAEwAKAAAAAAAAfAEAAAEAAAC7pPKKAQ==';
         $mimeType = 'audio/ogg';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 
@@ -73,7 +73,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAAC+f+f+rgAAA==';
         $mimeType = 'audio/wav';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage(['name' => 'test', 'value' => 'ignored']);
 
@@ -87,7 +87,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = '';
         $mimeType = 'audio/wav';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 
@@ -101,7 +101,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
         $mimeType = 'audio/aac';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 
@@ -115,7 +115,7 @@ class AudioPromptMessageTest extends TestCase
     {
         $base64Data = 'ZkxhQwAAACIQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
         $mimeType = 'audio/flac';
-        
+
         $message = new AudioPromptMessage($base64Data, $mimeType);
         $result = $message->getSanitizedMessage();
 

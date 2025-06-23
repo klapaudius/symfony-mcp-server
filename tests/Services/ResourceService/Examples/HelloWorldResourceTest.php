@@ -19,7 +19,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_uri_returns_correct_uri(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedUri = 'file:/hello-world.txt';
 
         $this->assertSame($expectedUri, $resource->getUri());
@@ -30,7 +30,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_name_returns_correct_name(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedName = 'hello-world.txt';
 
         $this->assertSame($expectedName, $resource->getName());
@@ -41,7 +41,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_description_returns_correct_description(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedDescription = 'The HelloWorld resource.';
 
         $this->assertSame($expectedDescription, $resource->getDescription());
@@ -52,7 +52,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_mime_type_returns_correct_mime_type(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedMimeType = 'text/plain';
 
         $this->assertSame($expectedMimeType, $resource->getMimeType());
@@ -63,7 +63,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_data_returns_correct_data(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedData = 'Hello, World!';
 
         $this->assertSame($expectedData, $resource->getData());
@@ -74,7 +74,7 @@ class HelloWorldResourceTest extends TestCase
      */
     public function test_get_size_returns_correct_size(): void
     {
-        $resource = new HelloWorldResource();
+        $resource = new HelloWorldResource;
         $expectedSize = strlen('Hello, World!');
 
         $this->assertSame($expectedSize, $resource->getSize());
