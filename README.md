@@ -348,6 +348,7 @@ klp_mcp_server:
 
 ## MCP Registries referencing
 https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
+
 https://mcp.so/server/symfony-mcp-server/klapaudius
 
 ## Credits
