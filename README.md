@@ -346,15 +346,9 @@ klp_mcp_server:
 
 **For deep diving into resources' management, please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**
 
-## Roadmap
-We are committed to actively pursuing the following key initiatives to enhance the package's functionality and ensure compliance with evolving standards.
-
-- **Core Features:**
-  - ✅ Resources implementation compliant with MCP specification.
-  - ✅ Support for Streamable HTTP (as specified in MCP 2025-03-26 version).
-  - ✅ Prompts implementation compliant with MCP specification.
-- **Additional Adaptaters:**
-  - Support for more Pub/Sub adapters (e.g., RabbitMQ).
+## MCP Registries referencing
+https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
+https://mcp.so/server/symfony-mcp-server/klapaudius
 
 ## Credits
 - Boris AUBE and [all contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)
