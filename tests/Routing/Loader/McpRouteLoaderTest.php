@@ -47,7 +47,7 @@ class McpRouteLoaderTest extends TestCase
 
         // Verify route path
         $streamableRoute = $routes->get('klp_mcp_server_streamable_http');
-        $this->assertEquals('/mcp', $streamableRoute->getPath());
+        $this->assertEquals('/mcp{trailingSlash}', $streamableRoute->getPath());
     }
 
     public function test_both_providers_enabled_routes(): void
