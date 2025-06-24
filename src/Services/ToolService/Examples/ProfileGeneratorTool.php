@@ -20,7 +20,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
 {
     private string $baseDir;
 
-    private ProgressNotifierInterface $progressNotifier;
+    private ?ProgressNotifierInterface $progressNotifier = null;
 
     public function __construct(KernelInterface $kernel)
     {
@@ -68,7 +68,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
         $collection = new CollectionToolResult;
 
         // Generate text profile
-        $this->progressNotifier->sendProgress(
+        $this->progressNotifier?->sendProgress(
             progress: 1,
             total: 3,
             message: 'Generating text profile...'
@@ -78,7 +78,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
         usleep(100000);
 
         // Avatar image
-        $this->progressNotifier->sendProgress(
+        $this->progressNotifier?->sendProgress(
             progress: 2,
             total: 3,
             message: 'Generating avatar image...'
@@ -86,7 +86,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
         $avatarImageData = base64_encode(file_get_contents($this->baseDir.'/assets/avatar_sample.jpg'));
         $collection->addItem(new ImageToolResult($avatarImageData, 'image/jpeg'));
         usleep(400000);
-        $this->progressNotifier->sendProgress(
+        $this->progressNotifier?->sendProgress(
             progress: 3,
             total: 3,
             message: 'Done.'
