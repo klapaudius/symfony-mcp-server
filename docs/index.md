@@ -60,7 +60,7 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 ## Requirements & Compatibility
 
 - **PHP**: >=8.2
-- **Symfony**: >=7
+- **Symfony**: >=6.4
 - **Transport**: SSE requires proper web server (not `symfony server:start`)
 
 ## Contributing

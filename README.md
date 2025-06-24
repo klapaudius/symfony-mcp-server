@@ -48,7 +48,7 @@ Key benefits:
 ## Requirements
 
 - PHP >=8.2
-- Symfony >=7
+- Symfony >=6.4
 
 ## Installation
 

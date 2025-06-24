@@ -6,7 +6,7 @@ This document provides essential information for developers working on the Symfo
 
 ### Prerequisites
 - PHP 8.2 or higher
-- Symfony 7.0
+- Symfony 6.4 or higher
 - Composer
 
 ### Installation

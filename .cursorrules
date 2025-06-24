@@ -2,7 +2,7 @@ This is a packge for Symfony which makes easier to build a Model Context Protoco
 
 ## Technical Specification
 
-- Support Symfony 7
+- Support Symfony 6.4 and 7
 - Support PHP 8.2+
 
 ## Symfony Package Development Guideline
