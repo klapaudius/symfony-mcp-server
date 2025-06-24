@@ -41,8 +41,9 @@ class McpRouteLoader implements LoaderInterface
         // StreamableHTTP routes
         if ($this->isProviderEnabled('streamable_http')) {
             $routes->add('klp_mcp_server_streamable_http', new Route(
-                '/'.$this->defaultPath,
-                ['_controller' => 'klp_mcp_server.controller.streamable_http::handle']
+                '/'.$this->defaultPath.'{trailingSlash}',
+                ['_controller' => 'klp_mcp_server.controller.streamable_http::handle'],
+                ['trailingSlash' => '/?'],
             ));
         }
 
