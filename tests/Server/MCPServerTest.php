@@ -542,4 +542,37 @@ class MCPServerTest extends TestCase
         $this->assertSame(['mock-capability' => true], $initializeResource->capabilities);
         $this->assertEquals($serverInfo, $initializeResource->serverInfo);
     }
+
+    /**
+     * Tests that the initialize method throws an exception for unsupported protocol versions
+     */
+    public function test_initialize_throws_exception_for_unsupported_protocol_version(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+        $serverInfo = ['name' => 'TestServer', 'version' => '1.0'];
+        $mockCapabilities = $this->createMock(ServerCapabilitiesInterface::class);
+
+        $mockProgressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
+        $server = MCPServer::create($mockProtocol, $mockProgressNotifierRepository, $serverInfo['name'], $serverInfo['version'], $mockCapabilities);
+        $unsupportedVersion = '2025-12-01';
+        $initializeData = new InitializeData('2.0', ['mock-capability' => true], $unsupportedVersion);
+
+        // Act & Assert
+        try {
+            $server->initialize($initializeData);
+            $this->fail('Expected JsonRpcErrorException not thrown');
+        } catch (JsonRpcErrorException $e) {
+            $this->assertEquals(-32602, $e->getJsonRpcErrorCode());
+            $this->assertEquals('Unsupported protocol version', $e->getMessage());
+            
+            $errorData = $e->getErrorData();
+            $this->assertIsArray($errorData);
+            $this->assertArrayHasKey('supported', $errorData);
+            $this->assertArrayHasKey('requested', $errorData);
+            $this->assertEquals($unsupportedVersion, $errorData['requested']);
+            $this->assertContains(MCPProtocolInterface::PROTOCOL_VERSION_SSE, $errorData['supported']);
+            $this->assertContains(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP, $errorData['supported']);
+        }
+    }
 }

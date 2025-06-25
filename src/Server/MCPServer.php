@@ -205,7 +205,10 @@ final class MCPServer implements MCPServerInterface
 
         $this->initialized = true;
 
-        $protocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+        // Validate and determine the protocol version to use
+        $requestedProtocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+        $protocolVersion = $this->getValidatedProtocolVersion($requestedProtocolVersion);
+        
         $hasSamplingCapability = isset($data->capabilities['sampling']);
         $this->protocol->setClientSamplingCapability($hasSamplingCapability);
 
@@ -214,6 +217,36 @@ final class MCPServer implements MCPServerInterface
             $this->serverInfo['version'],
             $this->capabilities->toInitializeMessage(),
             $protocolVersion
+        );
+    }
+
+    /**
+     * Validates the requested protocol version and returns a supported version.
+     * 
+     * @param string $requestedVersion The protocol version requested by the client
+     * @return string A supported protocol version
+     * @throws JsonRpcErrorException If the requested protocol version is not supported
+     */
+    private function getValidatedProtocolVersion(string $requestedVersion): string
+    {
+        $supportedVersions = [
+            MCPProtocolInterface::PROTOCOL_VERSION_SSE,
+            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP,
+        ];
+
+        // If the requested version is supported, return it
+        if (in_array($requestedVersion, $supportedVersions, true)) {
+            return $requestedVersion;
+        }
+
+        // Throw error for unsupported protocol version
+        throw new JsonRpcErrorException(
+            message: 'Unsupported protocol version',
+            code: JsonRpcErrorCode::INVALID_PARAMS,
+            data: [
+                'supported' => $supportedVersions,
+                'requested' => $requestedVersion,
+            ]
         );
     }
 
