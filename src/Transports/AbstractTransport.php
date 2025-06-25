@@ -148,7 +148,11 @@ abstract class AbstractTransport implements TransportInterface
         echo sprintf('data: %s', $data).PHP_EOL;
         echo PHP_EOL;
 
-        flush(); // Ensure the data is sent to the client
+        // Ensure the output buffer is flushed
+        if (false !== ob_get_length()) {
+            ob_flush();
+        }
+        flush();
     }
 
     /**
