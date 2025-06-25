@@ -150,9 +150,9 @@ abstract class AbstractTransport implements TransportInterface
 
         // Ensure the output buffer is flushed
         if (false !== ob_get_length()) {
-            ob_flush();
+            ob_flush();  // Flush PHP's output buffer first
         }
-        flush();
+        flush();         // Then flush system/web server buffers
     }
 
     /**
