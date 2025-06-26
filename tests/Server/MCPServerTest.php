@@ -565,7 +565,7 @@ class MCPServerTest extends TestCase
         } catch (JsonRpcErrorException $e) {
             $this->assertEquals(-32602, $e->getJsonRpcErrorCode());
             $this->assertEquals('Unsupported protocol version', $e->getMessage());
-            
+
             $errorData = $e->getErrorData();
             $this->assertIsArray($errorData);
             $this->assertArrayHasKey('supported', $errorData);

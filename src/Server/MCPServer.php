@@ -208,7 +208,7 @@ final class MCPServer implements MCPServerInterface
         // Validate and determine the protocol version to use
         $requestedProtocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
         $protocolVersion = $this->getValidatedProtocolVersion($requestedProtocolVersion);
-        
+
         $hasSamplingCapability = isset($data->capabilities['sampling']);
         $this->protocol->setClientSamplingCapability($hasSamplingCapability);
 
@@ -222,9 +222,10 @@ final class MCPServer implements MCPServerInterface
 
     /**
      * Validates the requested protocol version and returns a supported version.
-     * 
-     * @param string $requestedVersion The protocol version requested by the client
+     *
+     * @param  string  $requestedVersion  The protocol version requested by the client
      * @return string A supported protocol version
+     *
      * @throws JsonRpcErrorException If the requested protocol version is not supported
      */
     private function getValidatedProtocolVersion(string $requestedVersion): string
