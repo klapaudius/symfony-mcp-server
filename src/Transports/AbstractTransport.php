@@ -97,10 +97,14 @@ abstract class AbstractTransport implements TransportInterface
             return;
         }
 
-        set_time_limit(0);
-        ini_set('output_buffering', 'off');
-        ini_set('zlib.output_compression', false);
-        ini_set('zlib.default_socket_timeout', 5);
+        // Only modify these settings if not in test environment
+        // Tests need output buffering to capture output
+        if (!defined('PHPUNIT_RUNNING')) {
+            set_time_limit(0);
+            ini_set('output_buffering', 'off');
+            ini_set('zlib.output_compression', false);
+            ini_set('zlib.default_socket_timeout', 5);
+        }
 
         $this->connected = true;
         $this->initialize();
