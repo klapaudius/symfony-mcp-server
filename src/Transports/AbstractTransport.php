@@ -99,7 +99,7 @@ abstract class AbstractTransport implements TransportInterface
 
         // Only modify these settings if not in test environment
         // Tests need output buffering to capture output
-        if (!defined('PHPUNIT_RUNNING')) {
+        if (! defined('PHPUNIT_RUNNING')) {
             set_time_limit(0);
             ini_set('output_buffering', 'off');
             ini_set('zlib.output_compression', false);
@@ -153,8 +153,8 @@ abstract class AbstractTransport implements TransportInterface
         echo PHP_EOL;
 
         // Only flush when not in test environment
-        if (!defined('PHPUNIT_RUNNING')
-            && false !== ob_get_length()) {
+        if (! defined('PHPUNIT_RUNNING')
+            && ob_get_length() !== false) {
             ob_flush();  // Flush PHP's output buffer first
         }
         flush();         // Then flush system/web server buffers
