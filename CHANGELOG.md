@@ -1,3 +1,12 @@
+### Version 1.3.2
+- **Bug Fixes:**
+  - Fix protocol evaluation on client request (#38)
+  - Fix SSE stream blocking issue (#36)
+- **Enhancements:**
+  - Add test environment initialization and conditional output handling adjustments
+- **Documentation:**
+  - Move development guidelines to CONTRIBUTING.md
+
 ### Version 1.3.1
 - **Enhancements:**
   - Add Symfony 6.4 compliancy

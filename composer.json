@@ -10,7 +10,7 @@
         "ext-json": "*",
         "ext-fileinfo": "*",
         "psr/log": "^3.0",
-        "symfony/cache": "^7.2|^6.4",
+        "symfony/cache": "~7.0|^6.4",
         "symfony/config": "~7.0|^6.4",
         "symfony/console": "~7.0|^6.4",
         "symfony/dependency-injection": "~7.0|^6.4",
