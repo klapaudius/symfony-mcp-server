@@ -1,7 +1,7 @@
 ### Version 1.3.2
 - **Bug Fixes:**
-  - Fix protocol evaluation on client request (#38)
-  - Fix SSE stream blocking issue (#36)
+  - Fix protocol evaluation on client request (#38) by @Wolfgang-check24
+  - Fix SSE stream blocking issue (#36) by @Wolfgang-check24
 - **Enhancements:**
   - Add test environment initialization and conditional output handling adjustments
 - **Documentation:**
