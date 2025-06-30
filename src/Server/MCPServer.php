@@ -240,15 +240,8 @@ final class MCPServer implements MCPServerInterface
             return $requestedVersion;
         }
 
-        // Throw error for unsupported protocol version
-        throw new JsonRpcErrorException(
-            message: 'Unsupported protocol version',
-            code: JsonRpcErrorCode::INVALID_PARAMS,
-            data: [
-                'supported' => $supportedVersions,
-                'requested' => $requestedVersion,
-            ]
-        );
+        //return latest version
+        return MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP;
     }
 
     /**
