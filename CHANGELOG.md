@@ -1,3 +1,7 @@
+### Version 1.3.3
+- **Bug Fixes:**
+  - Protocol version negotiation incorrect (#41) by @Wolfgang-check24
+
 ### Version 1.3.2
 - **Bug Fixes:**
   - Fix protocol evaluation on client request (#38) by @Wolfgang-check24
