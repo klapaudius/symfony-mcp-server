@@ -240,7 +240,7 @@ final class MCPServer implements MCPServerInterface
             return $requestedVersion;
         }
 
-        //return latest version
+        // return latest version
         return MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP;
     }
 

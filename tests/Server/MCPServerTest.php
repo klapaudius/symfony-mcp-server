@@ -564,6 +564,6 @@ class MCPServerTest extends TestCase
         // Assert
         $this->assertInstanceOf(InitializeResource::class, $initializeResource);
         $this->assertEquals(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP, $initializeResource->protocolVersion);
-        $this->assertEquals($serverInfo, $initializeResource->serverInfo);    
+        $this->assertEquals($serverInfo, $initializeResource->serverInfo);
     }
 }
