@@ -68,6 +68,6 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 - [Development Guidelines](../CONTRIBUTING.md) - Setup and contribution standards
 - [Issue Tracker](https://github.com/klapaudius/symfony-mcp-server/issues) - Report bugs and request features
 
----
+----
 
 **Need Help?** Check the [troubleshooting section](../CONTRIBUTING.md#troubleshooting) or create an issue on GitHub.
