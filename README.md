@@ -8,8 +8,8 @@
 <a href="https://github.com/klapaudius/symfony-mcp-server/actions"><img src="https://github.com/klapaudius/symfony-mcp-server/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1" alt="Coverage"/></a>
 <a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/l/klapaudius/symfony-mcp-server" alt="License"></a>
+<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/v/klapaudius/symfony-mcp-server" alt="Latest Stable Version"></a>
 
-[//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/v/klapaudius/symfony-mcp-server" alt="Latest Stable Version"></a>)
 [//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
 </p>
 
@@ -40,9 +40,9 @@ Key benefits:
 ## Key Features
 
 - Real-time communication support through StreamableHTTP and/or Server-Sent Events (SSE) integration
-- Implementation of tools and resources compliant with Model Context Protocol specifications
-- Support of streaming tools with progres notifications
-- Support different types of tool results such as Text, Image, Audio, or Resource
+- Implementation of tools, resources and prompts compliant with Model Context Protocol specifications
+- Support of streaming tools with progress notifications
+- Support different types of tool results such as Text, Image, Audio or Resource
 - Adapter-based design architecture with Pub/Sub messaging pattern
 
 ## Requirements
@@ -116,36 +116,26 @@ Enhance your application's security by implementing OAuth2 Authentication. You c
 
 ## Basic Usage
 
-### Creating and Adding Custom Tools
+### Creating and Adding Custom Tools or Prompts
 
-The package provides convenient commands to generate new tools:
-
+The package provides convenient commands 
+- to generate new tools:
 ```bash
 php bin/console make:mcp-tool MyCustomTool
 ```
+- to generate new prompts:
+```bash
+php bin/console make:mcp-prompt MyCustomPrompt
+```
 
-This command:
+Those commands:
 
 - Handles various input formats (spaces, hyphens, mixed case)
 - Automatically converts the name to the proper case format
-- Creates a properly structured tool class in `src/MCP/Tools`
-- Offers to automatically register the tool in your configuration
+- Creates a properly structured class in `src/MCP/Tools` or `src/MCP/Prompts`
+- Offers to automatically register items in your configuration (`config/packages/klp_mcp_server.yaml`)
 
-You can also manually create and register tools in `config/packages/klp_mcp_server.yaml`:
-
-```php
-use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
-use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
-
-class MyCustomTool implements StreamableToolInterface
-{
-    // Tool implementation
-}
-```
-
-### Testing MCP Tools
+### Testing MCP Tools or Prompts
 
 The package includes a special command for testing your MCP tools without needing a real MCP client:
 
@@ -153,136 +143,33 @@ The package includes a special command for testing your MCP tools without needin
 # Test a specific tool interactively
 php bin/console mcp:test-tool MyCustomTool
 
-# List all available tools
-php bin/console mcp:test-tool --list
-
-# Test with specific JSON input
-php bin/console mcp:test-tool MyCustomTool --input='{"param1":"value"}'
-```
-
-This helps you rapidly develop and debug tools by:
-
-- Showing the tool's input schema and validating inputs
-- Executing the tool with your provided input
-- Displaying formatted results or detailed error information
-- Displaying progress notifications for streaming tool
-- Supporting complex input types including objects and arrays
-
-**For deep diving into tools creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
-
-### Creating and Adding Custom Prompts
-
-The package provides convenient commands to generate new prompts:
-
-```bash
-php bin/console make:mcp-prompt MyCustomPrompt
-```
-
-This command:
-
-- Handles various input formats (spaces, hyphens, mixed case)
-- Automatically converts the name to the proper kebab-case format
-- Creates a properly structured prompt class in `src/MCP/Prompts`
-- Offers to automatically register the prompt in your configuration
-
-You can also manually create and register prompts in `config/packages/klp_mcp_server.yaml`:
-
-```php
-use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
-use KLP\KlpMcpServer\Services\PromptService\Message\TextPromptMessage;
-
-class MyCustomPrompt implements PromptInterface
-{
-    // Prompt implementation
-}
-```
-
-### Testing MCP Prompts
-
-The package includes a command for testing your MCP prompts without needing a real MCP client:
-
-```bash
 # Test a specific prompt interactively
 php bin/console mcp:test-prompt MyCustomPrompt
 
+# List all available tools
+php bin/console mcp:test-tool --list
+
 # List all available prompts
 php bin/console mcp:test-prompt --list
+
+# Test with specific JSON input
+php bin/console mcp:test-tool MyCustomTool --input='{"param1":"value"}'
 
 # Test with specific arguments
 php bin/console mcp:test-prompt MyCustomPrompt --arguments='{"topic":"AI","tone":"professional"}'
 ```
 
-This helps you rapidly develop and debug prompts by:
+This helps you rapidly develop and debug tools by:
 
-- Showing the prompt's argument schema and validating inputs
-- Executing the prompt with your provided arguments
-- Displaying formatted message results with proper role assignments
-- Supporting complex argument types including objects and arrays
-- Demonstrating multi-modal content (text, images, audio, resources)
+- Showing the item's input schema and validating inputs
+- Executing the item with your provided input
+- Displaying formatted results or detailed error information
+- Displaying progress notifications for a streaming tool
+- Supporting complex input types including objects and arrays
 
-**For deep diving into prompts creation please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**
+**For deep diving into tools creation: please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
 
-### Visualizing with Inspector
-
-You can also use the Model Context Protocol Inspector to visualize and test your MCP tools:
-
-```bash
-# Run the MCP Inspector without installation
-npx @modelcontextprotocol/inspector node build/index.js
-```
-This will typically open a web interface at `localhost:6274`. To test your MCP server:
-
-1. **Warning**: `symfony server:start` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
-
-     - Nginx + PHP-FPM
-     - Apache + PHP-FPM
-     - Custom Docker setup
-     - Any web server that properly supports SSE streaming  
-     - 
-2. In the Inspector interface, chose the protocol and enter the corresponding endpoint url
-
-|  MCP Specification version   | Connection Url pattern                                                         |
-|:----------------------------:|--------------------------------------------------------------------------------|
-|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse`                               |
-| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`                                   |
-|                              | `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.  |
-
-3. Connect and explore available items visually
-
-## Advanced Features
-
-### Pub/Sub Architecture with Adapters
-
-The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system:
-
-1. **Publisher (Server)**: When clients send requests (e.g. `/messages` endpoint for SSE connection), the server processes these requests and publishes responses through the configured adapter.
-
-2. **Message Broker (Adapter)**: The adapter maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
-
-3. **Subscriber (SSE Connection)**: Long-lived SSE connections subscribe to messages for their respective clients and deliver them in real-time.
-
-This architecture enables:
-
-- Scalable real-time communication
-- Reliable message delivery even during temporary disconnections
-- Efficient handling of multiple concurrent client connections
-- Potential for distributed server deployments
-
-### Redis Adapter Configuration (Optional)
-
-A Redis adapter can be configured as follows:
-
-
-```yaml
-klp_mcp_server:
-    # ...
-    sse_adapter: 'redis'
-    adapters:
-        redis:
-            prefix: 'mcp_sse_'  # Prefix for Redis keys
-            host: 'localhost'   # Change it as needed
-            ttl: 100            # Message TTL in seconds
-```
+**For prompts creation: [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**
 
 ## Resources
 
@@ -345,6 +232,77 @@ klp_mcp_server:
 ```
 
 **For deep diving into resources' management, please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**
+
+### Visualizing with Inspector
+
+You can also use the Model Context Protocol Inspector to visualize and test your MCP tools:
+
+```bash
+# Run the MCP Inspector without installation
+npx @modelcontextprotocol/inspector node build/index.js
+```
+This will typically open a web interface at `localhost:6274`. To test your MCP server:
+
+1. **Warning**: `symfony server:start` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
+
+     - Nginx + PHP-FPM
+     - Apache + PHP-FPM
+     - Custom Docker setup
+     - Any web server that properly supports SSE streaming  
+     - 
+2. In the Inspector interface, chose the protocol and enter the corresponding endpoint url
+
+|  MCP Specification version   | Connection Url pattern                                                         |
+|:----------------------------:|--------------------------------------------------------------------------------|
+|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse`                               |
+| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`                                   |
+|                              | `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.  |
+
+3. Connect and explore available items visually
+
+## Advanced Features
+
+### Pub/Sub Architecture with Adapters
+
+The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system:
+
+1. **Publisher (Server)**: When clients send requests (e.g. `/messages` endpoint for SSE connection), the server processes these requests and publishes responses through the configured adapter.
+
+2. **Message Broker (Adapter)**: The adapter maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
+
+3. **Subscriber (SSE Connection)**: Long-lived SSE connections subscribe to messages for their respective clients and deliver them in real-time.
+
+This architecture enables:
+
+- Scalable real-time communication
+- Reliable message delivery even during temporary disconnections
+- Efficient handling of multiple concurrent client connections
+- Potential for distributed server deployments
+
+### Redis Adapter Configuration (Optional)
+
+A Redis adapter can be configured as follows:
+
+```yaml
+klp_mcp_server:
+    # ...
+    sse_adapter: 'redis'
+    adapters:
+        redis:
+            prefix: 'mcp_sse_'  # Prefix for Redis keys
+            host: 'localhost'   # Change it as needed
+            ttl: 100            # Message TTL in seconds
+```
+
+## Roadmap
+
+Our development roadmap outlines the planned enhancements and features for upcoming releases:
+
+- **Enhanced Protocol Support**: Continued improvements to StreamableHTTP implementation and stay up to date with newer specifications
+- **Sampling Feature Implementation**: Taking advantage of Client's Sampling Capability
+
+For detailed discussions about upcoming features and to contribute your ideas, please visit the [Discussion section](https://github.com/klapaudius/symfony-mcp-server/discussions).
+Community feedback plays a crucial role in shaping our development priorities.
 
 ## MCP Registries referencing
 https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
