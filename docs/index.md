@@ -23,9 +23,9 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 
 ## Development & Testing
 
-- [Development Guidelines](development_guidelines.md) - Setup, coding standards, and best practices
+- [Development Guidelines](../CONTRIBUTING.md) - Setup, coding standards, and best practices
 - [Testing Commands](../README.md#testing-mcp-tools) - Test tools and prompts without MCP clients
-- [Docker Setup](development_guidelines.md#docker-setup) - Development environment configuration
+- [Docker Setup](../CONTRIBUTING.md#docker-setup) - Development environment configuration
 
 ## Architecture & Advanced Topics
 
@@ -42,7 +42,7 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 
 - [MCP Inspector](../README.md#visualizing-with-inspector) - Visual testing interface
 - [Console Commands](../README.md#testing-mcp-tools) - Command-line testing tools
-- [PHPUnit Testing](development_guidelines.md#testing) - Unit and integration tests
+- [PHPUnit Testing](../CONTRIBUTING.md#testing) - Unit and integration tests
 
 ## API Reference
 
@@ -65,9 +65,9 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 
 ## Contributing
 
-- [Development Guidelines](development_guidelines.md) - Setup and contribution standards
+- [Development Guidelines](../CONTRIBUTING.md) - Setup and contribution standards
 - [Issue Tracker](https://github.com/klapaudius/symfony-mcp-server/issues) - Report bugs and request features
 
 ---
 
-**Need Help?** Check the [troubleshooting section](development_guidelines.md#troubleshooting) or create an issue on GitHub.
+**Need Help?** Check the [troubleshooting section](../CONTRIBUTING.md#troubleshooting) or create an issue on GitHub.
