@@ -1,3 +1,16 @@
+### Version Next (Unreleased)
+- **Core Features:**
+  - Add comprehensive sampling support allowing tools to request LLM assistance during execution
+  - Introduce SamplingAwareToolInterface for tools that need to make nested LLM calls
+  - Add SamplingClient service for managing sampling requests
+  - Create example CodeAnalyzerTool demonstrating sampling usage
+- **Enhancements:**
+  - Automatic injection of SamplingClient into tools that implement SamplingAwareToolInterface
+  - Support for text and multi-message sampling requests
+  - Model preferences for controlling LLM selection (cost, speed, intelligence priorities)
+- **Documentation:**
+  - Add comprehensive sampling documentation with examples and best practices
+
 ### Version 1.3.3
 - **Bug Fixes:**
   - Protocol version negotiation incorrect (#41) by @Wolfgang-check24

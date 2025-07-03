@@ -37,7 +37,7 @@ class ToolsCallHandlerTest extends TestCase
     {
         $this->toolRepository = $this->createMock(ToolRepository::class);
         $this->progressNotifierRepository = $this->createMock(ProgressNotifierRepository::class);
-        $this->toolsCallHandler = new ToolsCallHandler($this->toolRepository, $this->progressNotifierRepository);
+        $this->toolsCallHandler = new ToolsCallHandler($this->toolRepository, $this->progressNotifierRepository, null);
     }
 
     public function test_execute_throws_exception_when_tool_name_is_missing(): void

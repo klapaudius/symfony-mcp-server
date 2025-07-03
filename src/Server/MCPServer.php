@@ -9,6 +9,7 @@ use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Server\Request\InitializeHandler;
 use KLP\KlpMcpServer\Server\Request\PromptsGetHandler;
 use KLP\KlpMcpServer\Server\Request\PromptsListHandler;
@@ -59,6 +60,8 @@ final class MCPServer implements MCPServerInterface
 
     private ProgressNotifierRepository $progressNotifierRepository;
 
+    private ?SamplingClient $samplingClient;
+
     /**
      * Creates a new MCPServer instance.
      *
@@ -73,12 +76,14 @@ final class MCPServer implements MCPServerInterface
         MCPProtocolInterface $protocol,
         ProgressNotifierRepository $progressNotifierRepository,
         array $serverInfo,
+        ?SamplingClient $samplingClient = null,
         ?ServerCapabilitiesInterface $capabilities = null)
     {
         $this->protocol = $protocol;
         $this->progressNotifierRepository = $progressNotifierRepository;
         $this->serverInfo = $serverInfo;
         $this->capabilities = $capabilities ?? new ServerCapabilities;
+        $this->samplingClient = $samplingClient;
 
         // Register the handler for the mandatory 'initialize' method.
         $this->registerRequestHandler(new InitializeHandler($this));
@@ -115,7 +120,7 @@ final class MCPServer implements MCPServerInterface
             $progressNotifierRepository, [
                 'name' => $name,
                 'version' => $version,
-            ], $capabilities);
+            ], null, $capabilities);
     }
 
     /**
@@ -128,7 +133,7 @@ final class MCPServer implements MCPServerInterface
     public function registerToolRepository(ToolRepository $toolRepository): self
     {
         $this->registerRequestHandler(new ToolsListHandler($toolRepository));
-        $this->registerRequestHandler(new ToolsCallHandler($toolRepository, $this->progressNotifierRepository));
+        $this->registerRequestHandler(new ToolsCallHandler($toolRepository, $this->progressNotifierRepository, $this->samplingClient));
         $this->capabilities->withTools($toolRepository->getToolSchemas());
 
         return $this;

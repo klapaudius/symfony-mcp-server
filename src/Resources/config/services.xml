@@ -72,6 +72,7 @@
                 <argument key="name">%klp_mcp_server.server.name%</argument>
                 <argument key="version">%klp_mcp_server.server.version%</argument>
             </argument>
+            <argument type="service" id="klp_mcp_server.sampling_client" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
@@ -94,6 +95,12 @@
         <!-- Prompt services -->
         <service id="klp_mcp_server.prompt_repository" class="KLP\KlpMcpServer\Services\PromptService\PromptRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <!-- Sampling services -->
+        <service id="klp_mcp_server.sampling_client" class="KLP\KlpMcpServer\Services\SamplingService\SamplingClient">
+            <argument type="service" id="klp_mcp_server.transport.factory" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
     </services>
 

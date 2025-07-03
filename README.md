@@ -44,6 +44,7 @@ Key benefits:
 - Support of streaming tools with progress notifications
 - Support different types of tool results such as Text, Image, Audio or Resource
 - Adapter-based design architecture with Pub/Sub messaging pattern
+- Sampling support: Tools can request LLM assistance during execution for complex reasoning tasks
 
 ## Requirements
 
@@ -299,7 +300,7 @@ klp_mcp_server:
 Our development roadmap outlines the planned enhancements and features for upcoming releases:
 
 - **Enhanced Protocol Support**: Continued improvements to StreamableHTTP implementation and stay up to date with newer specifications
-- **Sampling Feature Implementation**: Taking advantage of Client's Sampling Capability
+- ✅ **Sampling Feature Implementation**: Complete implementation of MCP sampling allowing tools to request LLM assistance
 
 For detailed discussions about upcoming features and to contribute your ideas, please visit the [Discussion section](https://github.com/klapaudius/symfony-mcp-server/discussions).
 Community feedback plays a crucial role in shaping our development priorities.

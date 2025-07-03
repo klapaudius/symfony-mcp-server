@@ -68,6 +68,7 @@ klp_mcp_server:
     # generating the tool list for the client.
     # Register your tools here
     tools:
+        - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool

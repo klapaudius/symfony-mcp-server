@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace KLP\KlpMcpServer\Tests\Services\SamplingService;
+
+use KLP\KlpMcpServer\Services\SamplingService\SamplingRequest;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use PHPUnit\Framework\TestCase;
+
+class SamplingRequestTest extends TestCase
+{
+    public function testCreateSamplingRequest(): void
+    {
+        $message = new SamplingMessage(
+            'user',
+            new SamplingContent('text', 'Hello, world!')
+        );
+
+        $modelPreferences = new ModelPreferences(
+            hints: [['name' => 'claude-3-sonnet']],
+            costPriority: 0.5,
+            speedPriority: 0.3,
+            intelligencePriority: 0.8
+        );
+
+        $request = new SamplingRequest(
+            [$message],
+            $modelPreferences,
+            'You are a helpful assistant',
+            1000
+        );
+
+        $this->assertCount(1, $request->getMessages());
+        $this->assertSame($modelPreferences, $request->getModelPreferences());
+        $this->assertSame('You are a helpful assistant', $request->getSystemPrompt());
+        $this->assertSame(1000, $request->getMaxTokens());
+    }
+
+    public function testToArray(): void
+    {
+        $message = new SamplingMessage(
+            'user',
+            new SamplingContent('text', 'Test message')
+        );
+
+        $request = new SamplingRequest([$message]);
+        $array = $request->toArray();
+
+        $this->assertArrayHasKey('messages', $array);
+        $this->assertCount(1, $array['messages']);
+        $this->assertSame('user', $array['messages'][0]['role']);
+        $this->assertSame('text', $array['messages'][0]['content']['type']);
+        $this->assertSame('Test message', $array['messages'][0]['content']['text']);
+    }
+
+    public function testFromArray(): void
+    {
+        $data = [
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => [
+                        'type' => 'text',
+                        'text' => 'Hello from array',
+                    ],
+                ],
+            ],
+            'modelPreferences' => [
+                'hints' => [['name' => 'claude-3']],
+                'costPriority' => 0.7,
+            ],
+            'systemPrompt' => 'System prompt',
+            'maxTokens' => 500,
+        ];
+
+        $request = SamplingRequest::fromArray($data);
+
+        $this->assertCount(1, $request->getMessages());
+        $this->assertSame('user', $request->getMessages()[0]->getRole());
+        $this->assertNotNull($request->getModelPreferences());
+        $this->assertSame(0.7, $request->getModelPreferences()->getCostPriority());
+        $this->assertSame('System prompt', $request->getSystemPrompt());
+        $this->assertSame(500, $request->getMaxTokens());
+    }
+}

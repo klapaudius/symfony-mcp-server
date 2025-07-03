@@ -38,7 +38,7 @@ class MCPServerTest extends TestCase
 
         $invocations = [
             new ToolsListHandler($mockToolRepository),
-            new ToolsCallHandler($mockToolRepository, $mockProgressNotifierRepository),
+            new ToolsCallHandler($mockToolRepository, $mockProgressNotifierRepository, null),
         ];
         $mockProtocol->expects($matcher = $this->exactly(count($invocations)))
             ->method('registerRequestHandler')
@@ -53,6 +53,7 @@ class MCPServerTest extends TestCase
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
         $server->getProperty('progressNotifierRepository')->setValue($instance, $mockProgressNotifierRepository);
+        $server->getProperty('samplingClient')->setValue($instance, null);
 
         // Act
         $instance->registerToolRepository($mockToolRepository);
@@ -128,6 +129,7 @@ class MCPServerTest extends TestCase
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
         $server->getProperty('progressNotifierRepository')->setValue($instance, $mockProgressNotifierRepository);
+        $server->getProperty('samplingClient')->setValue($instance, null);
 
         // Act
         $result = $instance->registerToolRepository($mockToolRepository);

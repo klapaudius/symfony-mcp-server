@@ -14,8 +14,10 @@ use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 
 class ToolsCallHandler implements RequestHandler
 {
@@ -23,10 +25,16 @@ class ToolsCallHandler implements RequestHandler
 
     private ProgressNotifierRepository $progressNotifierRepository;
 
-    public function __construct(ToolRepository $toolRepository, ProgressNotifierRepository $progressNotifierRepository)
-    {
+    private ?SamplingClient $samplingClient;
+
+    public function __construct(
+        ToolRepository $toolRepository,
+        ProgressNotifierRepository $progressNotifierRepository,
+        ?SamplingClient $samplingClient
+    ) {
         $this->toolRepository = $toolRepository;
         $this->progressNotifierRepository = $progressNotifierRepository;
+        $this->samplingClient = $samplingClient;
     }
 
     public function isHandle(string $method): bool
@@ -70,6 +78,13 @@ class ToolsCallHandler implements RequestHandler
             $progressNotifier = $this->progressNotifierRepository->registerToken($progressToken, $clientId);
             $tool->setProgressNotifier($progressNotifier);
         }
+
+        // Inject sampling client if the tool supports it
+        if ($tool instanceof SamplingAwareToolInterface && $this->samplingClient !== null) {
+            $this->samplingClient->setCurrentClientId($clientId);
+            $tool->setSamplingClient($this->samplingClient);
+        }
+
         $result = $tool->execute($arguments);
 
         $this->progressNotifierRepository->unregisterToken($progressToken);
