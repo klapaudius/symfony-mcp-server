@@ -6,10 +6,11 @@ This guide provides a comprehensive walkthrough for creating MCP prompts in the 
 1. [Understanding MCP Prompts](#understanding-mcp-prompts)
 2. [Quick Start with make:mcp-prompt](#quick-start-with-makemcp-prompt)
 3. [Basic Prompt Implementation](#basic-prompt-implementation)
-4. [Advanced Prompt Features](#advanced-prompt-features)
-5. [Multi-Modal Prompts](#multi-modal-prompts)
-6. [Dynamic Prompts with Arguments](#dynamic-prompts-with-arguments)
-7. [Best Practices](#best-practices)
+4. [SamplingAwarePromptInterface](#samplingawarepromptinterface)
+5. [Advanced Prompt Features](#advanced-prompt-features)
+6. [Multi-Modal Prompts](#multi-modal-prompts)
+7. [Dynamic Prompts with Arguments](#dynamic-prompts-with-arguments)
+8. [Best Practices](#best-practices)
 
 ## Understanding MCP Prompts
 
@@ -145,6 +146,92 @@ klp_mcp_server:
         blog_post:
             class: App\Mcp\Prompts\BlogPostPrompt
 ```
+
+
+
+## SamplingAwarePromptInterface
+
+For prompts that need to make LLM sampling requests during message generation, implement the `SamplingAwarePromptInterface`. This interface extends `PromptInterface` and provides access to a `SamplingClient` for creating nested LLM calls.
+
+### When to Use Sampling
+
+Use sampling in prompts that need:
+- Dynamic question generation based on input content
+- Context-specific prompt adaptation
+- AI-enhanced prompt customization
+- Analysis of user input to tailor prompt messages
+
+### Implementation
+
+```php
+use KLP\KlpMcpServer\Services\PromptService\SamplingAwarePromptInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+
+class AdaptiveReviewPrompt implements SamplingAwarePromptInterface
+{
+    private ?SamplingClient $samplingClient = null;
+
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+
+    public function getMessages(array $arguments = []): CollectionPromptMessage
+    {
+        $content = $arguments['content'] ?? '';
+        
+        $collection = new CollectionPromptMessage([
+            new TextPromptMessage('system', 'You are an expert reviewer.')
+        ]);
+
+        // Generate dynamic questions if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->canSample()) {
+            $dynamicQuestions = $this->generateQuestions($content);
+            if ($dynamicQuestions) {
+                $collection->addMessage(
+                    new TextPromptMessage('user', $dynamicQuestions)
+                );
+            }
+        }
+
+        $collection->addMessage(
+            new TextPromptMessage('user', "Please review: {$content}")
+        );
+
+        return $collection;
+    }
+
+    private function generateQuestions(string $content): ?string
+    {
+        try {
+            $prompt = "Generate specific review questions for: " . $content;
+            
+            $response = $this->samplingClient->createTextRequest(
+                $prompt,
+                new ModelPreferences(
+                    hints: [['name' => 'claude-3-haiku']],
+                    speedPriority: 0.8
+                ),
+                null,
+                300
+            );
+
+            return $response->getContent()->getText();
+        } catch (\Exception $e) {
+            return null; // Fallback gracefully
+        }
+    }
+}
+```
+
+### Best Practices
+
+- Always check if sampling is available with `canSample()`
+- Handle sampling failures gracefully with fallbacks
+- Use faster models for prompt generation (like Haiku)
+- Keep token limits reasonable for prompt generation
+- Cache results when appropriate to avoid repeated calls
 
 ## Advanced Prompt Features
 

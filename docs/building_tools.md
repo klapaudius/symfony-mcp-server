@@ -1,5 +1,19 @@
 # Building MCP Tools - Complete Walkthrough
 
+## Table of Contents
+1. [Introduction to Model Context Protocol (MCP)](#introduction-to-model-context-protocol-mcp)
+2. [What are MCP Tools?](#what-are-mcp-tools)
+3. [Creating Your First MCP Tool](#creating-your-first-mcp-tool)
+4. [Understanding the Tool Interface](#understanding-the-tool-interface)
+5. [Tool Result Types](#tool-result-types)
+6. [Testing Your MCP Tools](#testing-your-mcp-tools)
+7. [Streaming Tools with Progress Notifications](#streaming-tools-with-progress-notifications)
+8. [SamplingAwareToolInterface](#samplingawaretoolinterface)
+9. [Advanced Tool Development](#advanced-tool-development)
+10. [Best Practices for MCP Tool Development](#best-practices-for-mcp-tool-development)
+11. [Example Tools](#example-tools)
+12. [Conclusion](#conclusion)
+
 ## Introduction to Model Context Protocol (MCP)
 
 The Model Context Protocol (MCP) is a standardized communication protocol that enables Large Language Models (LLMs) to interact with external systems and services. MCP allows LLMs to:
@@ -695,6 +709,64 @@ class FileProcessingTool implements StreamableToolInterface
     }
 }
 ```
+
+## SamplingAwareToolInterface
+
+For tools that need to make LLM sampling requests during execution, implement the `SamplingAwareToolInterface`. This interface extends `StreamableToolInterface` and provides access to a `SamplingClient` for creating nested LLM calls.
+
+### When to Use Sampling
+
+Use sampling in tools that need:
+- Code analysis and recommendations
+- Content generation or transformation
+- Complex reasoning tasks
+- Natural language processing
+
+### Implementation
+
+```php
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+
+class MyAnalysisTool implements SamplingAwareToolInterface
+{
+    private ?SamplingClient $samplingClient = null;
+
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+
+    public function execute(array $arguments): ToolResultInterface
+    {
+        if ($this->samplingClient === null || !$this->samplingClient->canSample()) {
+            return new TextToolResult('This tool requires LLM sampling capability');
+        }
+
+        $prompt = "Analyze this data: " . $arguments['data'];
+        
+        $response = $this->samplingClient->createTextRequest(
+            $prompt,
+            new ModelPreferences(
+                hints: [['name' => 'claude-3-sonnet']],
+                intelligencePriority: 0.8
+            ),
+            null,
+            2000 // max tokens
+        );
+
+        return new TextToolResult($response->getContent()->getText() ?? 'No response');
+    }
+}
+```
+
+### Best Practices
+
+- Always check if sampling is available with `canSample()`
+- Handle sampling failures gracefully
+- Use appropriate model preferences for your use case
+- Set reasonable token limits to control costs
 
 ## Advanced Tool Development
 

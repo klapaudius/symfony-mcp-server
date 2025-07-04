@@ -33,6 +33,7 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 - [Transport Layer](../README.md#why-not-stdio) - SSE vs StreamableHTTP vs STDIO
 - [Pub/Sub Architecture](../README.md#pubsub-architecture-with-adapters) - Message broker and adapter system
 - [Progress Notifications](building_tools.md#progress-notifications) - Real-time updates for long-running operations
+- [Sampling Feature](sampling.md) - Enable tools to make nested LLM calls for enhanced AI capabilities
 
 ### Configuration
 - [Configuration Reference](../src/Resources/config/packages/klp_mcp_server.yaml) - Complete configuration options
@@ -47,14 +48,15 @@ Welcome to the Symfony MCP Server documentation. This bundle enables developers 
 ## API Reference
 
 ### Interfaces
-- **Tools**: `StreamableToolInterface`, `BaseToolInterface` (deprecated)
-- **Prompts**: `PromptInterface`, `PromptMessageInterface`
-- **Resources**: `ResourceInterface`, `ResourceTemplateInterface`
+- **Tools**: `StreamableToolInterface`, `SamplingAwareToolInterface`, `ToolInterface` (deprecated)
+- **Prompts**: `PromptInterface`, `SamplingAwarePromptInterface`, `PromptMessageInterface`
+- **Resources**: `ResourceInterface`, `SamplingAwareResourceInterface`, `ResourceTemplateInterface`
 - **Results**: `ToolResultInterface` with Text, Image, Audio, Resource types
 
 ### Services
 - **ProgressNotifier**: Real-time progress updates
 - **PromptRepository**: Prompt management and retrieval
+- **SamplingClient**: Interface for making nested LLM calls
 - **MCPProtocol**: Core protocol implementation
 
 ## Requirements & Compatibility

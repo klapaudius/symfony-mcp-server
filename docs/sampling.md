@@ -1,6 +1,6 @@
 # Sampling Feature
 
-The Symfony MCP Server bundle now supports the Model Context Protocol (MCP) sampling feature, which allows MCP servers (tools) to request LLM assistance from clients during tool execution.
+The Symfony MCP Server bundle now supports the Model Context Protocol (MCP) sampling feature, which allows MCP servers (tools, prompts, and resources) to request LLM assistance from clients during execution.
 
 ## Overview
 
@@ -9,9 +9,9 @@ Sampling enables tools to make nested LLM calls for complex reasoning, content g
 ## How It Works
 
 1. **Client Capability Declaration**: During initialization, clients declare their sampling capability
-2. **Tool Execution**: When a tool needs LLM assistance, it can make a sampling request
+2. **MCP Component Execution**: When a tool, prompt, or resource needs LLM assistance, it can make a sampling request
 3. **Client Processing**: The client receives the request and forwards it to an LLM
-4. **Response**: The LLM's response is sent back to the tool
+4. **Response**: The LLM's response is sent back to the requesting component
 
 ## Implementation
 
@@ -57,6 +57,112 @@ class MyTool implements SamplingAwareToolInterface
 ```
 
 2. The framework automatically injects the `SamplingClient` when the tool is executed.
+
+### For Prompt Developers
+
+Prompts can also use sampling to generate dynamic content based on user input:
+
+```php
+use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
+use KLP\KlpMcpServer\Services\PromptService\SamplingAwarePromptInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+
+class DynamicPrompt implements PromptInterface, SamplingAwarePromptInterface
+{
+    private ?SamplingClient $samplingClient = null;
+    
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+    
+    public function getMessages(array $arguments = []): CollectionPromptMessage
+    {
+        $content = $arguments['content'] ?? '';
+        
+        $collection = new CollectionPromptMessage([
+            new TextPromptMessage('system', 'You are an expert reviewer.')
+        ]);
+
+        // Generate dynamic questions if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->canSample()) {
+            $dynamicQuestions = $this->generateQuestions($content);
+            if ($dynamicQuestions) {
+                $collection->addMessage(
+                    new TextPromptMessage('user', $dynamicQuestions)
+                );
+            }
+        }
+
+        return $collection;
+    }
+    
+    private function generateQuestions(string $content): ?string
+    {
+        try {
+            $response = $this->samplingClient->createTextRequest(
+                "Generate specific review questions for: " . $content,
+                new ModelPreferences(speedPriority: 0.8),
+                null,
+                300
+            );
+            return $response->getContent()->getText();
+        } catch (\Exception $e) {
+            return null; // Fallback gracefully
+        }
+    }
+}
+```
+
+### For Resource Developers
+
+Resources can use sampling to generate dynamic content based on project data:
+
+```php
+use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
+use KLP\KlpMcpServer\Services\ResourceService\SamplingAwareResourceInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+
+class ProjectSummaryResource implements ResourceInterface, SamplingAwareResourceInterface
+{
+    private ?SamplingClient $samplingClient = null;
+    private ?string $cachedData = null;
+
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+        $this->cachedData = null; // Clear cache when client changes
+    }
+
+    public function getData(): string
+    {
+        if ($this->cachedData !== null) {
+            return $this->cachedData;
+        }
+
+        if ($this->samplingClient === null || !$this->samplingClient->canSample()) {
+            return $this->getStaticSummary();
+        }
+
+        try {
+            $projectInfo = $this->gatherProjectInfo();
+            $response = $this->samplingClient->createTextRequest(
+                "Generate a project summary: " . json_encode($projectInfo),
+                new ModelPreferences(intelligencePriority: 0.8),
+                null,
+                2000
+            );
+
+            $this->cachedData = $response->getContent()->getText() ?? 'No summary generated';
+            return $this->cachedData;
+        } catch (\Exception $e) {
+            return $this->getStaticSummary() . "\n\n*Note: Dynamic summary generation failed.*";
+        }
+    }
+    
+    // ... other required interface methods
+}
+```
 
 ### Sampling Request Types
 
@@ -110,7 +216,10 @@ See `src/Services/ToolService/Example/CodeAnalyzerTool.php` for a complete examp
 
 The sampling feature is automatically enabled when:
 1. The client declares sampling capability during initialization
-2. Tools implement the `SamplingAwareToolInterface`
+2. Components implement the appropriate sampling-aware interface:
+   - Tools: `SamplingAwareToolInterface`
+   - Prompts: `SamplingAwarePromptInterface`
+   - Resources: `SamplingAwareResourceInterface`
 
 No additional configuration is required.
 
