@@ -8,15 +8,18 @@ use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifier;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool;
 use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\AudioToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
@@ -672,4 +675,324 @@ class ToolsCallHandlerTest extends TestCase
         $this->assertStringContainsString('Test streaming - Chunk 1/2', $result['content'][0]['text']);
         $this->assertStringContainsString('Test streaming - Chunk 2/2', $result['content'][0]['text']);
     }
+
+    public function test_execute_with_sampling_aware_tool_and_sampling_client(): void
+    {
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
+
+        $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
+        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Sampling aware result'));
+
+        $samplingClient->expects($this->once())
+            ->method('setCurrentClientId')
+            ->with('client1');
+
+        $samplingAwareTool->expects($this->once())
+            ->method('setSamplingClient')
+            ->with($samplingClient);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('sampling-aware-tool')
+            ->willReturn($samplingAwareTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        // Create handler with sampling client
+        $handlerWithSampling = new ToolsCallHandler(
+            $this->toolRepository,
+            $this->progressNotifierRepository,
+            $samplingClient
+        );
+
+        $params = [
+            'name' => 'sampling-aware-tool',
+            'arguments' => [],
+        ];
+
+        $result = $handlerWithSampling->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Sampling aware result'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_sampling_aware_tool_without_sampling_client(): void
+    {
+        $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
+
+        $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
+        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Result without sampling'));
+
+        $samplingAwareTool->expects($this->never())
+            ->method('setSamplingClient');
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('sampling-aware-tool')
+            ->willReturn($samplingAwareTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'sampling-aware-tool',
+            'arguments' => [],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result without sampling'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_tool_that_is_both_streamable_and_sampling_aware(): void
+    {
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        
+        // Create a tool that implements both interfaces
+        $combinedTool = new class implements StreamableToolInterface, SamplingAwareToolInterface
+        {
+            private ?ProgressNotifierInterface $progressNotifier = null;
+            private ?SamplingClient $samplingClient = null;
+
+            public function getName(): string
+            {
+                return 'combined-tool';
+            }
+
+            public function getDescription(): string
+            {
+                return 'Tool with both streaming and sampling';
+            }
+
+            public function getInputSchema(): array
+            {
+                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+            }
+
+            public function getAnnotations(): ToolAnnotation
+            {
+                return new ToolAnnotation;
+            }
+
+            public function execute(array $arguments): ToolResultInterface
+            {
+                $result = 'Combined result';
+                if ($this->progressNotifier !== null) {
+                    $result .= ' with progress';
+                }
+                if ($this->samplingClient !== null) {
+                    $result .= ' with sampling';
+                }
+                return new TextToolResult($result);
+            }
+
+            public function isStreaming(): bool
+            {
+                return true;
+            }
+
+            public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+            {
+                $this->progressNotifier = $progressNotifier;
+            }
+
+            public function setSamplingClient(SamplingClient $samplingClient): void
+            {
+                $this->samplingClient = $samplingClient;
+            }
+        };
+
+        $samplingClient->expects($this->once())
+            ->method('setCurrentClientId')
+            ->with('client1');
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('combined-tool')
+            ->willReturn($combinedTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('registerToken')
+            ->with('progress-789', 'client1')
+            ->willReturn($progressNotifier);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with('progress-789');
+
+        // Create handler with sampling client
+        $handlerWithSampling = new ToolsCallHandler(
+            $this->toolRepository,
+            $this->progressNotifierRepository,
+            $samplingClient
+        );
+
+        $params = [
+            'name' => 'combined-tool',
+            'arguments' => [],
+            '_meta' => ['progressToken' => 'progress-789'],
+        ];
+
+        $result = $handlerWithSampling->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Combined result with progress with sampling'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_non_sampling_aware_tool_and_sampling_client(): void
+    {
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $regularTool = $this->createMock(StreamableToolInterface::class);
+
+        $regularTool->method('getName')->willReturn('regular-tool');
+        $regularTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $regularTool->method('isStreaming')->willReturn(false);
+        $regularTool->method('execute')->willReturn(new TextToolResult('Regular tool result'));
+
+        // Sampling client should not be called for non-sampling-aware tools
+        $samplingClient->expects($this->never())
+            ->method('setCurrentClientId');
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('regular-tool')
+            ->willReturn($regularTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        // Create handler with sampling client
+        $handlerWithSampling = new ToolsCallHandler(
+            $this->toolRepository,
+            $this->progressNotifierRepository,
+            $samplingClient
+        );
+
+        $params = [
+            'name' => 'regular-tool',
+            'arguments' => [],
+        ];
+
+        $result = $handlerWithSampling->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Regular tool result'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_sampling_aware_tool_different_client_ids(): void
+    {
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
+
+        $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
+        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Result for client2'));
+
+        // Test with different client ID
+        $samplingClient->expects($this->once())
+            ->method('setCurrentClientId')
+            ->with('client2-special-id');
+
+        $samplingAwareTool->expects($this->once())
+            ->method('setSamplingClient')
+            ->with($samplingClient);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('sampling-aware-tool')
+            ->willReturn($samplingAwareTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        // Create handler with sampling client
+        $handlerWithSampling = new ToolsCallHandler(
+            $this->toolRepository,
+            $this->progressNotifierRepository,
+            $samplingClient
+        );
+
+        $params = [
+            'name' => 'sampling-aware-tool',
+            'arguments' => [],
+        ];
+
+        $result = $handlerWithSampling->execute('tools/call', 'client2-special-id', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result for client2'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_collection_tool_result(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+        
+        $textResult1 = new TextToolResult('First result');
+        $textResult2 = new TextToolResult('Second result');
+        $collectionResult = new CollectionToolResult();
+        $collectionResult->addItem($textResult1);
+        $collectionResult->addItem($textResult2);
+
+        $tool->method('getName')->willReturn('collection-tool');
+        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willReturn($collectionResult);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('collection-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'collection-tool',
+            'arguments' => [],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertArrayHasKey('content', $result);
+        $this->assertCount(2, $result['content']);
+        $this->assertEquals(['type' => 'text', 'text' => 'First result'], $result['content'][0]);
+        $this->assertEquals(['type' => 'text', 'text' => 'Second result'], $result['content'][1]);
+    }
+
+    // Note: Legacy deprecation tests for tools returning string/array instead of ToolResultInterface
+    // are not included due to PHP type system constraints in test environment.
+    // The deprecation logic is covered by the actual implementation in ToolsCallHandler.
 }

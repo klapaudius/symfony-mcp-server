@@ -142,7 +142,7 @@ final class MCPServer implements MCPServerInterface
     public function registerResourceRepository(ResourceRepository $resourceRepository): self
     {
         $this->registerRequestHandler(new ResourcesListHandler($resourceRepository));
-        $this->registerRequestHandler(new ResourcesReadHandler($resourceRepository));
+        $this->registerRequestHandler(new ResourcesReadHandler($resourceRepository, $this->samplingClient));
         $this->capabilities->withResources($resourceRepository->getResourceSchemas());
 
         return $this;
@@ -158,7 +158,7 @@ final class MCPServer implements MCPServerInterface
     public function registerPromptRepository(PromptRepository $promptRepository): self
     {
         $this->registerRequestHandler(new PromptsListHandler($promptRepository));
-        $this->registerRequestHandler(new PromptsGetHandler($promptRepository));
+        $this->registerRequestHandler(new PromptsGetHandler($promptRepository, $this->samplingClient));
         $this->capabilities->withPrompts($promptRepository->getPromptSchemas());
 
         return $this;

@@ -5,11 +5,14 @@ namespace KLP\KlpMcpServer\Server\Request;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
+use KLP\KlpMcpServer\Services\ResourceService\SamplingAwareResourceInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 
 class ResourcesReadHandler implements RequestHandler
 {
     private const TEXT_MIME_TYPES = [
         // Supported text-based MIME types
+        'text/markdown',
         'text/plain',
         'text/html',
         'text/css',
@@ -26,9 +29,12 @@ class ResourcesReadHandler implements RequestHandler
 
     private ResourceRepository $resourceRepository;
 
-    public function __construct(ResourceRepository $resourceRepository)
+    private ?SamplingClient $samplingClient;
+
+    public function __construct(ResourceRepository $resourceRepository, ?SamplingClient $samplingClient)
     {
         $this->resourceRepository = $resourceRepository;
+        $this->samplingClient = $samplingClient;
     }
 
     public function isHandle(string $method): bool
@@ -51,6 +57,12 @@ class ResourcesReadHandler implements RequestHandler
 
         if (! $resource) {
             return [];
+        }
+
+        // Inject sampling client if the resource supports it
+        if ($resource instanceof SamplingAwareResourceInterface && $this->samplingClient !== null) {
+            $this->samplingClient->setCurrentClientId($clientId);
+            $resource->setSamplingClient($this->samplingClient);
         }
 
         return [

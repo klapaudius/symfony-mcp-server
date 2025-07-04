@@ -72,7 +72,7 @@ class MCPServerTest extends TestCase
 
         $invocations = [
             new ResourcesListHandler($mockResourceRepository),
-            new ResourcesReadHandler($mockResourceRepository),
+            new ResourcesReadHandler($mockResourceRepository, null),
         ];
         $mockProtocol->expects($matcher = $this->exactly(count($invocations)))
             ->method('registerRequestHandler')
@@ -86,6 +86,7 @@ class MCPServerTest extends TestCase
         $instance = $server->newInstanceWithoutConstructor();
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
 
         // Act
         $instance->registerResourceRepository($mockResourceRepository);
@@ -106,6 +107,7 @@ class MCPServerTest extends TestCase
         $instance = $server->newInstanceWithoutConstructor();
         $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
         $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
 
         // Act
         $result = $instance->registerResourceRepository($mockResourceRepository);

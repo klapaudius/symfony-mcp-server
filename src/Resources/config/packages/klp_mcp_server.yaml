@@ -81,12 +81,15 @@ klp_mcp_server:
     # Register your prompts here
     prompts:
       - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
+      - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt
 
     # Resources List
     # https://modelcontextprotocol.io/docs/concepts/resources
     resources:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource
 
     resources_templates:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\CodeDocumentationResource
 ---

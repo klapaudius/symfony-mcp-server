@@ -21,7 +21,7 @@ class PromptsGetHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->promptRepository = $this->createMock(PromptRepository::class);
-        $this->handler = new PromptsGetHandler($this->promptRepository);
+        $this->handler = new PromptsGetHandler($this->promptRepository, null);
     }
 
     public function test_is_handle_returns_true_for_prompts_get(): void

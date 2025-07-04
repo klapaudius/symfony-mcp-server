@@ -6,14 +6,19 @@ use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
+use KLP\KlpMcpServer\Services\PromptService\SamplingAwarePromptInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 
 class PromptsGetHandler implements RequestHandler
 {
     private PromptRepository $promptRepository;
 
-    public function __construct(PromptRepository $promptRepository)
+    private ?SamplingClient $samplingClient;
+
+    public function __construct(PromptRepository $promptRepository, ?SamplingClient $samplingClient)
     {
         $this->promptRepository = $promptRepository;
+        $this->samplingClient = $samplingClient;
     }
 
     public function isHandle(string $method): bool
@@ -40,6 +45,12 @@ class PromptsGetHandler implements RequestHandler
         }
 
         $arguments = $params['arguments'] ?? [];
+
+        // Inject sampling client if the prompt supports it
+        if ($prompt instanceof SamplingAwarePromptInterface && $this->samplingClient !== null) {
+            $this->samplingClient->setCurrentClientId($clientId);
+            $prompt->setSamplingClient($this->samplingClient);
+        }
 
         return [
             'description' => $prompt->getDescription(),

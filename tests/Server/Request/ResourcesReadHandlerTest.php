@@ -23,7 +23,7 @@ class ResourcesReadHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->resourceRepository = $this->createMock(ResourceRepository::class);
-        $this->handler = new ResourcesReadHandler($this->resourceRepository);
+        $this->handler = new ResourcesReadHandler($this->resourceRepository, null);
     }
 
     /**
