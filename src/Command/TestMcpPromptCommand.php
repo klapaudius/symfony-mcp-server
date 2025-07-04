@@ -101,7 +101,7 @@ class TestMcpPromptCommand extends Command
             ->addOption('list', '-l', InputOption::VALUE_NONE, 'List all available prompts')
             ->setDescription('Test an MCP prompt with simulated inputs')
             ->setHelp(<<<'EOT'
-mcp:test-prompt {prompt? : The name of the prompt to test} {--inputs= : JSON inputs for the prompt} {--list : List all available prompts}
+mcp:test-prompt {prompt? : The name of the prompt to test} {--inputs= : JSON input for the prompt} {--list : List all available prompts}
 EOT
             );
     }
@@ -222,7 +222,7 @@ EOT
     public function getArgumentsFromOption(): ?array
     {
         // If arguments are provided as an option, use that
-        $argumentsOption = $this->input->getOption('arguments');
+        $argumentsOption = $this->input->getOption('inputs');
         if ($argumentsOption) {
             try {
                 $decodedArguments = json_decode($argumentsOption, true);
@@ -301,7 +301,7 @@ EOT
         $this->io->text([
             'To test a specific prompt, run:',
             '    php bin/console mcp:test-prompt [prompt_name]',
-            "    php bin/console mcp:test-prompt [prompt_name] --arguments='{\"name\":\"value\"}'",
+            "    php bin/console mcp:test-prompt [prompt_name] --inputs='{\"name\":\"value\"}'",
         ]);
 
         return Command::SUCCESS;
