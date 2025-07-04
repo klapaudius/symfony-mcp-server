@@ -97,11 +97,11 @@ class TestMcpPromptCommand extends Command
     {
         $this
             ->addArgument('prompt', InputArgument::OPTIONAL, 'The name of the prompt to test')
-            ->addOption('arguments', '-a', InputOption::VALUE_OPTIONAL, 'JSON arguments for the prompt')
+            ->addOption('input', '-i', InputOption::VALUE_OPTIONAL, 'JSON input for the prompt')
             ->addOption('list', '-l', InputOption::VALUE_NONE, 'List all available prompts')
-            ->setDescription('Test an MCP prompt with simulated arguments')
+            ->setDescription('Test an MCP prompt with simulated inputs')
             ->setHelp(<<<'EOT'
-mcp:test-prompt {prompt? : The name of the prompt to test} {--arguments= : JSON arguments for the prompt} {--list : List all available prompts}
+mcp:test-prompt {prompt? : The name of the prompt to test} {--inputs= : JSON inputs for the prompt} {--list : List all available prompts}
 EOT
             );
     }
@@ -131,12 +131,12 @@ EOT
             $arguments = $this->getArgumentsFromOption()
                 ?? $this->askForArguments($prompt->getArguments());
             if ($arguments === null) {
-                throw new TestMcpPromptCommandException('Invalid arguments.');
+                throw new TestMcpPromptCommandException('Invalid inputs.');
             }
 
             // Execute the prompt
             $this->io->text([
-                'Executing prompt with arguments:',
+                'Executing prompt with inputs:',
                 json_encode($arguments, JSON_PRETTY_PRINT),
             ]);
 
