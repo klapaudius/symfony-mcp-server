@@ -44,7 +44,11 @@ Key benefits:
 - Support of streaming tools with progress notifications
 - Support different types of tool results such as Text, Image, Audio or Resource
 - Adapter-based design architecture with Pub/Sub messaging pattern
-- Sampling support: Tools can request LLM assistance during execution for complex reasoning tasks
+- **Sampling support**: Tools can request LLM assistance during execution for complex reasoning tasks
+  - Dynamic model selection with preferences (cost, speed, intelligence)
+  - Multi-message conversations with context preservation
+  - Automatic capability detection and graceful fallback
+  - Integration with tools, prompts, and resources
 
 ## Requirements
 
