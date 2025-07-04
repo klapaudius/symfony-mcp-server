@@ -1,4 +1,4 @@
-### Version Next (Unreleased)
+### Version 1.4.0
 - **Core Features:**
   - Add comprehensive sampling support allowing tools to request LLM assistance during execution
   - Introduce SamplingAwareToolInterface for tools that need to make nested LLM calls
@@ -8,6 +8,8 @@
   - Automatic injection of SamplingClient into tools that implement SamplingAwareToolInterface
   - Support for text and multi-message sampling requests
   - Model preferences for controlling LLM selection (cost, speed, intelligence priorities)
+- **Bug Fixes:**
+  - #45 Rename "arguments" option to "inputs" in TestMcpPromptCommand and related files for consistency
 - **Documentation:**
   - Add comprehensive sampling documentation with examples and best practices
 
