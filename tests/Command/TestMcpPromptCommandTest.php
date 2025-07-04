@@ -208,7 +208,7 @@ class TestMcpPromptCommandTest extends TestCase
 
         $this->inputMock
             ->method('getOption')
-            ->with('inputs')
+            ->with('input')
             ->willReturn($validJson);
 
         $result = $this->command->getArgumentsFromOption();
@@ -229,7 +229,7 @@ class TestMcpPromptCommandTest extends TestCase
 
         $this->inputMock
             ->method('getOption')
-            ->with('inputs')
+            ->with('input')
             ->willReturn($invalidJson);
 
         $this->ioMock
@@ -249,7 +249,7 @@ class TestMcpPromptCommandTest extends TestCase
     {
         $this->inputMock
             ->method('getOption')
-            ->with('inputs')
+            ->with('input')
             ->willReturn(null);
 
         $result = $this->command->getArgumentsFromOption();
@@ -411,7 +411,7 @@ class TestMcpPromptCommandTest extends TestCase
             ->with([
                 'To test a specific prompt, run:',
                 '    php bin/console mcp:test-prompt [prompt_name]',
-                '    php bin/console mcp:test-prompt [prompt_name] --inputs=\'{"name":"value"}\'',
+                '    php bin/console mcp:test-prompt [prompt_name] --input=\'{"name":"value"}\'',
             ]);
 
         $result = $this->command->execute($this->inputMock, $this->outputMock);
@@ -734,9 +734,9 @@ class TestMcpPromptCommandTest extends TestCase
                     // Second call from displaySchema (no arguments)
                     return $text === 'This prompt accepts no arguments.';
                 } elseif ($textCallCount === 3) {
-                    // Third call - executing prompt with inputs
+                    // Third call - executing prompt with input
                     return is_array($text) &&
-                           $text[0] === 'Executing prompt with inputs:' &&
+                           $text[0] === 'Executing prompt with input:' &&
                            $text[1] === '[]';
                 } elseif ($textCallCount === 4) {
                     // Fourth call from error stack trace
@@ -783,7 +783,7 @@ class TestMcpPromptCommandTest extends TestCase
         $this->inputMock->method('getArgument')->with('prompt')->willReturn('test-prompt');
         $this->inputMock->method('getOption')->willReturnMap([
             ['list', false], // First call is for --list
-            ['inputs', 'invalid-json'], // Second call is for --inputs
+            ['input', 'invalid-json'], // Second call is for --input
         ]);
 
         $promptMock = $this->createMock(PromptInterface::class);

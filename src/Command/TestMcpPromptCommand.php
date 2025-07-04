@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'mcp:test-prompt', description: 'Test an MCP prompt with simulated arguments')]
+#[AsCommand(name: 'mcp:test-prompt', description: 'Test an MCP prompt with simulated input')]
 class TestMcpPromptCommand extends Command
 {
     private const NOT_SPECIFIED = 'Not specified';
@@ -99,9 +99,9 @@ class TestMcpPromptCommand extends Command
             ->addArgument('prompt', InputArgument::OPTIONAL, 'The name of the prompt to test')
             ->addOption('input', '-i', InputOption::VALUE_OPTIONAL, 'JSON input for the prompt')
             ->addOption('list', '-l', InputOption::VALUE_NONE, 'List all available prompts')
-            ->setDescription('Test an MCP prompt with simulated inputs')
+            ->setDescription('Test an MCP prompt with simulated input')
             ->setHelp(<<<'EOT'
-mcp:test-prompt {prompt? : The name of the prompt to test} {--inputs= : JSON input for the prompt} {--list : List all available prompts}
+mcp:test-prompt {prompt? : The name of the prompt to test} {--input= : JSON input for the prompt} {--list : List all available prompts}
 EOT
             );
     }
@@ -131,12 +131,12 @@ EOT
             $arguments = $this->getArgumentsFromOption()
                 ?? $this->askForArguments($prompt->getArguments());
             if ($arguments === null) {
-                throw new TestMcpPromptCommandException('Invalid inputs.');
+                throw new TestMcpPromptCommandException('Invalid input.');
             }
 
             // Execute the prompt
             $this->io->text([
-                'Executing prompt with inputs:',
+                'Executing prompt with input:',
                 json_encode($arguments, JSON_PRETTY_PRINT),
             ]);
 
@@ -222,7 +222,7 @@ EOT
     public function getArgumentsFromOption(): ?array
     {
         // If arguments are provided as an option, use that
-        $argumentsOption = $this->input->getOption('inputs');
+        $argumentsOption = $this->input->getOption('input');
         if ($argumentsOption) {
             try {
                 $decodedArguments = json_decode($argumentsOption, true);
@@ -301,7 +301,7 @@ EOT
         $this->io->text([
             'To test a specific prompt, run:',
             '    php bin/console mcp:test-prompt [prompt_name]',
-            "    php bin/console mcp:test-prompt [prompt_name] --inputs='{\"name\":\"value\"}'",
+            "    php bin/console mcp:test-prompt [prompt_name] --input='{\"name\":\"value\"}'",
         ]);
 
         return Command::SUCCESS;
