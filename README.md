@@ -267,7 +267,6 @@ Your agents are now accessible to:
 ### Agent Development Tools
 - **MCP Inspector**: Visualize and debug agent behavior
 - **Test Commands**: Rapid agent development and testing
-- **Sampling Debugger**: Understand AI decision-making
 
 ## 🎓 Agent Development Resources
 
