@@ -43,15 +43,18 @@ class IntelligentAnalyzer implements SamplingAwareToolInterface
     public function execute(array $arguments): ToolResultInterface
     {
         // Let AI analyze and reason about complex data
-        $analysis = $this->sampling->createRequest([
-            'role' => 'user',
-            'content' => "Analyze this data and suggest optimizations: {$arguments['data']}"
-        ]);
-        
-        $aiResponse = $this->sampling->sendRequest($analysis);
+        $analysis = $this->samplingClient->createTextRequest(
+            "Analyze this data and suggest optimizations: {$arguments['data']}",
+            new ModelPreferences(
+                hints: [['name' => 'claude-3-sonnet']],
+                intelligencePriority: 0.8
+            ),
+            null,
+            2000
+        );
         
         // Execute actions based on AI reasoning
-        return $this->processAIRecommendations($aiResponse);
+        return TextToolResult($analysis);
     }
 }
 ```
@@ -87,17 +90,21 @@ class CodeReviewAgent implements SamplingAwareToolInterface
     public function execute(array $arguments): ToolResultInterface
     {
         // AI analyzes code for patterns, security, and best practices
-        $review = $this->sampling->createRequest([
-            'role' => 'user',
-            'content' => "Review this code for security vulnerabilities, 
-                         performance issues, and suggest improvements: 
-                         {$arguments['code']}"
+        $review = $this->samplingClient->createTextRequest(<<<Prompt
+            Review this code for security vulnerabilities, 
+            performance issues, and suggest improvements: 
+            {$arguments['code']}
+            Prompt,
+            new ModelPreferences(
+                hints: [['name' => 'claude-3-sonnet']],
+                intelligencePriority: 0.8
+            ),
+            null,
+            2000
         ]);
         
-        $aiAnalysis = $this->sampling->sendRequest($review);
-        
         // Generate actionable recommendations
-        return new TextResult($this->formatReview($aiAnalysis));
+        return new TextToolResult($this->formatReview($review));
     }
 }
 ```
@@ -108,8 +115,6 @@ class DataInsightAgent implements SamplingAwareToolInterface, StreamableToolInte
 {
     public function execute(array $arguments): ToolResultInterface
     {
-        $this->notifier->notify("Analyzing dataset...", 0.1);
-        
         // Multi-step reasoning process
         $steps = [
             'Identify patterns and anomalies',
@@ -117,19 +122,31 @@ class DataInsightAgent implements SamplingAwareToolInterface, StreamableToolInte
             'Create visualizations',
             'Recommend actions'
         ];
+        $this->progressNotifier->sendProgress(
+            progress: 0,
+            total: count($steps)+1,
+            message: "Analyzing dataset..."
+        );
         
         $insights = [];
         foreach ($steps as $i => $step) {
-            $request = $this->sampling->createRequest([
-                'role' => 'user',
-                'content' => "$step for this data: {$arguments['data']}"
-            ]);
-            
-            $insights[] = $this->sampling->sendRequest($request);
-            $this->notifier->notify("Completed: $step", ($i + 1) / count($steps));
+            $insights[] = $this->samplingClient->createTextRequest(
+                "$step for this data: {$arguments['data']}",
+                new ModelPreferences(
+                    hints: [['name' => 'claude-3-sonnet']],
+                    intelligencePriority: 0.8
+                ),
+                null,
+                2000
+            );
+            $this->progressNotifier->sendProgress(
+                progress: $i+1,
+                total: count($steps)+1,
+                message: $step
+            );
         }
         
-        return new TextResult($this->compileReport($insights));
+        return new TextToolResult($this->compileReport($insights));
     }
 }
 ```
@@ -144,20 +161,21 @@ class SupportAgent implements SamplingAwareToolInterface
         $context = $this->loadCustomerHistory($arguments['customer_id']);
         
         // AI determines best response strategy
-        $strategy = $this->sampling->createRequest([
-            'role' => 'system',
-            'content' => 'You are an expert customer support agent.'
-        ], [
-            'role' => 'user',
-            'content' => "Customer issue: {$arguments['issue']}
-                         History: $context
-                         Determine the best resolution approach."
-        ]);
+        $strategy = $this->samplingClient->createTextRequest(<<<Prompt
+            Customer issue: {$arguments['issue']}
+            History: $context
+            Determine the best resolution approach.
+            Prompt,
+            new ModelPreferences(
+                hints: [['name' => 'claude-3-sonnet']],
+                intelligencePriority: 0.8
+            ),
+            'You are an expert customer support agent.',
+            2000
+        );
         
-        $approach = $this->sampling->sendRequest($strategy);
-        
-        // Execute the recommended actions
-        return $this->executeResolution($approach, $arguments);
+        // Send back the strategy for user approbation
+        return new TextToolResult($strategy);
     }
 }
 ```
