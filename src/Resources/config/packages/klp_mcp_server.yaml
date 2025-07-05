@@ -68,7 +68,7 @@ klp_mcp_server:
     # generating the tool list for the client.
     # Register your tools here
     tools:
-        - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool               # Agentic Tool Sample
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
@@ -81,15 +81,15 @@ klp_mcp_server:
     # Register your prompts here
     prompts:
       - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
-      - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt
+      - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt               # Agentic Prompt Sample
 
     # Resources List
     # https://modelcontextprotocol.io/docs/concepts/resources
     resources:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
-        - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource     # Agentic Resource Sample
 
     resources_templates:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
-        - KLP\KlpMcpServer\Services\ResourceService\Examples\CodeDocumentationResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\CodeDocumentationResource  # Agentic Resource Template Sample
 ---
