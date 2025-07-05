@@ -9,7 +9,6 @@ use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
-use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Server\Request\InitializeHandler;
 use KLP\KlpMcpServer\Server\Request\PromptsGetHandler;
 use KLP\KlpMcpServer\Server\Request\PromptsListHandler;
@@ -20,6 +19,7 @@ use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**

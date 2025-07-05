@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\SamplingService;
 
-use KLP\KlpMcpServer\Services\SamplingService\SamplingResponse;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingResponse;
 use PHPUnit\Framework\TestCase;
 
 class SamplingResponseTest extends TestCase
 {
-    public function testCreateSamplingResponse(): void
+    public function test_create_sampling_response(): void
     {
         $content = new SamplingContent('text', 'Hello, this is a response');
         $response = new SamplingResponse(
@@ -26,7 +26,7 @@ class SamplingResponseTest extends TestCase
         $this->assertSame('stop_sequence', $response->getStopReason());
     }
 
-    public function testCreateSamplingResponseWithMinimalData(): void
+    public function test_create_sampling_response_with_minimal_data(): void
     {
         $content = new SamplingContent('text', 'Minimal response');
         $response = new SamplingResponse('assistant', $content);
@@ -37,7 +37,7 @@ class SamplingResponseTest extends TestCase
         $this->assertNull($response->getStopReason());
     }
 
-    public function testToArrayWithAllFields(): void
+    public function test_to_array_with_all_fields(): void
     {
         $content = new SamplingContent('text', 'Full response');
         $response = new SamplingResponse(
@@ -53,7 +53,7 @@ class SamplingResponseTest extends TestCase
         $this->assertArrayHasKey('content', $array);
         $this->assertArrayHasKey('model', $array);
         $this->assertArrayHasKey('stopReason', $array);
-        
+
         $this->assertSame('assistant', $array['role']);
         $this->assertSame('claude-3-opus', $array['model']);
         $this->assertSame('max_tokens', $array['stopReason']);
@@ -62,7 +62,7 @@ class SamplingResponseTest extends TestCase
         $this->assertSame('Full response', $array['content']['text']);
     }
 
-    public function testToArrayWithMinimalFields(): void
+    public function test_to_array_with_minimal_fields(): void
     {
         $content = new SamplingContent('text', 'Minimal response');
         $response = new SamplingResponse('user', $content);
@@ -73,12 +73,12 @@ class SamplingResponseTest extends TestCase
         $this->assertArrayHasKey('content', $array);
         $this->assertArrayNotHasKey('model', $array);
         $this->assertArrayNotHasKey('stopReason', $array);
-        
+
         $this->assertSame('user', $array['role']);
         $this->assertIsArray($array['content']);
     }
 
-    public function testFromArrayWithAllFields(): void
+    public function test_from_array_with_all_fields(): void
     {
         $data = [
             'role' => 'assistant',
@@ -95,13 +95,13 @@ class SamplingResponseTest extends TestCase
         $this->assertSame('assistant', $response->getRole());
         $this->assertSame('claude-3-haiku', $response->getModel());
         $this->assertSame('end_turn', $response->getStopReason());
-        
+
         $content = $response->getContent();
         $this->assertSame('text', $content->getType());
         $this->assertSame('Response from array', $content->getText());
     }
 
-    public function testFromArrayWithMinimalFields(): void
+    public function test_from_array_with_minimal_fields(): void
     {
         $data = [
             'role' => 'system',
@@ -116,13 +116,13 @@ class SamplingResponseTest extends TestCase
         $this->assertSame('system', $response->getRole());
         $this->assertNull($response->getModel());
         $this->assertNull($response->getStopReason());
-        
+
         $content = $response->getContent();
         $this->assertSame('text', $content->getType());
         $this->assertSame('System message', $content->getText());
     }
 
-    public function testFromArrayWithImageContent(): void
+    public function test_from_array_with_image_content(): void
     {
         $data = [
             'role' => 'assistant',
@@ -136,7 +136,7 @@ class SamplingResponseTest extends TestCase
         $response = SamplingResponse::fromArray($data);
 
         $this->assertSame('assistant', $response->getRole());
-        
+
         $content = $response->getContent();
         $this->assertSame('image', $content->getType());
         $this->assertNull($content->getText());
@@ -144,7 +144,7 @@ class SamplingResponseTest extends TestCase
         $this->assertSame('image/png', $content->getMimeType());
     }
 
-    public function testRoundTripConversion(): void
+    public function test_round_trip_conversion(): void
     {
         $originalData = [
             'role' => 'assistant',

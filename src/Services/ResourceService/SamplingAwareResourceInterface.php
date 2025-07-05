@@ -15,8 +15,8 @@ interface SamplingAwareResourceInterface extends ResourceInterface
      * to request LLM assistance during resource retrieval. The sampling client enables the resource
      * to create nested LLM calls for complex reasoning or content generation tasks.
      *
-     * @param SamplingClient $samplingClient The sampling client instance to use for
-     *                                      creating sampling requests to the LLM.
+     * @param  SamplingClient  $samplingClient  The sampling client instance to use for
+     *                                          creating sampling requests to the LLM.
      */
     public function setSamplingClient(SamplingClient $samplingClient): void;
 }

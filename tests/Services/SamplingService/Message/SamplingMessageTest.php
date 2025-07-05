@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\SamplingService\Message;
 
-use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use PHPUnit\Framework\TestCase;
 
 class SamplingMessageTest extends TestCase
 {
-    public function testCreateSamplingMessage(): void
+    public function test_create_sampling_message(): void
     {
         $content = new SamplingContent('text', 'Test message content');
         $message = new SamplingMessage('user', $content);
@@ -19,24 +19,24 @@ class SamplingMessageTest extends TestCase
         $this->assertSame($content, $message->getContent());
     }
 
-    public function testCreateSamplingMessageWithDifferentRoles(): void
+    public function test_create_sampling_message_with_different_roles(): void
     {
         $content = new SamplingContent('text', 'Assistant response');
-        
+
         // Test with assistant role
         $assistantMessage = new SamplingMessage('assistant', $content);
         $this->assertSame('assistant', $assistantMessage->getRole());
-        
+
         // Test with system role
         $systemMessage = new SamplingMessage('system', $content);
         $this->assertSame('system', $systemMessage->getRole());
-        
+
         // Test with user role
         $userMessage = new SamplingMessage('user', $content);
         $this->assertSame('user', $userMessage->getRole());
     }
 
-    public function testToArray(): void
+    public function test_to_array(): void
     {
         $content = new SamplingContent('text', 'Array conversion test');
         $message = new SamplingMessage('assistant', $content);
@@ -51,7 +51,7 @@ class SamplingMessageTest extends TestCase
         $this->assertSame('Array conversion test', $array['content']['text']);
     }
 
-    public function testToArrayWithImageContent(): void
+    public function test_to_array_with_image_content(): void
     {
         $imageData = ['base64' => 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='];
         $content = new SamplingContent('image', null, $imageData, 'image/png');
@@ -69,7 +69,7 @@ class SamplingMessageTest extends TestCase
         $this->assertSame('image/png', $array['content']['mimeType']);
     }
 
-    public function testFromArrayWithTextContent(): void
+    public function test_from_array_with_text_content(): void
     {
         $data = [
             'role' => 'system',
@@ -82,7 +82,7 @@ class SamplingMessageTest extends TestCase
         $message = SamplingMessage::fromArray($data);
 
         $this->assertSame('system', $message->getRole());
-        
+
         $content = $message->getContent();
         $this->assertSame('text', $content->getType());
         $this->assertSame('System prompt message', $content->getText());
@@ -90,7 +90,7 @@ class SamplingMessageTest extends TestCase
         $this->assertNull($content->getMimeType());
     }
 
-    public function testFromArrayWithAudioContent(): void
+    public function test_from_array_with_audio_content(): void
     {
         $audioData = ['base64' => 'SGVsbG8gV29ybGQ=']; // "Hello World" in base64
         $data = [
@@ -105,7 +105,7 @@ class SamplingMessageTest extends TestCase
         $message = SamplingMessage::fromArray($data);
 
         $this->assertSame('assistant', $message->getRole());
-        
+
         $content = $message->getContent();
         $this->assertSame('audio', $content->getType());
         $this->assertNull($content->getText());
@@ -113,7 +113,7 @@ class SamplingMessageTest extends TestCase
         $this->assertSame('audio/mp3', $content->getMimeType());
     }
 
-    public function testRoundTripConversion(): void
+    public function test_round_trip_conversion(): void
     {
         $originalData = [
             'role' => 'user',
@@ -131,7 +131,7 @@ class SamplingMessageTest extends TestCase
         $this->assertSame($originalData['content']['text'], $convertedData['content']['text']);
     }
 
-    public function testMessageWithComplexContent(): void
+    public function test_message_with_complex_content(): void
     {
         // Test with resource content type
         $resourceData = [
@@ -149,7 +149,7 @@ class SamplingMessageTest extends TestCase
         $this->assertSame('application/json', $array['content']['mimeType']);
     }
 
-    public function testDifferentContentTypesIntegration(): void
+    public function test_different_content_types_integration(): void
     {
         // Create messages with different content types
         $textContent = new SamplingContent('text', 'Hello');

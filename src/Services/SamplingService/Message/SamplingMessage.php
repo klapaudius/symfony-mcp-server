@@ -9,8 +9,7 @@ class SamplingMessage
     public function __construct(
         private string $role,
         private SamplingContent $content,
-    ) {
-    }
+    ) {}
 
     public function getRole(): string
     {

@@ -58,7 +58,7 @@ class CodeReviewPrompt implements SamplingAwarePromptInterface
         $language = $arguments['language'] ?? 'unknown';
         $focusAreas = $arguments['focus_areas'] ?? 'general';
 
-        $collection = new CollectionPromptMessage();
+        $collection = new CollectionPromptMessage;
 
         // Add the system message
         $collection->addMessage(
@@ -69,7 +69,7 @@ class CodeReviewPrompt implements SamplingAwarePromptInterface
         );
 
         // If we have sampling capabilities, generate dynamic questions
-        if ($this->samplingClient !== null && $this->samplingClient->canSample() && !empty($code)) {
+        if ($this->samplingClient !== null && $this->samplingClient->canSample() && ! empty($code)) {
             $dynamicQuestions = $this->generateDynamicQuestions($code, $language);
             if ($dynamicQuestions !== null) {
                 $collection->addMessage(
@@ -95,8 +95,8 @@ class CodeReviewPrompt implements SamplingAwarePromptInterface
     private function getSystemPrompt(string $language, string $focusAreas): string
     {
         return sprintf(
-            "You are an expert %s code reviewer. Your task is to provide a thorough code review focusing on: %s. " .
-            "Be specific in your feedback, provide examples when suggesting improvements, and explain the reasoning behind your recommendations.",
+            'You are an expert %s code reviewer. Your task is to provide a thorough code review focusing on: %s. '.
+            'Be specific in your feedback, provide examples when suggesting improvements, and explain the reasoning behind your recommendations.',
             $language !== 'unknown' ? $language : 'software',
             $focusAreas
         );
@@ -110,41 +110,41 @@ class CodeReviewPrompt implements SamplingAwarePromptInterface
         foreach ($areas as $area) {
             switch (strtolower($area)) {
                 case 'security':
-                    $areaPrompts[] = "- Security vulnerabilities and potential attack vectors";
+                    $areaPrompts[] = '- Security vulnerabilities and potential attack vectors';
                     break;
                 case 'performance':
-                    $areaPrompts[] = "- Performance bottlenecks and optimization opportunities";
+                    $areaPrompts[] = '- Performance bottlenecks and optimization opportunities';
                     break;
                 case 'style':
-                    $areaPrompts[] = "- Code style, naming conventions, and formatting";
+                    $areaPrompts[] = '- Code style, naming conventions, and formatting';
                     break;
                 case 'testing':
-                    $areaPrompts[] = "- Test coverage and testability of the code";
+                    $areaPrompts[] = '- Test coverage and testability of the code';
                     break;
                 case 'architecture':
-                    $areaPrompts[] = "- Architectural patterns and design decisions";
+                    $areaPrompts[] = '- Architectural patterns and design decisions';
                     break;
                 default:
-                    $areaPrompts[] = "- General code quality and best practices";
+                    $areaPrompts[] = '- General code quality and best practices';
             }
         }
 
         return sprintf(
-            "Please review the following code:\n\n```\n%s\n```\n\nFocus your review on:\n%s\n\n" .
-            "Provide specific, actionable feedback with examples where appropriate.",
+            "Please review the following code:\n\n```\n%s\n```\n\nFocus your review on:\n%s\n\n".
+            'Provide specific, actionable feedback with examples where appropriate.',
             $code,
             implode("\n", $areaPrompts)
         );
     }
 
-    private function generateDynamicQuestions(string $code, string $language): string|null
+    private function generateDynamicQuestions(string $code, string $language): ?string
     {
         try {
             // Use sampling to analyze the code and generate specific questions
             $prompt = sprintf(
-                "Analyze this %s code and generate 3-5 specific, insightful questions that a code reviewer should ask. " .
-                "Focus on potential issues, design decisions, or areas that need clarification:\n\n```\n%s\n```\n\n" .
-                "Format your response as a bulleted list of questions only.",
+                'Analyze this %s code and generate 3-5 specific, insightful questions that a code reviewer should ask. '.
+                "Focus on potential issues, design decisions, or areas that need clarification:\n\n```\n%s\n```\n\n".
+                'Format your response as a bulleted list of questions only.',
                 $language,
                 $code
             );
@@ -161,8 +161,8 @@ class CodeReviewPrompt implements SamplingAwarePromptInterface
             );
 
             $questions = $response->getContent()->getText();
-            if (!empty($questions)) {
-                return "Additionally, please address these specific questions:\n\n" . $questions;
+            if (! empty($questions)) {
+                return "Additionally, please address these specific questions:\n\n".$questions;
             }
         } catch (\Exception $e) {
             // If sampling fails, we'll just skip the dynamic questions

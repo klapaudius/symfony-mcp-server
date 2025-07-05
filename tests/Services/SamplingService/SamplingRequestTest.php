@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\SamplingService;
 
-use KLP\KlpMcpServer\Services\SamplingService\SamplingRequest;
-use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingRequest;
 use PHPUnit\Framework\TestCase;
 
 class SamplingRequestTest extends TestCase
 {
-    public function testCreateSamplingRequest(): void
+    public function test_create_sampling_request(): void
     {
         $message = new SamplingMessage(
             'user',
@@ -39,7 +39,7 @@ class SamplingRequestTest extends TestCase
         $this->assertSame(1000, $request->getMaxTokens());
     }
 
-    public function testToArray(): void
+    public function test_to_array(): void
     {
         $message = new SamplingMessage(
             'user',
@@ -56,7 +56,7 @@ class SamplingRequestTest extends TestCase
         $this->assertSame('Test message', $array['messages'][0]['content']['text']);
     }
 
-    public function testFromArray(): void
+    public function test_from_array(): void
     {
         $data = [
             'messages' => [
@@ -86,7 +86,7 @@ class SamplingRequestTest extends TestCase
         $this->assertSame(500, $request->getMaxTokens());
     }
 
-    public function testCreateSamplingRequestWithMinimalData(): void
+    public function test_create_sampling_request_with_minimal_data(): void
     {
         $message = new SamplingMessage(
             'assistant',
@@ -102,7 +102,7 @@ class SamplingRequestTest extends TestCase
         $this->assertNull($request->getMaxTokens());
     }
 
-    public function testToArrayWithFullData(): void
+    public function test_to_array_with_full_data(): void
     {
         $messages = [
             new SamplingMessage('system', new SamplingContent('text', 'System message')),
@@ -139,7 +139,7 @@ class SamplingRequestTest extends TestCase
         $this->assertSame(0.1, $array['modelPreferences']['costPriority']);
     }
 
-    public function testToArrayWithMinimalData(): void
+    public function test_to_array_with_minimal_data(): void
     {
         $message = new SamplingMessage(
             'user',
@@ -157,7 +157,7 @@ class SamplingRequestTest extends TestCase
         $this->assertCount(1, $array);
     }
 
-    public function testFromArrayWithMinimalData(): void
+    public function test_from_array_with_minimal_data(): void
     {
         $data = [
             'messages' => [
@@ -180,7 +180,7 @@ class SamplingRequestTest extends TestCase
         $this->assertNull($request->getMaxTokens());
     }
 
-    public function testRoundTripConversion(): void
+    public function test_round_trip_conversion(): void
     {
         $originalData = [
             'messages' => [
@@ -217,7 +217,7 @@ class SamplingRequestTest extends TestCase
         $this->assertSame($originalData['modelPreferences']['speedPriority'], $convertedData['modelPreferences']['speedPriority']);
     }
 
-    public function testWithMultipleMessageTypes(): void
+    public function test_with_multiple_message_types(): void
     {
         $messages = [
             new SamplingMessage(
@@ -237,7 +237,7 @@ class SamplingRequestTest extends TestCase
         $request = new SamplingRequest($messages);
 
         $this->assertCount(3, $request->getMessages());
-        
+
         $array = $request->toArray();
         $this->assertCount(3, $array['messages']);
         $this->assertSame('text', $array['messages'][0]['content']['type']);
@@ -245,18 +245,18 @@ class SamplingRequestTest extends TestCase
         $this->assertSame('text', $array['messages'][2]['content']['type']);
     }
 
-    public function testEmptyMessagesArray(): void
+    public function test_empty_messages_array(): void
     {
         $request = new SamplingRequest([]);
 
         $this->assertCount(0, $request->getMessages());
-        
+
         $array = $request->toArray();
         $this->assertArrayHasKey('messages', $array);
         $this->assertCount(0, $array['messages']);
     }
 
-    public function testMaxTokensEdgeCases(): void
+    public function test_max_tokens_edge_cases(): void
     {
         // Test with zero tokens
         $request1 = new SamplingRequest(

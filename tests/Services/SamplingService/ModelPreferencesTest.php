@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class ModelPreferencesTest extends TestCase
 {
-    public function testCreateModelPreferencesWithAllFields(): void
+    public function test_create_model_preferences_with_all_fields(): void
     {
         $hints = [
             ['name' => 'claude-3-sonnet'],
@@ -29,9 +29,9 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame(0.9, $preferences->getIntelligencePriority());
     }
 
-    public function testCreateModelPreferencesWithDefaults(): void
+    public function test_create_model_preferences_with_defaults(): void
     {
-        $preferences = new ModelPreferences();
+        $preferences = new ModelPreferences;
 
         $this->assertSame([], $preferences->getHints());
         $this->assertNull($preferences->getCostPriority());
@@ -39,7 +39,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertNull($preferences->getIntelligencePriority());
     }
 
-    public function testCreateModelPreferencesWithPartialData(): void
+    public function test_create_model_preferences_with_partial_data(): void
     {
         $hints = [['name' => 'claude-3-haiku']];
         $preferences = new ModelPreferences(
@@ -53,7 +53,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertNull($preferences->getIntelligencePriority());
     }
 
-    public function testToArrayWithAllFields(): void
+    public function test_to_array_with_all_fields(): void
     {
         $hints = [
             ['name' => 'model-1', 'version' => 'latest'],
@@ -80,15 +80,15 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame(0.5, $array['intelligencePriority']);
     }
 
-    public function testToArrayWithEmptyData(): void
+    public function test_to_array_with_empty_data(): void
     {
-        $preferences = new ModelPreferences();
+        $preferences = new ModelPreferences;
         $array = $preferences->toArray();
 
         $this->assertSame([], $array);
     }
 
-    public function testToArrayWithPartialData(): void
+    public function test_to_array_with_partial_data(): void
     {
         $preferences = new ModelPreferences(
             hints: [['name' => 'test-model']],
@@ -106,7 +106,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame(0.95, $array['intelligencePriority']);
     }
 
-    public function testFromArrayWithAllFields(): void
+    public function test_from_array_with_all_fields(): void
     {
         $data = [
             'hints' => [
@@ -126,7 +126,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame(0.8, $preferences->getIntelligencePriority());
     }
 
-    public function testFromArrayWithEmptyData(): void
+    public function test_from_array_with_empty_data(): void
     {
         $preferences = ModelPreferences::fromArray([]);
 
@@ -136,7 +136,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertNull($preferences->getIntelligencePriority());
     }
 
-    public function testFromArrayWithPartialData(): void
+    public function test_from_array_with_partial_data(): void
     {
         $data = [
             'speedPriority' => 0.75,
@@ -151,7 +151,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame(0.25, $preferences->getIntelligencePriority());
     }
 
-    public function testRoundTripConversion(): void
+    public function test_round_trip_conversion(): void
     {
         $originalData = [
             'hints' => [
@@ -169,7 +169,7 @@ class ModelPreferencesTest extends TestCase
         $this->assertSame($originalData, $convertedData);
     }
 
-    public function testPriorityValueEdgeCases(): void
+    public function test_priority_value_edge_cases(): void
     {
         // Test with zero priorities
         $preferences = new ModelPreferences(

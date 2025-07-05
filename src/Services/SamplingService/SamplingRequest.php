@@ -9,15 +9,14 @@ use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 class SamplingRequest
 {
     /**
-     * @param SamplingMessage[] $messages
+     * @param  SamplingMessage[]  $messages
      */
     public function __construct(
         private array $messages,
-        private ModelPreferences|null $modelPreferences = null,
-        private string|null $systemPrompt = null,
-        private int|null $maxTokens = null,
-    ) {
-    }
+        private ?ModelPreferences $modelPreferences = null,
+        private ?string $systemPrompt = null,
+        private ?int $maxTokens = null,
+    ) {}
 
     /**
      * @return SamplingMessage[]
@@ -27,17 +26,17 @@ class SamplingRequest
         return $this->messages;
     }
 
-    public function getModelPreferences(): ModelPreferences|null
+    public function getModelPreferences(): ?ModelPreferences
     {
         return $this->modelPreferences;
     }
 
-    public function getSystemPrompt(): string|null
+    public function getSystemPrompt(): ?string
     {
         return $this->systemPrompt;
     }
 
-    public function getMaxTokens(): int|null
+    public function getMaxTokens(): ?int
     {
         return $this->maxTokens;
     }
@@ -45,7 +44,7 @@ class SamplingRequest
     public function toArray(): array
     {
         $result = [
-            'messages' => array_map(fn(SamplingMessage $msg) => $msg->toArray(), $this->messages),
+            'messages' => array_map(fn (SamplingMessage $msg) => $msg->toArray(), $this->messages),
         ];
 
         if ($this->modelPreferences !== null) {
@@ -66,7 +65,7 @@ class SamplingRequest
     public static function fromArray(array $data): self
     {
         $messages = array_map(
-            fn(array $msg) => SamplingMessage::fromArray($msg),
+            fn (array $msg) => SamplingMessage::fromArray($msg),
             $data['messages']
         );
 

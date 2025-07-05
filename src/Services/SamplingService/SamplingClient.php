@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Services\SamplingService;
 
-use KLP\KlpMcpServer\Transports\TransportInterface;
-use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
-use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
-use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
-use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
-use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
+use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
+use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
+use KLP\KlpMcpServer\Transports\TransportInterface;
 use Psr\Log\LoggerInterface;
 
 class SamplingClient implements SamplingInterface
 {
     private bool $enabled = true;
-    private string|null $currentClientId = null;
+
+    private ?string $currentClientId = null;
 
     private ?TransportInterface $transport = null;
 
     public function __construct(
         private TransportFactoryInterface $transportFactory,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function isEnabled(): bool
     {
@@ -44,7 +44,7 @@ class SamplingClient implements SamplingInterface
 
     public function canSample(): bool
     {
-        if (!$this->enabled || $this->currentClientId === null) {
+        if (! $this->enabled || $this->currentClientId === null) {
             return false;
         }
 
@@ -62,9 +62,9 @@ class SamplingClient implements SamplingInterface
      */
     public function createTextRequest(
         string $prompt,
-        ModelPreferences|null $modelPreferences = null,
-        string|null $systemPrompt = null,
-        int|null $maxTokens = null
+        ?ModelPreferences $modelPreferences = null,
+        ?string $systemPrompt = null,
+        ?int $maxTokens = null
     ): SamplingResponse {
         $message = new SamplingMessage(
             'user',
@@ -96,11 +96,11 @@ class SamplingClient implements SamplingInterface
      */
     public function createRequest(
         array $messages,
-        ModelPreferences|null $modelPreferences = null,
-        string|null $systemPrompt = null,
-        int|null $maxTokens = null
+        ?ModelPreferences $modelPreferences = null,
+        ?string $systemPrompt = null,
+        ?int $maxTokens = null
     ): SamplingResponse {
-        if (!$this->canSample()) {
+        if (! $this->canSample()) {
             throw new JsonRpcErrorException('Sampling is not available for the current client', JsonRpcErrorCode::METHOD_NOT_FOUND);
         }
 

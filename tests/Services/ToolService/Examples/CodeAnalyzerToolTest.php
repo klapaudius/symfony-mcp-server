@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\ToolService\Examples;
 
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
 use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
 use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\SamplingService\SamplingResponse;
-use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use PHPUnit\Framework\TestCase;
@@ -16,25 +16,26 @@ use PHPUnit\Framework\TestCase;
 class CodeAnalyzerToolTest extends TestCase
 {
     private CodeAnalyzerTool $tool;
+
     private SamplingClient $samplingClient;
 
     protected function setUp(): void
     {
-        $this->tool = new CodeAnalyzerTool();
+        $this->tool = new CodeAnalyzerTool;
         $this->samplingClient = $this->createMock(SamplingClient::class);
     }
 
-    public function testGetName(): void
+    public function test_get_name(): void
     {
         $this->assertSame('code_analyzer', $this->tool->getName());
     }
 
-    public function testGetDescription(): void
+    public function test_get_description(): void
     {
         $this->assertSame('Analyzes code and provides insights using LLM assistance', $this->tool->getDescription());
     }
 
-    public function testGetInputSchema(): void
+    public function test_get_input_schema(): void
     {
         $schema = $this->tool->getInputSchema();
 
@@ -44,7 +45,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertContains('code', $schema['required']);
     }
 
-    public function testExecuteWithoutSamplingClient(): void
+    public function test_execute_without_sampling_client(): void
     {
         $result = $this->tool->execute(['code' => 'echo "Hello";']);
 
@@ -53,7 +54,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertStringContainsString('requires LLM sampling capability', $sanitized['text']);
     }
 
-    public function testExecuteWithSamplingClientButCannotSample(): void
+    public function test_execute_with_sampling_client_but_cannot_sample(): void
     {
         $this->samplingClient->method('canSample')->willReturn(false);
         $this->tool->setSamplingClient($this->samplingClient);
@@ -65,7 +66,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertStringContainsString('requires LLM sampling capability', $sanitized['text']);
     }
 
-    public function testExecuteWithSuccessfulSampling(): void
+    public function test_execute_with_successful_sampling(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
 
@@ -92,7 +93,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertSame($analysisText, $sanitized['text']);
     }
 
-    public function testExecuteWithDifferentAnalysisTypes(): void
+    public function test_execute_with_different_analysis_types(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
 
@@ -121,7 +122,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertSame('Security analysis result', $sanitized['text']);
     }
 
-    public function testExecuteHandlesSamplingException(): void
+    public function test_execute_handles_sampling_exception(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
         $this->samplingClient->method('createTextRequest')
@@ -136,24 +137,24 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertStringContainsString('Code analysis failed: Sampling service unavailable', $sanitized['text']);
     }
 
-    public function testIsStreaming(): void
+    public function test_is_streaming(): void
     {
         $this->assertFalse($this->tool->isStreaming());
     }
 
-    public function testSetProgressNotifier(): void
+    public function test_set_progress_notifier(): void
     {
         $progressNotifier = $this->createMock(ProgressNotifierInterface::class);
-        
+
         // This should not throw any exceptions
         $this->tool->setProgressNotifier($progressNotifier);
-        
+
         // Execute to ensure it works with progress notifier set
         $result = $this->tool->execute(['code' => 'test code']);
         $this->assertInstanceOf(TextToolResult::class, $result);
     }
 
-    public function testGetAnnotations(): void
+    public function test_get_annotations(): void
     {
         $annotations = $this->tool->getAnnotations();
 
@@ -163,7 +164,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertFalse($annotations->isOpenWorldHint());
     }
 
-    public function testExecuteWithAllAnalysisTypes(): void
+    public function test_execute_with_all_analysis_types(): void
     {
         $analysisTypes = ['performance', 'readability', 'general'];
         $expectedPrompts = [
@@ -174,12 +175,12 @@ class CodeAnalyzerToolTest extends TestCase
 
         foreach ($analysisTypes as $type) {
             // Create a fresh tool and sampling client for each test
-            $tool = new CodeAnalyzerTool();
+            $tool = new CodeAnalyzerTool;
             $samplingClient = $this->createMock(SamplingClient::class);
-            
+
             $samplingClient->method('canSample')->willReturn(true);
-            
-            $content = new SamplingContent('text', ucfirst($type) . ' analysis result');
+
+            $content = new SamplingContent('text', ucfirst($type).' analysis result');
             $response = new SamplingResponse('assistant', $content);
 
             $samplingClient->expects($this->once())
@@ -200,11 +201,11 @@ class CodeAnalyzerToolTest extends TestCase
             ]);
 
             $sanitized = $result->getSanitizedResult();
-            $this->assertSame(ucfirst($type) . ' analysis result', $sanitized['text']);
+            $this->assertSame(ucfirst($type).' analysis result', $sanitized['text']);
         }
     }
 
-    public function testExecuteWithModelPreferences(): void
+    public function test_execute_with_model_preferences(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
 
@@ -232,7 +233,7 @@ class CodeAnalyzerToolTest extends TestCase
         $this->assertSame('Analysis with model preferences', $sanitized['text']);
     }
 
-    public function testExecuteWithNullResponseText(): void
+    public function test_execute_with_null_response_text(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
 
@@ -247,36 +248,36 @@ class CodeAnalyzerToolTest extends TestCase
         $this->tool->setSamplingClient($this->samplingClient);
 
         $result = $this->tool->execute(['code' => 'echo "test";']);
-        
+
         $this->assertInstanceOf(TextToolResult::class, $result);
         $sanitized = $result->getSanitizedResult();
         $this->assertSame('No analysis provided', $sanitized['text']);
     }
 
-    public function testGetInputSchemaDetails(): void
+    public function test_get_input_schema_details(): void
     {
         $schema = $this->tool->getInputSchema();
 
         // Test complete schema structure
         $this->assertSame('object', $schema['type']);
-        
+
         // Test code property
         $this->assertArrayHasKey('code', $schema['properties']);
         $this->assertSame('string', $schema['properties']['code']['type']);
         $this->assertSame('The code to analyze', $schema['properties']['code']['description']);
-        
+
         // Test analysis_type property
         $this->assertArrayHasKey('analysis_type', $schema['properties']);
         $this->assertSame('string', $schema['properties']['analysis_type']['type']);
         $this->assertSame(['security', 'performance', 'readability', 'general'], $schema['properties']['analysis_type']['enum']);
         $this->assertSame('Type of analysis to perform', $schema['properties']['analysis_type']['description']);
         $this->assertSame('general', $schema['properties']['analysis_type']['default']);
-        
+
         // Test required fields
         $this->assertSame(['code'], $schema['required']);
     }
 
-    public function testExecuteWithInvalidAnalysisType(): void
+    public function test_execute_with_invalid_analysis_type(): void
     {
         $this->samplingClient->method('canSample')->willReturn(true);
 

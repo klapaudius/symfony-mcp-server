@@ -8,28 +8,27 @@ class SamplingContent
 {
     public function __construct(
         private string $type,
-        private string|null $text = null,
-        private array|null $data = null,
-        private string|null $mimeType = null,
-    ) {
-    }
+        private ?string $text = null,
+        private ?array $data = null,
+        private ?string $mimeType = null,
+    ) {}
 
     public function getType(): string
     {
         return $this->type;
     }
 
-    public function getText(): string|null
+    public function getText(): ?string
     {
         return $this->text;
     }
 
-    public function getData(): array|null
+    public function getData(): ?array
     {
         return $this->data;
     }
 
-    public function getMimeType(): string|null
+    public function getMimeType(): ?string
     {
         return $this->mimeType;
     }

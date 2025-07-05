@@ -17,10 +17,12 @@ use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 class ProjectSummaryResource implements SamplingAwareResourceInterface
 {
     private ?SamplingClient $samplingClient = null;
+
     private string $projectPath;
+
     private ?string $cachedData = null;
 
-    public function __construct(string|null $projectPath = null)
+    public function __construct(?string $projectPath = null)
     {
         $this->projectPath = $projectPath ?? getcwd();
     }
@@ -53,7 +55,7 @@ class ProjectSummaryResource implements SamplingAwareResourceInterface
         }
 
         // If no sampling client is available, return a static summary
-        if ($this->samplingClient === null || !$this->samplingClient->canSample()) {
+        if ($this->samplingClient === null || ! $this->samplingClient->canSample()) {
             return $this->getStaticSummary();
         }
 
@@ -61,10 +63,11 @@ class ProjectSummaryResource implements SamplingAwareResourceInterface
         try {
             $projectInfo = $this->gatherProjectInfo();
             $this->cachedData = $this->generateDynamicSummary($projectInfo);
+
             return $this->cachedData;
         } catch (\Exception $e) {
             // Fall back to static summary on error
-            return $this->getStaticSummary() . "\n\n*Note: Dynamic summary generation failed: " . $e->getMessage() . "*";
+            return $this->getStaticSummary()."\n\n*Note: Dynamic summary generation failed: ".$e->getMessage().'*';
         }
     }
 
@@ -126,7 +129,7 @@ MARKDOWN;
         ];
 
         // Read composer.json if available
-        $composerPath = $this->projectPath . '/composer.json';
+        $composerPath = $this->projectPath.'/composer.json';
         if (file_exists($composerPath)) {
             $composerData = json_decode(file_get_contents($composerPath), true);
             $info['composer'] = [
@@ -141,7 +144,7 @@ MARKDOWN;
         // Get basic directory structure
         $directories = ['src', 'tests', 'config', 'public', 'docs'];
         foreach ($directories as $dir) {
-            $dirPath = $this->projectPath . '/' . $dir;
+            $dirPath = $this->projectPath.'/'.$dir;
             if (is_dir($dirPath)) {
                 $info['structure'][] = $dir;
             }
@@ -150,9 +153,9 @@ MARKDOWN;
         // Read README if available
         $readmePaths = ['README.md', 'readme.md', 'README', 'readme'];
         foreach ($readmePaths as $readmePath) {
-            $fullPath = $this->projectPath . '/' . $readmePath;
+            $fullPath = $this->projectPath.'/'.$readmePath;
             if (file_exists($fullPath)) {
-                $info['readme'] = substr(file_get_contents($fullPath), 0, 1000) . '...';
+                $info['readme'] = substr(file_get_contents($fullPath), 0, 1000).'...';
                 break;
             }
         }
@@ -178,33 +181,33 @@ MARKDOWN;
         $generatedSummary = $response->getContent()->getText();
 
         // Add metadata
-        return $generatedSummary . "\n\n---\n*This summary was generated using AI analysis of the project structure and files.*";
+        return $generatedSummary."\n\n---\n*This summary was generated using AI analysis of the project structure and files.*";
     }
 
     private function buildSummaryPrompt(array $projectInfo): string
     {
         $prompt = "Generate a comprehensive markdown summary for a Symfony project with the following information:\n\n";
 
-        if (!empty($projectInfo['composer']['name'])) {
+        if (! empty($projectInfo['composer']['name'])) {
             $prompt .= "Project Name: {$projectInfo['composer']['name']}\n";
             $prompt .= "Description: {$projectInfo['composer']['description']}\n";
             $prompt .= "Type: {$projectInfo['composer']['type']}\n";
 
-            if (!empty($projectInfo['composer']['keywords'])) {
-                $prompt .= "Keywords: " . implode(', ', $projectInfo['composer']['keywords']) . "\n";
+            if (! empty($projectInfo['composer']['keywords'])) {
+                $prompt .= 'Keywords: '.implode(', ', $projectInfo['composer']['keywords'])."\n";
             }
 
-            if (!empty($projectInfo['composer']['require'])) {
+            if (! empty($projectInfo['composer']['require'])) {
                 $mainDeps = array_slice($projectInfo['composer']['require'], 0, 10);
-                $prompt .= "\nMain Dependencies:\n" . implode("\n", array_map(fn($dep) => "- $dep", $mainDeps)) . "\n";
+                $prompt .= "\nMain Dependencies:\n".implode("\n", array_map(fn ($dep) => "- $dep", $mainDeps))."\n";
             }
         }
 
-        if (!empty($projectInfo['structure'])) {
-            $prompt .= "\nProject Structure includes: " . implode(', ', $projectInfo['structure']) . "\n";
+        if (! empty($projectInfo['structure'])) {
+            $prompt .= "\nProject Structure includes: ".implode(', ', $projectInfo['structure'])."\n";
         }
 
-        if (!empty($projectInfo['readme'])) {
+        if (! empty($projectInfo['readme'])) {
             $prompt .= "\nREADME excerpt:\n```\n{$projectInfo['readme']}\n```\n";
         }
 
@@ -214,7 +217,7 @@ MARKDOWN;
         $prompt .= "3. Technology stack analysis\n";
         $prompt .= "4. Project architecture insights\n";
         $prompt .= "5. Potential use cases\n\n";
-        $prompt .= "Format the response as clean markdown with appropriate sections and bullet points.";
+        $prompt .= 'Format the response as clean markdown with appropriate sections and bullet points.';
 
         return $prompt;
     }

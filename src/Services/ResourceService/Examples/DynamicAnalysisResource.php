@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Services\ResourceService\Examples;
 
-use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\ResourceService\Resource;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
 use KLP\KlpMcpServer\Services\ResourceService\SamplingAwareResourceInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -24,7 +24,8 @@ use Symfony\Component\Finder\Finder;
  */
 class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwareResourceInterface
 {
-    private SamplingClient|null $samplingClient = null;
+    private ?SamplingClient $samplingClient = null;
+
     private string $projectRoot;
 
     /**
@@ -37,9 +38,9 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
         'bundle' => '/^analysis:\/\/bundle\/(.+)$/',
     ];
 
-    public function __construct(string|null $projectRoot = null)
+    public function __construct(?string $projectRoot = null)
     {
-        $this->projectRoot = $projectRoot ?? getcwd() . '/../';
+        $this->projectRoot = $projectRoot ?? getcwd().'/../';
     }
 
     public function getName(): string
@@ -89,36 +90,44 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
         foreach (self::ANALYSIS_PATTERNS as $type => $pattern) {
             if (preg_match($pattern, $uri, $matches)) {
                 $componentName = $matches[1];
+
                 return $this->componentExists($type, $componentName);
             }
         }
+
         return false;
     }
 
-    public function getResource(string $uri): ResourceInterface|null
+    public function getResource(string $uri): ?ResourceInterface
     {
         foreach (self::ANALYSIS_PATTERNS as $type => $pattern) {
             if (preg_match($pattern, $uri, $matches)) {
                 $componentName = $matches[1];
 
-                if (!$this->componentExists($type, $componentName)) {
+                if (! $this->componentExists($type, $componentName)) {
                     return null;
                 }
 
                 // Return a new resource instance for this specific analysis
-                return new class($uri, $type, $componentName, $this->samplingClient, $this->projectRoot) implements ResourceInterface, SamplingAwareResourceInterface {
+                return new class($uri, $type, $componentName, $this->samplingClient, $this->projectRoot) implements ResourceInterface, SamplingAwareResourceInterface
+                {
                     private string $uri;
+
                     private string $type;
+
                     private string $componentName;
-                    private SamplingClient|null $samplingClient;
+
+                    private ?SamplingClient $samplingClient;
+
                     private string $projectRoot;
-                    private string|null $cachedData = null;
+
+                    private ?string $cachedData = null;
 
                     public function __construct(
                         string $uri,
                         string $type,
                         string $componentName,
-                        SamplingClient|null $samplingClient,
+                        ?SamplingClient $samplingClient,
                         string $projectRoot
                     ) {
                         $this->uri = $uri;
@@ -163,6 +172,7 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
 
                         if ($this->samplingClient === null || empty($componentCode)) {
                             $this->cachedData = $this->getFallbackAnalysis();
+
                             return $this->cachedData;
                         }
 
@@ -179,7 +189,7 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
 
                             $this->cachedData = $response->getContent()->getText() ?? $this->getFallbackAnalysis();
                         } catch (\Exception $e) {
-                            $this->cachedData = $this->getFallbackAnalysis() . "\n\n**Error during analysis:** " . $e->getMessage();
+                            $this->cachedData = $this->getFallbackAnalysis()."\n\n**Error during analysis:** ".$e->getMessage();
                         }
 
                         return $this->cachedData;
@@ -192,27 +202,27 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
 
                     private function getComponentCode(): string
                     {
-                        $finder = new Finder();
+                        $finder = new Finder;
 
                         switch ($this->type) {
                             case 'controller':
                                 $pattern = sprintf('*%s*.php', str_replace('\\', '/', $this->componentName));
-                                $finder->files()->in($this->projectRoot . '/src/Controller')->name($pattern);
+                                $finder->files()->in($this->projectRoot.'/src/Controller')->name($pattern);
                                 break;
 
                             case 'service':
                                 $pattern = sprintf('*%s*.php', str_replace('\\', '/', $this->componentName));
-                                $finder->files()->in($this->projectRoot . '/src')->name($pattern);
+                                $finder->files()->in($this->projectRoot.'/src')->name($pattern);
                                 break;
 
                             case 'entity':
                                 $pattern = sprintf('%s.php', $this->componentName);
-                                $finder->files()->in($this->projectRoot . '/src/Entity')->name($pattern);
+                                $finder->files()->in($this->projectRoot.'/src/Entity')->name($pattern);
                                 break;
 
                             case 'bundle':
                                 $pattern = sprintf('*%s*.php', $this->componentName);
-                                $finder->files()->in($this->projectRoot . '/src')->name($pattern)->depth('< 3');
+                                $finder->files()->in($this->projectRoot.'/src')->name($pattern)->depth('< 3');
                                 break;
 
                             default:
@@ -221,8 +231,8 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
 
                         $code = '';
                         foreach ($finder as $file) {
-                            $code .= "// File: " . $file->getRelativePathname() . "\n";
-                            $code .= $file->getContents() . "\n\n";
+                            $code .= '// File: '.$file->getRelativePathname()."\n";
+                            $code .= $file->getContents()."\n\n";
 
                             // Limit code size to prevent token overflow
                             if (strlen($code) > 50000) {
@@ -237,37 +247,37 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
                     private function buildAnalysisPrompt(string $code): string
                     {
                         $prompts = [
-                            'controller' => "Analyze this Symfony controller and provide insights on:\n" .
-                                "1. Route organization and RESTful design\n" .
-                                "2. Security considerations (authentication, authorization, CSRF)\n" .
-                                "3. Performance optimizations\n" .
-                                "4. Code quality and Symfony best practices\n" .
-                                "5. Potential refactoring opportunities\n\n" .
+                            'controller' => "Analyze this Symfony controller and provide insights on:\n".
+                                "1. Route organization and RESTful design\n".
+                                "2. Security considerations (authentication, authorization, CSRF)\n".
+                                "3. Performance optimizations\n".
+                                "4. Code quality and Symfony best practices\n".
+                                "5. Potential refactoring opportunities\n\n".
                                 "Controller code:\n```php\n{$code}\n```",
 
-                            'service' => "Analyze this Symfony service and provide insights on:\n" .
-                                "1. Service architecture and dependency injection\n" .
-                                "2. SOLID principles adherence\n" .
-                                "3. Performance and memory considerations\n" .
-                                "4. Error handling and logging\n" .
-                                "5. Testability improvements\n\n" .
+                            'service' => "Analyze this Symfony service and provide insights on:\n".
+                                "1. Service architecture and dependency injection\n".
+                                "2. SOLID principles adherence\n".
+                                "3. Performance and memory considerations\n".
+                                "4. Error handling and logging\n".
+                                "5. Testability improvements\n\n".
                                 "Service code:\n```php\n{$code}\n```",
 
-                            'entity' => "Analyze this Doctrine entity and provide insights on:\n" .
-                                "1. Database design and relationships\n" .
-                                "2. Validation rules and constraints\n" .
-                                "3. Performance considerations (indexes, lazy loading)\n" .
-                                "4. Data integrity and business rules\n" .
-                                "5. Potential schema improvements\n\n" .
+                            'entity' => "Analyze this Doctrine entity and provide insights on:\n".
+                                "1. Database design and relationships\n".
+                                "2. Validation rules and constraints\n".
+                                "3. Performance considerations (indexes, lazy loading)\n".
+                                "4. Data integrity and business rules\n".
+                                "5. Potential schema improvements\n\n".
                                 "Entity code:\n```php\n{$code}\n```",
 
-                            'bundle' => "Analyze this Symfony bundle structure and provide insights on:\n" .
-                                "1. Bundle organization and architecture\n" .
-                                "2. Service configuration and dependency injection\n" .
-                                "3. Extension points and flexibility\n" .
-                                "4. Integration with Symfony ecosystem\n" .
-                                "5. Documentation and usability\n\n" .
-                                "Bundle code:\n```php\n{$code}\n```"
+                            'bundle' => "Analyze this Symfony bundle structure and provide insights on:\n".
+                                "1. Bundle organization and architecture\n".
+                                "2. Service configuration and dependency injection\n".
+                                "3. Extension points and flexibility\n".
+                                "4. Integration with Symfony ecosystem\n".
+                                "5. Documentation and usability\n\n".
+                                "Bundle code:\n```php\n{$code}\n```",
                         ];
 
                         return $prompts[$this->type] ?? "Analyze this Symfony component:\n```php\n{$code}\n```";
@@ -276,15 +286,15 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
                     private function getFallbackAnalysis(): string
                     {
                         return sprintf(
-                            "# %s Analysis: %s\n\n" .
-                            "**Note:** AI-powered analysis is currently unavailable.\n\n" .
-                            "## Component Type\n%s\n\n" .
-                            "## Location\n`%s`\n\n" .
-                            "## General Recommendations\n" .
-                            "- Follow Symfony coding standards\n" .
-                            "- Implement proper error handling\n" .
-                            "- Add comprehensive PHPDoc comments\n" .
-                            "- Write unit and functional tests\n" .
+                            "# %s Analysis: %s\n\n".
+                            "**Note:** AI-powered analysis is currently unavailable.\n\n".
+                            "## Component Type\n%s\n\n".
+                            "## Location\n`%s`\n\n".
+                            "## General Recommendations\n".
+                            "- Follow Symfony coding standards\n".
+                            "- Implement proper error handling\n".
+                            "- Add comprehensive PHPDoc comments\n".
+                            "- Write unit and functional tests\n".
                             "- Consider performance implications\n",
                             ucfirst($this->type),
                             $this->componentName,
@@ -301,30 +311,30 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
 
     private function componentExists(string $type, string $componentName): bool
     {
-        $finder = new Finder();
+        $finder = new Finder;
 
         try {
             switch ($type) {
                 case 'controller':
                     $pattern = sprintf('*%s*.php', str_replace('\\', '/', $componentName));
-                    $finder->files()->in($this->projectRoot . '/src/Controller')->name($pattern);
+                    $finder->files()->in($this->projectRoot.'/src/Controller')->name($pattern);
                     break;
 
                 case 'service':
                     $pattern = sprintf('*%s*.php', str_replace('\\', '/', $componentName));
-                    $finder->files()->in($this->projectRoot . '/src')->name($pattern);
+                    $finder->files()->in($this->projectRoot.'/src')->name($pattern);
                     break;
 
                 case 'entity':
                     $pattern = sprintf('%s.php', $componentName);
-                    if (is_dir($this->projectRoot . '/src/Entity')) {
-                        $finder->files()->in($this->projectRoot . '/src/Entity')->name($pattern);
+                    if (is_dir($this->projectRoot.'/src/Entity')) {
+                        $finder->files()->in($this->projectRoot.'/src/Entity')->name($pattern);
                     }
                     break;
 
                 case 'bundle':
                     $pattern = sprintf('*%s*.php', $componentName);
-                    $finder->files()->in($this->projectRoot . '/src')->name($pattern)->depth('< 3');
+                    $finder->files()->in($this->projectRoot.'/src')->name($pattern)->depth('< 3');
                     break;
 
                 default:
@@ -347,30 +357,30 @@ class DynamicAnalysisResource implements ResourceTemplateInterface, SamplingAwar
             'controller' => [
                 'pattern' => 'analysis://controller/{ControllerName}',
                 'example' => 'analysis://controller/UserController',
-                'description' => 'Analyzes Symfony controllers for best practices, security, and performance'
+                'description' => 'Analyzes Symfony controllers for best practices, security, and performance',
             ],
             'service' => [
                 'pattern' => 'analysis://service/{ServiceName}',
                 'example' => 'analysis://service/UserService',
-                'description' => 'Analyzes services for SOLID principles, dependency injection, and testability'
+                'description' => 'Analyzes services for SOLID principles, dependency injection, and testability',
             ],
             'entity' => [
                 'pattern' => 'analysis://entity/{EntityName}',
                 'example' => 'analysis://entity/User',
-                'description' => 'Analyzes Doctrine entities for database design and performance'
+                'description' => 'Analyzes Doctrine entities for database design and performance',
             ],
             'bundle' => [
                 'pattern' => 'analysis://bundle/{BundleName}',
                 'example' => 'analysis://bundle/UserBundle',
-                'description' => 'Analyzes bundle structure and configuration'
-            ]
+                'description' => 'Analyzes bundle structure and configuration',
+            ],
         ];
 
         foreach ($examples as $type => $info) {
             $markdown .= sprintf(
-                "### %s Analysis\n" .
-                "- **Pattern:** `%s`\n" .
-                "- **Example:** `%s`\n" .
+                "### %s Analysis\n".
+                "- **Pattern:** `%s`\n".
+                "- **Example:** `%s`\n".
                 "- **Description:** %s\n\n",
                 ucfirst($type),
                 $info['pattern'],

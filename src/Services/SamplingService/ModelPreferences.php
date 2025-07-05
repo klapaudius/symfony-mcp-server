@@ -8,28 +8,27 @@ class ModelPreferences
 {
     public function __construct(
         private array $hints = [],
-        private float|null $costPriority = null,
-        private float|null $speedPriority = null,
-        private float|null $intelligencePriority = null,
-    ) {
-    }
+        private ?float $costPriority = null,
+        private ?float $speedPriority = null,
+        private ?float $intelligencePriority = null,
+    ) {}
 
     public function getHints(): array
     {
         return $this->hints;
     }
 
-    public function getCostPriority(): float|null
+    public function getCostPriority(): ?float
     {
         return $this->costPriority;
     }
 
-    public function getSpeedPriority(): float|null
+    public function getSpeedPriority(): ?float
     {
         return $this->speedPriority;
     }
 
-    public function getIntelligencePriority(): float|null
+    public function getIntelligencePriority(): ?float
     {
         return $this->intelligencePriority;
     }
@@ -38,7 +37,7 @@ class ModelPreferences
     {
         $result = [];
 
-        if (!empty($this->hints)) {
+        if (! empty($this->hints)) {
             $result['hints'] = $this->hints;
         }
 

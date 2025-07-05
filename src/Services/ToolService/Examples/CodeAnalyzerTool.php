@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
+use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
 use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
-use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
@@ -18,6 +18,7 @@ use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
 class CodeAnalyzerTool implements SamplingAwareToolInterface
 {
     private ?ProgressNotifierInterface $progressNotifier = null;
+
     private ?SamplingClient $samplingClient = null;
 
     public function getName(): string
@@ -55,7 +56,7 @@ class CodeAnalyzerTool implements SamplingAwareToolInterface
         $code = $arguments['code'];
         $analysisType = $arguments['analysis_type'] ?? 'general';
 
-        if ($this->samplingClient === null || !$this->samplingClient->canSample()) {
+        if ($this->samplingClient === null || ! $this->samplingClient->canSample()) {
             return new TextToolResult('Code analysis requires LLM sampling capability');
         }
 
@@ -76,7 +77,7 @@ class CodeAnalyzerTool implements SamplingAwareToolInterface
 
             return new TextToolResult($response->getContent()->getText() ?? 'No analysis provided');
         } catch (\Exception $e) {
-            return new TextToolResult('Code analysis failed: ' . $e->getMessage());
+            return new TextToolResult('Code analysis failed: '.$e->getMessage());
         }
     }
 

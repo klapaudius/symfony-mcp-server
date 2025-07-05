@@ -11,10 +11,9 @@ class SamplingResponse
     public function __construct(
         private string $role,
         private SamplingContent $content,
-        private string|null $model = null,
-        private string|null $stopReason = null,
-    ) {
-    }
+        private ?string $model = null,
+        private ?string $stopReason = null,
+    ) {}
 
     public function getRole(): string
     {
@@ -26,12 +25,12 @@ class SamplingResponse
         return $this->content;
     }
 
-    public function getModel(): string|null
+    public function getModel(): ?string
     {
         return $this->model;
     }
 
-    public function getStopReason(): string|null
+    public function getStopReason(): ?string
     {
         return $this->stopReason;
     }

@@ -20,7 +20,7 @@ class CodeReviewPromptTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->prompt = new CodeReviewPrompt();
+        $this->prompt = new CodeReviewPrompt;
     }
 
     public function test_get_name(): void
@@ -39,17 +39,17 @@ class CodeReviewPromptTest extends TestCase
     public function test_get_arguments(): void
     {
         $arguments = $this->prompt->getArguments();
-        
+
         $this->assertCount(3, $arguments);
-        
+
         $this->assertEquals('code', $arguments[0]['name']);
         $this->assertEquals('The code to review', $arguments[0]['description']);
         $this->assertTrue($arguments[0]['required']);
-        
+
         $this->assertEquals('language', $arguments[1]['name']);
         $this->assertEquals('The programming language of the code', $arguments[1]['description']);
         $this->assertFalse($arguments[1]['required']);
-        
+
         $this->assertEquals('focus_areas', $arguments[2]['name']);
         $this->assertStringContainsString('security,performance,style', $arguments[2]['description']);
         $this->assertFalse($arguments[2]['required']);
@@ -67,12 +67,12 @@ class CodeReviewPromptTest extends TestCase
         $sanitizedMessages = $messages->getSanitizedMessages();
 
         $this->assertCount(2, $sanitizedMessages);
-        
+
         // Check system message
         $this->assertEquals(PromptMessageInterface::ROLE_ASSISTANT, $sanitizedMessages[0]['role']);
         $this->assertStringContainsString('expert PHP code reviewer', $sanitizedMessages[0]['content']['text']);
         $this->assertStringContainsString('security,performance', $sanitizedMessages[0]['content']['text']);
-        
+
         // Check user message
         $this->assertEquals(PromptMessageInterface::ROLE_USER, $sanitizedMessages[1]['role']);
         $this->assertStringContainsString('function add($a, $b)', $sanitizedMessages[1]['content']['text']);
@@ -92,7 +92,7 @@ class CodeReviewPromptTest extends TestCase
         $mockContent->expects($this->once())
             ->method('getText')
             ->willReturn("- Is there input validation for the parameters?\n- What happens with non-numeric inputs?");
-        
+
         $mockResponse->expects($this->once())
             ->method('getContent')
             ->willReturn($mockContent);
@@ -118,7 +118,7 @@ class CodeReviewPromptTest extends TestCase
         $sanitizedMessages = $messages->getSanitizedMessages();
 
         $this->assertCount(3, $sanitizedMessages);
-        
+
         // Check that dynamic questions were added
         $this->assertEquals(PromptMessageInterface::ROLE_USER, $sanitizedMessages[1]['role']);
         $this->assertStringContainsString('Additionally, please address these specific questions', $sanitizedMessages[1]['content']['text']);
@@ -160,7 +160,7 @@ class CodeReviewPromptTest extends TestCase
         $sanitizedMessages = $messages->getSanitizedMessages();
 
         $userMessage = $sanitizedMessages[1]['content']['text'];
-        
+
         $this->assertStringContainsString('Code style, naming conventions', $userMessage);
         $this->assertStringContainsString('Test coverage and testability', $userMessage);
         $this->assertStringContainsString('Architectural patterns', $userMessage);

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class SamplingContentTest extends TestCase
 {
-    public function testCreateTextContent(): void
+    public function test_create_text_content(): void
     {
         $content = new SamplingContent('text', 'Hello, world!');
 
@@ -19,7 +19,7 @@ class SamplingContentTest extends TestCase
         $this->assertNull($content->getMimeType());
     }
 
-    public function testCreateImageContent(): void
+    public function test_create_image_content(): void
     {
         $imageData = ['base64' => 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='];
         $content = new SamplingContent('image', null, $imageData, 'image/png');
@@ -30,7 +30,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('image/png', $content->getMimeType());
     }
 
-    public function testCreateAudioContent(): void
+    public function test_create_audio_content(): void
     {
         $audioData = ['base64' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='];
         $content = new SamplingContent('audio', null, $audioData, 'audio/wav');
@@ -41,7 +41,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('audio/wav', $content->getMimeType());
     }
 
-    public function testCreateResourceContent(): void
+    public function test_create_resource_content(): void
     {
         $resourceData = [
             'uri' => 'file:///home/user/document.pdf',
@@ -56,7 +56,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('application/pdf', $content->getMimeType());
     }
 
-    public function testCreateMinimalContent(): void
+    public function test_create_minimal_content(): void
     {
         $content = new SamplingContent('text');
 
@@ -66,7 +66,7 @@ class SamplingContentTest extends TestCase
         $this->assertNull($content->getMimeType());
     }
 
-    public function testToArrayWithTextContent(): void
+    public function test_to_array_with_text_content(): void
     {
         $content = new SamplingContent('text', 'Sample text');
         $array = $content->toArray();
@@ -80,7 +80,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('Sample text', $array['text']);
     }
 
-    public function testToArrayWithImageContent(): void
+    public function test_to_array_with_image_content(): void
     {
         $imageData = ['base64' => 'abc123', 'width' => 100, 'height' => 100];
         $content = new SamplingContent('image', null, $imageData, 'image/jpeg');
@@ -96,7 +96,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('image/jpeg', $array['mimeType']);
     }
 
-    public function testToArrayWithMinimalData(): void
+    public function test_to_array_with_minimal_data(): void
     {
         $content = new SamplingContent('custom');
         $array = $content->toArray();
@@ -109,7 +109,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame(['type' => 'custom'], $array);
     }
 
-    public function testFromArrayWithTextContent(): void
+    public function test_from_array_with_text_content(): void
     {
         $data = [
             'type' => 'text',
@@ -124,7 +124,7 @@ class SamplingContentTest extends TestCase
         $this->assertNull($content->getMimeType());
     }
 
-    public function testFromArrayWithComplexData(): void
+    public function test_from_array_with_complex_data(): void
     {
         $complexData = [
             'base64' => 'SGVsbG8gV29ybGQ=',
@@ -148,7 +148,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame('application/octet-stream', $content->getMimeType());
     }
 
-    public function testFromArrayWithMinimalData(): void
+    public function test_from_array_with_minimal_data(): void
     {
         $data = ['type' => 'minimal'];
 
@@ -160,7 +160,7 @@ class SamplingContentTest extends TestCase
         $this->assertNull($content->getMimeType());
     }
 
-    public function testRoundTripConversionText(): void
+    public function test_round_trip_conversion_text(): void
     {
         $originalData = [
             'type' => 'text',
@@ -173,7 +173,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame($originalData, $convertedData);
     }
 
-    public function testRoundTripConversionComplex(): void
+    public function test_round_trip_conversion_complex(): void
     {
         $originalData = [
             'type' => 'video',
@@ -191,7 +191,7 @@ class SamplingContentTest extends TestCase
         $this->assertSame($originalData, $convertedData);
     }
 
-    public function testContentVariations(): void
+    public function test_content_variations(): void
     {
         // Test empty text
         $emptyText = new SamplingContent('text', '');
@@ -209,23 +209,23 @@ class SamplingContentTest extends TestCase
         $this->assertSame('text/plain', $mixed->getMimeType());
     }
 
-    public function testSpecialCharactersInContent(): void
+    public function test_special_characters_in_content(): void
     {
         $specialText = 'Hello "World" with \'quotes\' and \n newlines \t tabs';
         $content = new SamplingContent('text', $specialText);
-        
+
         $this->assertSame($specialText, $content->getText());
-        
+
         // Test serialization preserves special characters
         $array = $content->toArray();
         $this->assertSame($specialText, $array['text']);
-        
+
         // Test deserialization preserves special characters
         $restored = SamplingContent::fromArray($array);
         $this->assertSame($specialText, $restored->getText());
     }
 
-    public function testNestedDataStructures(): void
+    public function test_nested_data_structures(): void
     {
         $nestedData = [
             'level1' => [

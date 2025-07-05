@@ -763,11 +763,12 @@ class ToolsCallHandlerTest extends TestCase
     {
         $samplingClient = $this->createMock(SamplingClient::class);
         $progressNotifier = $this->createMock(ProgressNotifier::class);
-        
+
         // Create a tool that implements both interfaces
-        $combinedTool = new class implements StreamableToolInterface, SamplingAwareToolInterface
+        $combinedTool = new class implements SamplingAwareToolInterface, StreamableToolInterface
         {
             private ?ProgressNotifierInterface $progressNotifier = null;
+
             private ?SamplingClient $samplingClient = null;
 
             public function getName(): string
@@ -799,6 +800,7 @@ class ToolsCallHandlerTest extends TestCase
                 if ($this->samplingClient !== null) {
                     $result .= ' with sampling';
                 }
+
                 return new TextToolResult($result);
             }
 
@@ -957,10 +959,10 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_collection_tool_result(): void
     {
         $tool = $this->createMock(StreamableToolInterface::class);
-        
+
         $textResult1 = new TextToolResult('First result');
         $textResult2 = new TextToolResult('Second result');
-        $collectionResult = new CollectionToolResult();
+        $collectionResult = new CollectionToolResult;
         $collectionResult->addItem($textResult1);
         $collectionResult->addItem($textResult2);
 

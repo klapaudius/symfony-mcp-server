@@ -19,7 +19,7 @@ class ProjectSummaryResourceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->resource = new ProjectSummaryResource(__DIR__ . '/../../../../');
+        $this->resource = new ProjectSummaryResource(__DIR__.'/../../../../');
     }
 
     public function test_get_uri(): void
@@ -122,7 +122,7 @@ class ProjectSummaryResourceTest extends TestCase
         $mockContent = $this->createMock(SamplingContent::class);
         $mockContent->expects($this->once())
             ->method('getText')
-            ->willReturn("# Cached Summary");
+            ->willReturn('# Cached Summary');
 
         $mockResponse->expects($this->once())
             ->method('getContent')
@@ -155,7 +155,7 @@ class ProjectSummaryResourceTest extends TestCase
         $mockContent1 = $this->createMock(SamplingContent::class);
         $mockContent1->expects($this->once())
             ->method('getText')
-            ->willReturn("# First Summary");
+            ->willReturn('# First Summary');
 
         $mockResponse1->expects($this->once())
             ->method('getContent')
@@ -178,7 +178,7 @@ class ProjectSummaryResourceTest extends TestCase
         $mockContent2 = $this->createMock(SamplingContent::class);
         $mockContent2->expects($this->once())
             ->method('getText')
-            ->willReturn("# Second Summary");
+            ->willReturn('# Second Summary');
 
         $mockResponse2->expects($this->once())
             ->method('getContent')

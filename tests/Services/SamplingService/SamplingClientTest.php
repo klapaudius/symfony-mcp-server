@@ -4,24 +4,28 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\SamplingService;
 
-use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
-use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
-use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
-use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
-use KLP\KlpMcpServer\Transports\AbstractTransport;
-use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
-use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
-use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Transports\AbstractTransport;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class SamplingClientTest extends TestCase
 {
     private SamplingClient $samplingClient;
+
     private AbstractTransport $transport;
+
     private SseAdapterInterface $adapter;
+
     private LoggerInterface $logger;
+
     private TransportFactoryInterface $transportFactory;
 
     protected function setUp(): void
@@ -38,12 +42,12 @@ class SamplingClientTest extends TestCase
         $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
     }
 
-    public function testIsEnabledByDefault(): void
+    public function test_is_enabled_by_default(): void
     {
         $this->assertTrue($this->samplingClient->isEnabled());
     }
 
-    public function testSetEnabled(): void
+    public function test_set_enabled(): void
     {
         $this->samplingClient->setEnabled(false);
         $this->assertFalse($this->samplingClient->isEnabled());
@@ -52,18 +56,18 @@ class SamplingClientTest extends TestCase
         $this->assertTrue($this->samplingClient->isEnabled());
     }
 
-    public function testCanSampleReturnsFalseWhenDisabled(): void
+    public function test_can_sample_returns_false_when_disabled(): void
     {
         $this->samplingClient->setEnabled(false);
         $this->assertFalse($this->samplingClient->canSample());
     }
 
-    public function testCanSampleReturnsFalseWhenNoClientId(): void
+    public function test_can_sample_returns_false_when_no_client_id(): void
     {
         $this->assertFalse($this->samplingClient->canSample());
     }
 
-    public function testCanSampleReturnsTrueWhenClientHasCapability(): void
+    public function test_can_sample_returns_true_when_client_has_capability(): void
     {
         $clientId = 'test-client-123';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -76,7 +80,7 @@ class SamplingClientTest extends TestCase
         $this->assertTrue($this->samplingClient->canSample());
     }
 
-    public function testCanSampleReturnsFalseWhenClientLacksCapability(): void
+    public function test_can_sample_returns_false_when_client_lacks_capability(): void
     {
         $clientId = 'test-client-456';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -89,7 +93,7 @@ class SamplingClientTest extends TestCase
         $this->assertFalse($this->samplingClient->canSample());
     }
 
-    public function testCreateTextRequestThrowsExceptionWhenCannotSample(): void
+    public function test_create_text_request_throws_exception_when_cannot_sample(): void
     {
         $this->expectException(JsonRpcErrorException::class);
         $this->expectExceptionMessage('Sampling is not available for the current client');
@@ -97,7 +101,7 @@ class SamplingClientTest extends TestCase
         $this->samplingClient->createTextRequest('Test prompt');
     }
 
-    public function testCreateTextRequestSendsProperMessage(): void
+    public function test_create_text_request_sends_proper_message(): void
     {
         $clientId = 'test-client-789';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -130,7 +134,7 @@ class SamplingClientTest extends TestCase
         }
     }
 
-    public function testCreateTextRequestWithAllParameters(): void
+    public function test_create_text_request_with_all_parameters(): void
     {
         $clientId = 'test-client-full';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -173,7 +177,7 @@ class SamplingClientTest extends TestCase
         }
     }
 
-    public function testCreateRequestThrowsExceptionWhenCannotSample(): void
+    public function test_create_request_throws_exception_when_cannot_sample(): void
     {
         $this->expectException(JsonRpcErrorException::class);
         $this->expectExceptionMessage('Sampling is not available for the current client');
@@ -182,7 +186,7 @@ class SamplingClientTest extends TestCase
         $this->samplingClient->createRequest([$message]);
     }
 
-    public function testCreateRequestWithMultipleMessages(): void
+    public function test_create_request_with_multiple_messages(): void
     {
         $clientId = 'test-client-multi';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -229,21 +233,21 @@ class SamplingClientTest extends TestCase
         }
     }
 
-    public function testCanSampleReturnsFalseWhenAdapterIsNull(): void
+    public function test_can_sample_returns_false_when_adapter_is_null(): void
     {
         $clientId = 'test-client-no-adapter';
         $this->samplingClient->setCurrentClientId($clientId);
 
         $transportWithoutAdapter = $this->createMock(AbstractTransport::class);
         $transportWithoutAdapter->method('getAdapter')->willReturn(null);
-        
+
         $this->transportFactory->method('get')->willReturn($transportWithoutAdapter);
         $this->transportFactory->method('create')->willReturn($transportWithoutAdapter);
 
         $this->assertFalse($this->samplingClient->canSample());
     }
 
-    public function testGetTransportCreatesNewTransportWhenFactoryThrowsException(): void
+    public function test_get_transport_creates_new_transport_when_factory_throws_exception(): void
     {
         $clientId = 'test-client-factory-exception';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -251,7 +255,7 @@ class SamplingClientTest extends TestCase
         $transportFactory = $this->createMock(TransportFactoryInterface::class);
         $transport = $this->createMock(AbstractTransport::class);
         $adapter = $this->createMock(SseAdapterInterface::class);
-        
+
         $transport->method('getAdapter')->willReturn($adapter);
         $adapter->method('hasSamplingCapability')->willReturn(true);
 
@@ -270,11 +274,11 @@ class SamplingClientTest extends TestCase
         $this->assertTrue($samplingClient->canSample());
     }
 
-    public function testSetCurrentClientId(): void
+    public function test_set_current_client_id(): void
     {
         $clientId = 'new-client-id';
         $this->samplingClient->setCurrentClientId($clientId);
-        
+
         // Test that the client ID is used in canSample
         $this->adapter->expects($this->once())
             ->method('hasSamplingCapability')
@@ -284,7 +288,7 @@ class SamplingClientTest extends TestCase
         $this->assertTrue($this->samplingClient->canSample());
     }
 
-    public function testMessageIdIsUnique(): void
+    public function test_message_id_is_unique(): void
     {
         $clientId = 'test-unique-id';
         $this->samplingClient->setCurrentClientId($clientId);
@@ -299,6 +303,7 @@ class SamplingClientTest extends TestCase
                 $clientId,
                 $this->callback(function ($message) use (&$capturedIds) {
                     $capturedIds[] = $message['id'];
+
                     return true;
                 })
             );

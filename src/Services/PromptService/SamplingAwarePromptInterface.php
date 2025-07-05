@@ -15,8 +15,8 @@ interface SamplingAwarePromptInterface extends PromptInterface
      * to request LLM assistance during prompt message generation. The sampling client enables the prompt
      * to create nested LLM calls for complex reasoning or content generation tasks.
      *
-     * @param SamplingClient $samplingClient The sampling client instance to use for
-     *                                      creating sampling requests to the LLM.
+     * @param  SamplingClient  $samplingClient  The sampling client instance to use for
+     *                                          creating sampling requests to the LLM.
      */
     public function setSamplingClient(SamplingClient $samplingClient): void;
 }
