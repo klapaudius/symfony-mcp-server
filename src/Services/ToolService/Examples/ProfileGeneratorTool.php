@@ -3,11 +3,14 @@
 namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -16,11 +19,13 @@ use Symfony\Component\HttpKernel\KernelInterface;
  *
  * This tool demonstrates how to return multiple result types using CollectionToolResult.
  */
-class ProfileGeneratorTool implements StreamableToolInterface
+class ProfileGeneratorTool implements StreamableToolInterface, SamplingAwareToolInterface
 {
     private string $baseDir;
 
     private ?ProgressNotifierInterface $progressNotifier = null;
+
+    private SamplingClient $samplingClient;
 
     public function __construct(KernelInterface $kernel)
     {
@@ -70,7 +75,7 @@ class ProfileGeneratorTool implements StreamableToolInterface
         // Generate text profile
         $this->progressNotifier?->sendProgress(
             progress: 1,
-            total: 3,
+            total: 4,
             message: 'Generating text profile...'
         );
         $profileText = $this->generateProfileText($name, $role);
@@ -79,16 +84,16 @@ class ProfileGeneratorTool implements StreamableToolInterface
 
         // Avatar image
         $this->progressNotifier?->sendProgress(
-            progress: 2,
-            total: 3,
+            progress: 3,
+            total: 4,
             message: 'Generating avatar image...'
         );
         $avatarImageData = base64_encode(file_get_contents($this->baseDir.'/assets/avatar_sample.jpg'));
         $collection->addItem(new ImageToolResult($avatarImageData, 'image/jpeg'));
         usleep(400000);
         $this->progressNotifier?->sendProgress(
-            progress: 3,
-            total: 3,
+            progress: 4,
+            total: 4,
             message: 'Done.'
         );
 
@@ -112,14 +117,33 @@ class ProfileGeneratorTool implements StreamableToolInterface
     {
         $createdAt = date('Y-m-d H:i:s');
 
+        $this->progressNotifier?->sendProgress(
+            progress: 2,
+            total: 4,
+            message: 'Generating welcome message...'
+        );
+        $welcome = $this->samplingClient->createTextRequest(
+            "Generate a quick welcome message for a user with the following details: \n\n" .
+            "Name: {$name}\n" .
+            "Role: {$role}\n",
+            new ModelPreferences(
+                [["name" => "claude-3-sonnet"]],
+                0.2,
+                0.8,
+                0.2
+            ),
+            null,
+            200
+        );
+        $welcome = $welcome->getContent()->getText() ?? 'Welcome to the MCP!';
+
         return <<<TEXT
 === User Profile ===
 Name: {$name}
 Role: {$role}
 Profile Created: {$createdAt}
 
-Welcome, {$name}! As a {$role}, you're part of our growing community.
-Your profile has been successfully generated with a custom avatar.
+$welcome
 
 Profile ID: {$this->generateProfileId($name)}
 Status: Active
@@ -132,5 +156,10 @@ TEXT;
     private function generateProfileId(string $name): string
     {
         return 'PROF-'.strtoupper(substr(md5($name.time()), 0, 8));
+    }
+
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
     }
 }
