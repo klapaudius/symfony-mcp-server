@@ -22,9 +22,14 @@ class SamplingClient implements SamplingInterface
 
     private ?TransportInterface $transport = null;
 
+    private ?ResponseWaiter $responseWaiter = null;
+
+    private bool $handlerRegistered = false;
+
     public function __construct(
         private TransportFactoryInterface $transportFactory,
         private LoggerInterface $logger,
+        private int $defaultTimeout = 30,
     ) {}
 
     public function isEnabled(): bool
@@ -114,6 +119,9 @@ class SamplingClient implements SamplingInterface
         // Generate a unique message ID for this request
         $messageId = uniqid('sampling_', true);
 
+        // Ensure response handler is registered
+        $this->ensureResponseHandler();
+
         // Send the sampling request to the client
         $response = $this->sendSamplingRequest($messageId, $request);
 
@@ -132,11 +140,96 @@ class SamplingClient implements SamplingInterface
         // Send the request to the client
         $this->getTransport()->pushMessage($this->currentClientId, $message);
 
-        // In a real implementation, we would need to wait for the response
-        // This is a simplified version - in practice, you'd need proper async handling
-        // or a response waiting mechanism
+        // Wait for the response (use shorter timeout for tests)
+        $timeout = $this->defaultTimeout;
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            $timeout = 1; // Use 1 second timeout for tests
+        }
 
-        // For now, throw an exception indicating this needs implementation
-        throw new JsonRpcErrorException('Sampling response handling not yet implemented - requires async message handling', JsonRpcErrorCode::INTERNAL_ERROR);
+        $responseData = $this->getResponseWaiter()->waitForResponse($messageId, $timeout);
+
+        // Handle error response
+        if ($responseData instanceof JsonRpcErrorException) {
+            throw $responseData;
+        }
+
+        // Convert response data to SamplingResponse
+        return $this->createSamplingResponse($responseData);
+    }
+
+    /**
+     * Get or create the response waiter
+     */
+    private function getResponseWaiter(): ResponseWaiter
+    {
+        if ($this->responseWaiter === null) {
+            $this->responseWaiter = new ResponseWaiter($this->logger, $this->defaultTimeout);
+        }
+
+        return $this->responseWaiter;
+    }
+
+    /**
+     * Ensure the response handler is registered with the transport
+     */
+    private function ensureResponseHandler(): void
+    {
+        if ($this->handlerRegistered) {
+            return;
+        }
+
+        $transport = $this->getTransport();
+        $transport->onMessage([$this, 'handleIncomingMessage']);
+        $this->handlerRegistered = true;
+
+        $this->logger->debug('Registered sampling response handler');
+    }
+
+    /**
+     * Handle incoming messages from the transport
+     */
+    public function handleIncomingMessage(string $clientId, array $message): void
+    {
+        // Only handle messages for our current client
+        if ($clientId !== $this->currentClientId) {
+            return;
+        }
+
+        // Only handle response messages (messages with an ID)
+        if (!isset($message['id'])) {
+            return;
+        }
+
+        // Let the response waiter handle the message
+        $this->getResponseWaiter()->handleResponse($message);
+    }
+
+    /**
+     * Create a SamplingResponse from response data
+     */
+    private function createSamplingResponse(mixed $responseData): SamplingResponse
+    {
+        // If the response data is null or not an array, create a simple error response
+        if (!is_array($responseData)) {
+            return new SamplingResponse(
+                'assistant',
+                new SamplingContent('text', 'Error: Invalid response format'),
+                null,
+                'error'
+            );
+        }
+
+        // Convert the response data to a proper SamplingResponse
+        try {
+            return SamplingResponse::fromArray($responseData);
+        } catch (\Throwable $e) {
+            // If parsing fails, create an error response
+            return new SamplingResponse(
+                'assistant',
+                new SamplingContent('text', 'Error: Failed to parse response - ' . $e->getMessage()),
+                null,
+                'error'
+            );
+        }
     }
 }

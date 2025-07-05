@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Transports;
 
 use Exception;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 
 /**
  * Interface TransportInterface
@@ -111,4 +112,11 @@ interface TransportInterface
      * @param  bool  $hasSamplingCapability  Indicates whether the client has sampling capability.
      */
     public function setClientSamplingCapability(bool $hasSamplingCapability): void;
+
+    /**
+     * Get the adapter instance for this transport.
+     *
+     * @return SseAdapterInterface|null The adapter implementation, or null if no adapter is set.
+     */
+    public function getAdapter(): ?SseAdapterInterface;
 }
