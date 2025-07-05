@@ -122,7 +122,7 @@ class ProfileGeneratorTool implements StreamableToolInterface, SamplingAwareTool
             total: 4,
             message: 'Generating welcome message...'
         );
-        $welcome = $this->samplingClient->createTextRequest(
+        $request = $this->samplingClient->createTextRequest(
             "Generate a quick welcome message for a user with the following details: \n\n" .
             "Name: {$name}\n" .
             "Role: {$role}\n",
@@ -135,7 +135,7 @@ class ProfileGeneratorTool implements StreamableToolInterface, SamplingAwareTool
             null,
             200
         );
-        $welcome = $welcome->getContent()->getText() ?? 'Welcome to the MCP!';
+        $welcome = $request->getContent()->getText() ?? 'Welcome to the MCP!';
 
         return <<<TEXT
 === User Profile ===

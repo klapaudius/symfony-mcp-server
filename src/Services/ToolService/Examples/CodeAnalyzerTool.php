@@ -23,7 +23,7 @@ class CodeAnalyzerTool implements SamplingAwareToolInterface
 
     public function getName(): string
     {
-        return 'code_analyzer';
+        return 'code-analyzer';
     }
 
     public function getDescription(): string

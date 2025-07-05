@@ -86,7 +86,7 @@ class ResponseWaiter
 
         // Timeout reached
         unset($this->pendingResponses[$messageId]);
-        
+
         $this->logger->error('Response timeout', [
             'messageId' => $messageId,
             'timeout' => $timeout,
@@ -140,7 +140,7 @@ class ResponseWaiter
         if (isset($this->responseCallbacks[$messageId])) {
             $callback = $this->responseCallbacks[$messageId];
             unset($this->responseCallbacks[$messageId]);
-            
+
             try {
                 $callback($message['result'] ?? null);
             } catch (\Throwable $e) {
