@@ -1,7 +1,8 @@
 <h1 align="center">Symfony MCP Server</h1>
 
 <p align="center">
-  A powerful Symfony package to build a Model Context Protocol Server seamlessly
+  <strong>Build Intelligent AI Agents with Symfony</strong><br>
+  Transform your Symfony applications into powerful AI-driven systems
 </p>
 
 <p align="center">
@@ -13,51 +14,164 @@
 [//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
 </p>
 
-## Overview
+## 🤖 Unleash the Power of AI Agents in Your Symfony Apps
 
-Symfony MCP Server is a powerful package designed to streamline the implementation of Model Context Protocol (MCP) servers in Symfony applications. This package **utilizes StreamableHTTP and/or Server-Sent Events (SSE)** transport, providing a secure and controlled integration methods.
+Symfony MCP Server enables you to build **intelligent, context-aware AI agents** that can reason, make decisions, and interact with your application's business logic. By implementing the Model Context Protocol (MCP), your Symfony application becomes a platform for sophisticated AI-driven automation and intelligence.
 
-### Why not STDIO?
+### 🎯 Why Build Agents with Symfony MCP Server?
 
-While stdio is straightforward and widely used in MCP implementations, it has significant security implications for enterprise environments:
+**Transform Static Tools into Intelligent Agents:**
+- 🧠 **AI-Powered Reasoning**: Tools can consult LLMs mid-execution to make smart decisions
+- 🔄 **Dynamic Adaptation**: Agents adapt their behavior based on context and real-time analysis
+- 💡 **Complex Problem Solving**: Break down complex tasks and solve them iteratively with AI assistance
+- 🎨 **Creative Generation**: Generate content and solutions that evolve with user needs
 
-- **Security Risk**: STDIO transport potentially exposes internal system details and API specifications
-- **Data Protection**: Organizations need to protect proprietary API endpoints and internal system architecture
-- **Control**: StreamableHTTP or SSE offers better control over the communication channel between LLM clients and your application
+**Enterprise-Grade Security:**
+- 🔒 **Secure Transports**: StreamableHTTP and SSE instead of STDIO for production environments
+- 🛡️ **Protected APIs**: Keep your internal systems safe while exposing AI capabilities
+- 🎛️ **Fine-Grained Control**: Manage authentication, authorization, and access at every level
 
-By implementing the MCP server with StreamableHTTP or SSE transport, enterprises can:
+## 🚀 Agent-First Features
 
-- Expose only the necessary tools and resources while keeping proprietary API details private
-- Maintain control over authentication and authorization processes
+### 🧪 Sampling: The Core of Agentic Behavior (v1.4.0+)
 
-Key benefits:
+Transform your tools into autonomous agents that can think and reason:
 
-- Seamless and rapid implementation of StreamableHTTP and/or SSE in existing Symfony projects
-- Support for the latest Symfony and PHP versions
-- Efficient server communication and real-time data processing
-- Enhanced security for enterprise environments
+```php
+class IntelligentAnalyzer implements SamplingAwareToolInterface
+{
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // Let AI analyze and reason about complex data
+        $analysis = $this->sampling->createRequest([
+            'role' => 'user',
+            'content' => "Analyze this data and suggest optimizations: {$arguments['data']}"
+        ]);
+        
+        $aiResponse = $this->sampling->sendRequest($analysis);
+        
+        // Execute actions based on AI reasoning
+        return $this->processAIRecommendations($aiResponse);
+    }
+}
+```
 
-## Key Features
+### 🛠️ Tool System: Building Blocks for Agents
 
-- Real-time communication support through StreamableHTTP and/or Server-Sent Events (SSE) integration
-- Implementation of tools, resources and prompts compliant with Model Context Protocol specifications
-- Support of streaming tools with progress notifications
-- Support different types of tool results such as Text, Image, Audio or Resource
-- Adapter-based design architecture with Pub/Sub messaging pattern
-- **Sampling support**: Tools can request LLM assistance during execution for complex reasoning tasks
-  - Dynamic model selection with preferences (cost, speed, intelligence)
-  - Multi-message conversations with context preservation
-  - Automatic capability detection and graceful fallback
-  - Integration with tools, prompts, and resources
+Create powerful tools that AI agents can orchestrate:
+- **StreamableToolInterface**: Real-time progress updates for long-running operations
+- **Multi-Result Support**: Return text, images, audio, or resources
+- **Progress Notifications**: Keep users informed during complex agent operations
+- **Dynamic Tool Discovery**: Agents can discover and use tools based on capabilities
 
-## Requirements
+### 🎭 Prompt Engineering for Agent Behavior
+
+Define agent personalities and behaviors through sophisticated prompt systems:
+- **Context-Aware Prompts**: Guide agent behavior based on application state
+- **Multi-Modal Support**: Text, image, audio, and resource-based prompts
+- **Dynamic Prompt Generation**: Prompts that adapt based on user interaction
+
+### 📚 Resource Management for Agent Memory
+
+Give your agents access to structured knowledge:
+- **Dynamic Resource Loading**: Agents can access and reason about your data
+- **Template-Based Resources**: Generate resources on-the-fly based on context
+- **Multi-Provider Support**: File system, database, API, or custom providers
+
+## 🎯 Real-World Agent Examples
+
+### 🔍 Intelligent Code Review Agent
+```php
+class CodeReviewAgent implements SamplingAwareToolInterface
+{
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // AI analyzes code for patterns, security, and best practices
+        $review = $this->sampling->createRequest([
+            'role' => 'user',
+            'content' => "Review this code for security vulnerabilities, 
+                         performance issues, and suggest improvements: 
+                         {$arguments['code']}"
+        ]);
+        
+        $aiAnalysis = $this->sampling->sendRequest($review);
+        
+        // Generate actionable recommendations
+        return new TextResult($this->formatReview($aiAnalysis));
+    }
+}
+```
+
+### 📊 Data Analysis Agent
+```php
+class DataInsightAgent implements SamplingAwareToolInterface, StreamableToolInterface
+{
+    public function execute(array $arguments): ToolResultInterface
+    {
+        $this->notifier->notify("Analyzing dataset...", 0.1);
+        
+        // Multi-step reasoning process
+        $steps = [
+            'Identify patterns and anomalies',
+            'Generate statistical insights',
+            'Create visualizations',
+            'Recommend actions'
+        ];
+        
+        $insights = [];
+        foreach ($steps as $i => $step) {
+            $request = $this->sampling->createRequest([
+                'role' => 'user',
+                'content' => "$step for this data: {$arguments['data']}"
+            ]);
+            
+            $insights[] = $this->sampling->sendRequest($request);
+            $this->notifier->notify("Completed: $step", ($i + 1) / count($steps));
+        }
+        
+        return new TextResult($this->compileReport($insights));
+    }
+}
+```
+
+### 🤝 Customer Support Agent
+```php
+class SupportAgent implements SamplingAwareToolInterface
+{
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // Load customer context
+        $context = $this->loadCustomerHistory($arguments['customer_id']);
+        
+        // AI determines best response strategy
+        $strategy = $this->sampling->createRequest([
+            'role' => 'system',
+            'content' => 'You are an expert customer support agent.'
+        ], [
+            'role' => 'user',
+            'content' => "Customer issue: {$arguments['issue']}
+                         History: $context
+                         Determine the best resolution approach."
+        ]);
+        
+        $approach = $this->sampling->sendRequest($strategy);
+        
+        // Execute the recommended actions
+        return $this->executeResolution($approach, $arguments);
+    }
+}
+```
+
+## 🚀 Quick Start: Build Your First Agent
+
+### 1. Requirements
 
 - PHP >=8.2
 - Symfony >=6.4
 
-## Installation
+### 2. Install Symfony MCP Server
 
-1. Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
+#### Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
 
     ```yaml
     klp_mcp_server:
@@ -76,27 +190,31 @@ Key benefits:
                 prefix: 'mcp_sse_'
                 ttl: 100
         tools:
+            - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool     # Agentic tool sample
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
         prompts:
+            - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt   # Agentic prompt sample
             - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
         resources:
             - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource # Agentic resource sample
         resources_templates:
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\DynamicAnalysisResource # Agentic resource template sample
             - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
     ```
    For more detailed explanations, you can open the default configuration file
    [from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
 
-2. Install the package via Composer:
+#### Install the package via Composer:
 
    ```bash
    composer require klapaudius/symfony-mcp-server
    ```
 
-3. Add routes in your `config/routes.yaml`
+#### Add routes in your `config/routes.yaml`
 
 ```yaml
 klp_mcp_server:
@@ -116,208 +234,62 @@ The project includes a Docker setup that can be used for development. The Docker
 
 For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](CONTRIBUTING.md#docker-setup).
 
-## Strongly Recommended
-Enhance your application's security by implementing OAuth2 Authentication. You can use the [klapaudius/oauth-server-bundle](https://github.com/klapaudius/FOSOAuthServerBundle) or any other compatible OAuth2 solution.
 
-## Basic Usage
+### 3. Create Your First Tool
 
-### Creating and Adding Custom Tools or Prompts
-
-The package provides convenient commands 
-- to generate new tools:
 ```bash
+# Generate a new tool
 php bin/console make:mcp-tool MyCustomTool
-```
-- to generate new prompts:
-```bash
-php bin/console make:mcp-prompt MyCustomPrompt
-```
 
-Those commands:
-
-- Handles various input formats (spaces, hyphens, mixed case)
-- Automatically converts the name to the proper case format
-- Creates a properly structured class in `src/MCP/Tools` or `src/MCP/Prompts`
-- Offers to automatically register items in your configuration (`config/packages/klp_mcp_server.yaml`)
-
-### Testing MCP Tools or Prompts
-
-The package includes a special command for testing your MCP tools without needing a real MCP client:
-
-```bash
-# Test a specific tool interactively
-php bin/console mcp:test-tool MyCustomTool
-
-# Test a specific prompt interactively
-php bin/console mcp:test-prompt MyCustomPrompt
-
-# List all available tools
-php bin/console mcp:test-tool --list
-
-# List all available prompts
-php bin/console mcp:test-prompt --list
-
-# Test with specific JSON input
-php bin/console mcp:test-tool MyCustomTool --input='{"param1":"value"}'
-
-# Test with specific arguments
-php bin/console mcp:test-prompt MyCustomPrompt --input='{"topic":"AI","tone":"professional"}'
+# Test your tool locally
+php bin/console mcp:test-tool MyCustomTool --input='{"task":"analyze this code"}'
 ```
 
-This helps you rapidly develop and debug tools by:
+### 4. Connect AI Clients
 
-- Showing the item's input schema and validating inputs
-- Executing the item with your provided input
-- Displaying formatted results or detailed error information
-- Displaying progress notifications for a streaming tool
-- Supporting complex input types including objects and arrays
+Your agents are now accessible to:
+- 🤖 Claude Desktop / Claude.ai
+- 🧠 Custom AI applications
+- 🔗 Any MCP-compatible client
 
-**For deep diving into tools creation: please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**
+## 🏗️ Architecture for Agent Builders
 
-**For prompts creation: [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**
+### Secure Agent Communication
+- **StreamableHTTP**: Direct, secure agent-to-client communication
+- **SSE (Server-Sent Events)**: Real-time updates for long-running agent tasks
+- **No STDIO**: Enterprise-safe, no system exposure
 
-## Resources
+### Scalable Agent Infrastructure
+- **Pub/Sub Messaging**: Handle multiple agent sessions concurrently
+- **Redis/Cache Adapters**: Scale your agent platform horizontally
+- **Progress Streaming**: Real-time feedback for complex agent operations
 
-The package provides a flexible resource management system that allows you to store and retrieve resources from different providers (file system, database, etc.).
+### Agent Development Tools
+- **MCP Inspector**: Visualize and debug agent behavior
+- **Test Commands**: Rapid agent development and testing
+- **Sampling Debugger**: Understand AI decision-making
 
-### Configuration
+## 🎓 Agent Development Resources
 
-Configure resources in your `config/packages/klp_mcp_server.yaml` file:
+- 📖 **[Building Intelligent Tools](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**: Complete guide to creating AI-powered tools
+- 🧠 **[Sampling Documentation](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/sampling.md)**: Master agent reasoning capabilities
+- 🎭 **[Prompt Engineering](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**: Design agent behaviors and personalities
+- 📚 **[Resource Management](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**: Give agents access to knowledge
 
-```yaml
-klp_mcp_server:
-    # ...
-    resources:
-        - App\MCP\Resources\MyCustomResource
-    resources_templates:
-        - App\MCP\Resources\MyCustomResourceTemplate
-```
+## 🌟 Join the Agent Revolution
 
-### Usage
+Build the next generation of AI-powered applications with Symfony MCP Server. Your tools aren't just functions anymore – they're intelligent agents capable of reasoning, learning, and evolving.
 
-### Creating Custom Resource
+### Community
 
-```php
-use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
+- 💬 [GitHub Discussions](https://github.com/klapaudius/symfony-mcp-server/discussions): Share your agent creations
+- 🐛 [Issue Tracker](https://github.com/klapaudius/symfony-mcp-server/issues): Report bugs and request features
+- 🌟 [Examples](https://github.com/klapaudius/symfony-mcp-server/tree/master/src/Services/ToolService/Examples): Learn from working agents
 
-class MyCustomResource implements ResourceInterface
-{
-    // Resource implementation
-}
-```
-Then register your resource in the configuration:
+## 📜 License
 
-```yaml
-klp_mcp_server:
-    # ...
-    resources:
-      - App\MCP\Resources\MyCustomResource
-```
+MIT License - Build freely!
 
-### Creating Custom Resource Template
+---
 
-You can create custom resource templates by implementing the `ResourceTemplateInterface`:
-
-```php
-use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
-
-class MyCustomResourceTemplate implements ResourceTemplateInterface
-{
-    // Implement the required methods
-}
-```
-
-Then register your resource template in the configuration:
-
-```yaml
-klp_mcp_server:
-    # ...
-    resources_templates:
-      - App\MCP\Resources\MyCustomResourceTemplate
-```
-
-**For deep diving into resources' management, please take a look at dedicated documentation [Here](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**
-
-### Visualizing with Inspector
-
-You can also use the Model Context Protocol Inspector to visualize and test your MCP tools:
-
-```bash
-# Run the MCP Inspector without installation
-npx @modelcontextprotocol/inspector node build/index.js
-```
-This will typically open a web interface at `localhost:6274`. To test your MCP server:
-
-1. **Warning**: `symfony server:start` CANNOT be used with this package because it cannot handle multiple PHP connections simultaneously. Since MCP SSE requires processing multiple connections concurrently, you must use one of these alternatives:
-
-     - Nginx + PHP-FPM
-     - Apache + PHP-FPM
-     - Custom Docker setup
-     - Any web server that properly supports SSE streaming  
-     - 
-2. In the Inspector interface, chose the protocol and enter the corresponding endpoint url
-
-|  MCP Specification version   | Connection Url pattern                                                         |
-|:----------------------------:|--------------------------------------------------------------------------------|
-|       2024-11-05 (SSE)       | `http(s)://[your-web-server]/[default_path]/sse`                               |
-| 2025-03-26 (Streamable HTTP) | `http(s)://[your-web-server]/[default_path]`                                   |
-|                              | `default_path` is defined in your `config/packages/klp_mcp_server.yaml` file.  |
-
-3. Connect and explore available items visually
-
-## Advanced Features
-
-### Pub/Sub Architecture with Adapters
-
-The package implements a publish/subscribe (pub/sub) messaging pattern through its adapter system:
-
-1. **Publisher (Server)**: When clients send requests (e.g. `/messages` endpoint for SSE connection), the server processes these requests and publishes responses through the configured adapter.
-
-2. **Message Broker (Adapter)**: The adapter maintains message queues for each client, identified by unique client IDs. This provides a reliable asynchronous communication layer.
-
-3. **Subscriber (SSE Connection)**: Long-lived SSE connections subscribe to messages for their respective clients and deliver them in real-time.
-
-This architecture enables:
-
-- Scalable real-time communication
-- Reliable message delivery even during temporary disconnections
-- Efficient handling of multiple concurrent client connections
-- Potential for distributed server deployments
-
-### Redis Adapter Configuration (Optional)
-
-A Redis adapter can be configured as follows:
-
-```yaml
-klp_mcp_server:
-    # ...
-    sse_adapter: 'redis'
-    adapters:
-        redis:
-            prefix: 'mcp_sse_'  # Prefix for Redis keys
-            host: 'localhost'   # Change it as needed
-            ttl: 100            # Message TTL in seconds
-```
-
-## Roadmap
-
-Our development roadmap outlines the planned enhancements and features for upcoming releases:
-
-- **Enhanced Protocol Support**: Continued improvements to StreamableHTTP implementation and stay up to date with newer specifications
-- ✅ **Sampling Feature Implementation**: Complete implementation of MCP sampling allowing tools to request LLM assistance
-
-For detailed discussions about upcoming features and to contribute your ideas, please visit the [Discussion section](https://github.com/klapaudius/symfony-mcp-server/discussions).
-Community feedback plays a crucial role in shaping our development priorities.
-
-## MCP Registries referencing
-https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
-
-https://mcp.so/server/symfony-mcp-server/klapaudius
-
-## Credits
-- Boris AUBE and [all contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)
-- Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)
-
-## License
-
-This project is distributed under the MIT license.
+*Built with ❤️ by [Boris AUBE](https://github.com/klapaudius) and the [contributors](https://github.com/klapaudius/symfony-mcp-server/contributors) - Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)*

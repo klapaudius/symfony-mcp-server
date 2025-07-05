@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Services\ResourceService\Examples;
 
-use KLP\KlpMcpServer\Services\ResourceService\Resource;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceTemplateInterface;
 use KLP\KlpMcpServer\Services\ResourceService\SamplingAwareResourceInterface;
