@@ -310,7 +310,7 @@ final class MCPProtocol implements MCPProtocolInterface
     public function getResponseResult(string $clientId): array
     {
         $result = [];
-        foreach ($this->transport->receive() as $message) {
+        foreach ($this->transport->receive() ?? [] as $message) {
             if ($message !== null) {
                 $result[] = json_decode($message);
             }

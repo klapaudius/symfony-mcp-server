@@ -37,6 +37,14 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
     private bool $supportsPrompts = false;
 
     /**
+     * Indicates whether the server supports the MCP sampling feature.
+     * If true, the server can handle sampling requests from the client.
+     *
+     * @see https://modelcontextprotocol.io/docs/concepts/sampling
+     */
+    private bool $supportsSampling = true;
+
+    /**
      * Optional configuration specific to the tools capability.
      * This structure can be defined by the specific server implementation
      * to provide further details about the supported tools, if needed.
@@ -161,6 +169,9 @@ final class ServerCapabilities implements ServerCapabilitiesInterface
         }
         if ($this->supportsPrompts) {
             $capabilities['prompts']->listChanged = true;
+        }
+        if ($this->supportsSampling) {
+            $capabilities['sampling'] = new stdClass;
         }
 
         return $capabilities;

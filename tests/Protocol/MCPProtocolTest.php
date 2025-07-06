@@ -28,6 +28,7 @@ class MCPProtocolTest extends TestCase
         $this->mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
         $this->mockTransport = $this->createMock(SseTransportInterface::class);
         $this->mockTransportFactory->method('create')->willReturn($this->mockTransport);
+        $this->mockTransportFactory->method('get')->willReturn($this->mockTransport);
         $this->mockTransport
             ->method('getClientId')
             ->willReturn($this->exampleClientId);
@@ -40,8 +41,16 @@ class MCPProtocolTest extends TestCase
      */
     public function test_init_transport_initializes_transport(): void
     {
-        $mcpProtocol = new MCPProtocol($this->mockTransportFactory);
-        $this->mockTransportFactory
+        $mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
+        $mcpProtocol = new MCPProtocol($mockTransportFactory);
+        
+        // Mock to simulate TransportFactoryException on get()
+        $mockTransportFactory
+            ->expects($this->once())
+            ->method('get')
+            ->willThrowException(new \KLP\KlpMcpServer\Transports\Factory\TransportFactoryException('Factory not initialized'));
+        
+        $mockTransportFactory
             ->expects($this->once())
             ->method('create')
             ->with($this->equalTo(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP))
@@ -68,6 +77,12 @@ class MCPProtocolTest extends TestCase
             ->method('getClientId')
             ->willReturn($this->exampleClientId);
 
+        // Mock to simulate TransportFactoryException on get()
+        $mockTransportFactory
+            ->expects($this->once())
+            ->method('get')
+            ->willThrowException(new \KLP\KlpMcpServer\Transports\Factory\TransportFactoryException('Factory not initialized'));
+        
         $mockTransportFactory
             ->method('create')
             ->willReturn($streamableHttpTransport);

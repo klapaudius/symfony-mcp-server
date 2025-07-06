@@ -120,10 +120,7 @@ class SamplingClientTest extends TestCase
                 $messageCallback = $callback;
             });
 
-        // Set up the response waiter to intercept waiting and respond immediately
-        $responseWaiter = new \ReflectionClass($this->samplingClient);
-        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
-        
+        // Create a mock response waiter
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
@@ -137,7 +134,15 @@ class SamplingClientTest extends TestCase
                 'stopReason' => 'endTurn'
             ]);
         
-        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+        // Create a partial mock of SamplingClient to override getResponseWaiter method
+        $samplingClientMock = $this->getMockBuilder(SamplingClient::class)
+            ->setConstructorArgs([$this->transportFactory, $this->logger])
+            ->onlyMethods(['getResponseWaiter'])
+            ->getMock();
+        
+        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->setCurrentClientId($clientId);
+        $samplingClientMock->setEnabled(true);
 
         $this->transport->expects($this->once())
             ->method('pushMessage')
@@ -156,7 +161,7 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        $response = $this->samplingClient->createTextRequest('Test prompt');
+        $response = $samplingClientMock->createTextRequest('Test prompt');
 
         $this->assertEquals('assistant', $response->getRole());
         $this->assertEquals('Test response', $response->getContent()->getText());
@@ -188,10 +193,7 @@ class SamplingClientTest extends TestCase
                 $messageCallback = $callback;
             });
 
-        // Set up the response waiter to intercept waiting and respond immediately
-        $responseWaiter = new \ReflectionClass($this->samplingClient);
-        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
-        
+        // Create a mock response waiter
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
@@ -205,7 +207,15 @@ class SamplingClientTest extends TestCase
                 'stopReason' => 'endTurn'
             ]);
         
-        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+        // Create a partial mock of SamplingClient to override getResponseWaiter method
+        $samplingClientMock = $this->getMockBuilder(SamplingClient::class)
+            ->setConstructorArgs([$this->transportFactory, $this->logger])
+            ->onlyMethods(['getResponseWaiter'])
+            ->getMock();
+        
+        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->setCurrentClientId($clientId);
+        $samplingClientMock->setEnabled(true);
 
         $this->transport->expects($this->once())
             ->method('pushMessage')
@@ -223,7 +233,7 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        $response = $this->samplingClient->createTextRequest(
+        $response = $samplingClientMock->createTextRequest(
             'Test prompt',
             $modelPreferences,
             'You are a helpful assistant',
@@ -278,10 +288,7 @@ class SamplingClientTest extends TestCase
                 $messageCallback = $callback;
             });
 
-        // Set up the response waiter to intercept waiting and respond immediately
-        $responseWaiter = new \ReflectionClass($this->samplingClient);
-        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
-        
+        // Create a mock response waiter
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
@@ -295,7 +302,15 @@ class SamplingClientTest extends TestCase
                 'stopReason' => 'endTurn'
             ]);
         
-        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+        // Create a partial mock of SamplingClient to override getResponseWaiter method
+        $samplingClientMock = $this->getMockBuilder(SamplingClient::class)
+            ->setConstructorArgs([$this->transportFactory, $this->logger])
+            ->onlyMethods(['getResponseWaiter'])
+            ->getMock();
+        
+        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->setCurrentClientId($clientId);
+        $samplingClientMock->setEnabled(true);
 
         $this->transport->expects($this->once())
             ->method('pushMessage')
@@ -313,7 +328,7 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        $response = $this->samplingClient->createRequest($messages);
+        $response = $samplingClientMock->createRequest($messages);
 
         $this->assertEquals('assistant', $response->getRole());
         $this->assertEquals('Multi-message response', $response->getContent()->getText());
@@ -333,31 +348,25 @@ class SamplingClientTest extends TestCase
         $this->assertFalse($this->samplingClient->canSample());
     }
 
-    public function test_get_transport_creates_new_transport_when_factory_throws_exception(): void
+    public function test_can_sample_returns_false_when_transport_factory_throws_exception(): void
     {
         $clientId = 'test-client-factory-exception';
         $this->samplingClient->setCurrentClientId($clientId);
 
         $transportFactory = $this->createMock(TransportFactoryInterface::class);
-        $transport = $this->createMock(AbstractTransport::class);
-        $adapter = $this->createMock(SseAdapterInterface::class);
-
-        $transport->method('getAdapter')->willReturn($adapter);
-        $adapter->method('hasSamplingCapability')->willReturn(true);
 
         $transportFactory->expects($this->once())
             ->method('get')
             ->willThrowException(new TransportFactoryException('Factory not initialized'));
 
-        $transportFactory->expects($this->once())
-            ->method('create')
-            ->with('2025-03-26')
-            ->willReturn($transport);
+        // Should not call create() when canSample() catches the exception
+        $transportFactory->expects($this->never())
+            ->method('create');
 
         $samplingClient = new SamplingClient($transportFactory, $this->logger);
         $samplingClient->setCurrentClientId($clientId);
 
-        $this->assertTrue($samplingClient->canSample());
+        $this->assertFalse($samplingClient->canSample());
     }
 
     public function test_set_current_client_id(): void
@@ -384,17 +393,14 @@ class SamplingClientTest extends TestCase
         $capturedIds = [];
         $messageCallback = null;
 
-        // Capture the onMessage callback - only called once as the handler is registered once
-        $this->transport->expects($this->once())
+        // Capture the onMessage callback - will be called twice for each request
+        $this->transport->expects($this->exactly(2))
             ->method('onMessage')
             ->willReturnCallback(function ($callback) use (&$messageCallback) {
                 $messageCallback = $callback;
             });
 
-        // Set up the response waiter to intercept waiting and respond immediately
-        $responseWaiter = new \ReflectionClass($this->samplingClient);
-        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
-        
+        // Create a mock response waiter
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->expects($this->exactly(2))
             ->method('waitForResponse')
@@ -408,7 +414,15 @@ class SamplingClientTest extends TestCase
                 'stopReason' => 'endTurn'
             ]);
         
-        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+        // Create a partial mock of SamplingClient to override getResponseWaiter method
+        $samplingClientMock = $this->getMockBuilder(SamplingClient::class)
+            ->setConstructorArgs([$this->transportFactory, $this->logger])
+            ->onlyMethods(['getResponseWaiter'])
+            ->getMock();
+        
+        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->setCurrentClientId($clientId);
+        $samplingClientMock->setEnabled(true);
 
         $this->transport->expects($this->exactly(2))
             ->method('pushMessage')
@@ -420,8 +434,8 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        $this->samplingClient->createTextRequest('First request');
-        $this->samplingClient->createTextRequest('Second request');
+        $samplingClientMock->createTextRequest('First request');
+        $samplingClientMock->createTextRequest('Second request');
 
         $this->assertCount(2, $capturedIds);
         $this->assertNotSame($capturedIds[0], $capturedIds[1]);

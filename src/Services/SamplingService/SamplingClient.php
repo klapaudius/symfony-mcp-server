@@ -6,7 +6,6 @@ namespace KLP\KlpMcpServer\Services\SamplingService;
 
 use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
-use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
@@ -19,12 +18,6 @@ class SamplingClient implements SamplingInterface
     private bool $enabled = true;
 
     private ?string $currentClientId = null;
-
-    private ?TransportInterface $transport = null;
-
-    private ?ResponseWaiter $responseWaiter = null;
-
-    private bool $handlerRegistered = false;
 
     public function __construct(
         private TransportFactoryInterface $transportFactory,
@@ -44,22 +37,44 @@ class SamplingClient implements SamplingInterface
 
     public function setCurrentClientId(string $clientId): void
     {
+        $this->logger->debug('SamplingClient::setCurrentClientId', [
+            'clientId' => $clientId,
+            'previousClientId' => $this->currentClientId,
+        ]);
         $this->currentClientId = $clientId;
     }
 
     public function canSample(): bool
     {
         if (! $this->enabled || $this->currentClientId === null) {
+            $this->logger->debug('SamplingClient::canSample - Early return', [
+                'enabled' => $this->enabled,
+                'currentClientId' => $this->currentClientId,
+            ]);
             return false;
         }
 
-        $transport = $this->getTransport();
-        $adapter = $transport->getAdapter();
-        if ($adapter === null) {
+        try {
+            $transport = $this->getTransport();
+            $adapter = $transport->getAdapter();
+            if ($adapter === null) {
+                $this->logger->debug('SamplingClient::canSample - No adapter available');
+                return false;
+            }
+
+            $hasSampling = $adapter->hasSamplingCapability($this->currentClientId);
+            $this->logger->debug('SamplingClient::canSample - Checking capability', [
+                'clientId' => $this->currentClientId,
+                'hasSamplingCapability' => $hasSampling,
+            ]);
+            return $hasSampling;
+        } catch (TransportFactoryException $e) {
+            // Transport not initialized yet, sampling not available
+            $this->logger->debug('SamplingClient::canSample - Transport exception', [
+                'error' => $e->getMessage(),
+            ]);
             return false;
         }
-
-        return $adapter->hasSamplingCapability($this->currentClientId);
     }
 
     /**
@@ -80,20 +95,13 @@ class SamplingClient implements SamplingInterface
     }
 
     /**
-     * Get or create the transport instance
+     * Get the transport instance from the factory
      */
     private function getTransport(): TransportInterface
     {
-        if ($this->transport === null) {
-            try {
-                $this->transport = $this->transportFactory->get();
-            } catch (TransportFactoryException $e) {
-                // If the factory hasn't been initialized, create with a default protocol
-                $this->transport = $this->transportFactory->create(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
-            }
-        }
-
-        return $this->transport;
+        // Always get the current transport from the factory
+        // The transport is request-specific and depends on the protocol version
+        return $this->transportFactory->get();
     }
 
     /**
@@ -160,12 +168,9 @@ class SamplingClient implements SamplingInterface
      */
     public function getResponseWaiter(): ResponseWaiter
     {
-        if ($this->responseWaiter === null) {
-            $adapter = $this->getTransport()->getAdapter();
-            $this->responseWaiter = new ResponseWaiter($this->logger, $adapter, $this->defaultTimeout);
-        }
-
-        return $this->responseWaiter;
+        // Always create a new ResponseWaiter since the adapter is request-specific
+        $adapter = $this->getTransport()->getAdapter();
+        return new ResponseWaiter($this->logger, $adapter, $this->defaultTimeout);
     }
 
     /**
@@ -173,13 +178,8 @@ class SamplingClient implements SamplingInterface
      */
     private function ensureResponseHandler(): void
     {
-        if ($this->handlerRegistered) {
-            return;
-        }
-
         $transport = $this->getTransport();
         $transport->onMessage([$this, 'handleIncomingMessage']);
-        $this->handlerRegistered = true;
 
         $this->logger->debug('Registered sampling response handler');
     }

@@ -149,10 +149,17 @@ class CachePoolAdapter implements SseAdapterInterface
     public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void
     {
         try {
-            $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
+            $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+            $cacheItem = $this->cache->getItem($key);
             $cacheItem->set($hasSamplingCapability);
             $cacheItem->expiresAfter(60 * 60 * 24);
             $this->cache->save($cacheItem);
+            
+            $this->logger?->debug('Stored sampling capability', [
+                'clientId' => $clientId,
+                'key' => $key,
+                'hasSamplingCapability' => $hasSamplingCapability,
+            ]);
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to store sampling capability: '.$e->getMessage());
             throw new SseAdapterException('Failed to store sampling capability', 0, $e);
@@ -165,9 +172,19 @@ class CachePoolAdapter implements SseAdapterInterface
     public function hasSamplingCapability(string $clientId): bool
     {
         try {
-            $cacheItem = $this->cache->getItem($this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX);
+            $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+            $cacheItem = $this->cache->getItem($key);
+            $isHit = $cacheItem->isHit();
+            $value = $cacheItem->get();
+            
+            $this->logger?->debug('Retrieved sampling capability', [
+                'clientId' => $clientId,
+                'key' => $key,
+                'isHit' => $isHit,
+                'value' => $value,
+            ]);
 
-            return $cacheItem->get() ?? false;
+            return $value ?? false;
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to retrieve sampling capability: '.$e->getMessage());
             throw new SseAdapterException('Failed to retrieve sampling capability', 0, $e);

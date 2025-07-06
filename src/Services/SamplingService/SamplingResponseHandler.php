@@ -12,13 +12,10 @@ use Psr\Log\LoggerInterface;
  */
 class SamplingResponseHandler implements ResponseHandler
 {
-    private ResponseWaiter $responseWaiter;
-
     public function __construct(
         private SamplingClient $samplingClient,
         private LoggerInterface $logger
     ) {
-        $this->responseWaiter = $this->samplingClient->getResponseWaiter();
     }
 
     /**
@@ -28,9 +25,8 @@ class SamplingResponseHandler implements ResponseHandler
      * @param string|int $messageId The message ID of the response
      * @param array|null $result The result data if successful
      * @param array|null $error The error data if failed
-     * @return array Empty array as responses don't need a return
      */
-    public function execute(string $clientId, string|int $messageId, array|null $result = null, array|null $error = null): array
+    public function execute(string $clientId, string|int $messageId, array|null $result = null, array|null $error = null): void
     {
         // Get the response waiter from the sampling client
         $this->logger->debug('SamplingResponseHandler::execute', [
@@ -53,9 +49,15 @@ class SamplingResponseHandler implements ResponseHandler
         }
 
         // Let the response waiter handle the response
-        $this->responseWaiter->handleResponse($message);
-
-        return [];
+        try {
+            $responseWaiter = $this->samplingClient->getResponseWaiter();
+            $responseWaiter->handleResponse($message);
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to handle sampling response', [
+                'error' => $e->getMessage(),
+                'messageId' => $messageId
+            ]);
+        }
     }
 
     /**
@@ -66,6 +68,12 @@ class SamplingResponseHandler implements ResponseHandler
      */
     public function isHandle(string|int $messageId): bool
     {
-        return $this->responseWaiter->isWaitingFor($messageId);
+        try {
+            $responseWaiter = $this->samplingClient->getResponseWaiter();
+            return $responseWaiter->isWaitingFor($messageId);
+        } catch (\Exception $e) {
+            // If we can't get the response waiter, we can't handle the message
+            return false;
+        }
     }
 }

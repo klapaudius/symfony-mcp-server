@@ -175,7 +175,6 @@ final class MCPServer implements MCPServerInterface
     public function registerSamplingResponseHandler(): self
     {
         if ($this->samplingClient !== null) {
-            $this->samplingClient->getLogger()->info($this->protocolVersion ?? "null" . " protocol version");
             $handler = new SamplingResponseHandler(
                 $this->samplingClient,
                 $this->samplingClient->getLogger()

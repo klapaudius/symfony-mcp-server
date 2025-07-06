@@ -60,6 +60,7 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
      */
     public function processMessage(string $clientId, array $message): void
     {
+        $this->clientId = $clientId;
         foreach ($this->messageHandlers as $handler) {
             try {
                 $handler($clientId, $message);
@@ -113,6 +114,7 @@ final class SseTransport extends AbstractTransport implements SseTransportInterf
 
     public function setClientSamplingCapability(bool $hasSamplingCapability): void
     {
+        $this->logger?->debug('SSE Transport::setClientSamplingCapability: hasSamplingCapability: '.($hasSamplingCapability ? 'true' : 'false'));
         $this->getAdapter()->storeSamplingCapability($this->getClientId(), $hasSamplingCapability);
     }
 }
