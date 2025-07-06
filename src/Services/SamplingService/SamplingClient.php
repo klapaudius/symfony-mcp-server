@@ -80,7 +80,7 @@ class SamplingClient implements SamplingInterface
     }
 
     /**
-     * Get or create transport instance
+     * Get or create the transport instance
      */
     private function getTransport(): TransportInterface
     {
@@ -88,7 +88,7 @@ class SamplingClient implements SamplingInterface
             try {
                 $this->transport = $this->transportFactory->get();
             } catch (TransportFactoryException $e) {
-                // If factory hasn't been initialized, create with default protocol
+                // If the factory hasn't been initialized, create with a default protocol
                 $this->transport = $this->transportFactory->create(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
             }
         }
@@ -123,9 +123,7 @@ class SamplingClient implements SamplingInterface
         $this->ensureResponseHandler();
 
         // Send the sampling request to the client
-        $response = $this->sendSamplingRequest($messageId, $request);
-
-        return $response;
+        return $this->sendSamplingRequest($messageId, $request);
     }
 
     private function sendSamplingRequest(string $messageId, SamplingRequest $request): SamplingResponse
@@ -160,10 +158,11 @@ class SamplingClient implements SamplingInterface
     /**
      * Get or create the response waiter
      */
-    private function getResponseWaiter(): ResponseWaiter
+    public function getResponseWaiter(): ResponseWaiter
     {
         if ($this->responseWaiter === null) {
-            $this->responseWaiter = new ResponseWaiter($this->logger, $this->defaultTimeout);
+            $adapter = $this->getTransport()->getAdapter();
+            $this->responseWaiter = new ResponseWaiter($this->logger, $adapter, $this->defaultTimeout);
         }
 
         return $this->responseWaiter;
@@ -190,6 +189,7 @@ class SamplingClient implements SamplingInterface
      */
     public function handleIncomingMessage(string $clientId, array $message): void
     {
+        $this->logger->info("Current Client Id: " . $this->currentClientId);
         // Only handle messages for our current client
         if ($clientId !== $this->currentClientId) {
             return;
@@ -231,5 +231,10 @@ class SamplingClient implements SamplingInterface
                 'error'
             );
         }
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 }

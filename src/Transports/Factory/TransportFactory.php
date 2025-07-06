@@ -107,7 +107,7 @@ final class TransportFactory implements TransportFactoryInterface
     private function setProtocolVersion(string $protocolVersion): void
     {
         if ($this->protocolVersion) {
-            throw new InvalidArgumentException('Protocol version already set.');
+            throw new InvalidArgumentException('Protocol version already set to a different value.');
         }
         $this->protocolVersion = $protocolVersion;
     }

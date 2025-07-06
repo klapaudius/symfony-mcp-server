@@ -300,13 +300,137 @@ final class RedisAdapter implements SseAdapterInterface
      *
      * @throws SseAdapterException
      */
-    private function executeRedisCommand(callable $command, string $errorMessage): void
+    private function executeRedisCommand(callable $command, string $errorMessage): mixed
     {
         try {
-            $command();
+            return $command();
         } catch (Exception $e) {
             $this->logAndThrow($errorMessage.': '.$e->getMessage(), $e);
         }
+    }
+
+    /**
+     * Get the Redis key for a pending response
+     *
+     * @param  string  $messageId  The message ID
+     * @return string The Redis key
+     */
+    private function generatePendingResponseKey(string $messageId): string
+    {
+        return "$this->keyPrefix:pending_response:$messageId";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function storePendingResponse(string $messageId, array $responseData): void
+    {
+        $this->executeRedisCommand(
+            function () use ($messageId, $responseData) {
+                $key = $this->generatePendingResponseKey($messageId);
+                $this->redis->set($key, json_encode($responseData));
+                $this->setKeyExpiration($key);
+
+                $this->logger?->debug('Stored pending response', [
+                    'messageId' => $messageId,
+                    'key' => $key,
+                ]);
+            },
+            'Failed to store pending response'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPendingResponse(string $messageId): ?array
+    {
+        return $this->executeRedisCommand(
+            function () use ($messageId) {
+                $key = $this->generatePendingResponseKey($messageId);
+                $data = $this->redis->get($key);
+
+                if ($data === false || $data === null) {
+                    return null;
+                }
+
+                $decoded = json_decode($data, true);
+                return is_array($decoded) ? $decoded : null;
+            },
+            'Failed to retrieve pending response'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removePendingResponse(string $messageId): void
+    {
+        $this->executeRedisCommand(
+            function () use ($messageId) {
+                $key = $this->generatePendingResponseKey($messageId);
+                $this->redis->del($key);
+
+                $this->logger?->debug('Removed pending response', [
+                    'messageId' => $messageId,
+                    'key' => $key,
+                ]);
+            },
+            'Failed to remove pending response'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasPendingResponse(string $messageId): bool
+    {
+        return $this->executeRedisCommand(
+            function () use ($messageId) {
+                $key = $this->generatePendingResponseKey($messageId);
+                return $this->redis->exists($key) > 0;
+            },
+            'Failed to check pending response'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanupOldPendingResponses(int $maxAge): int
+    {
+        return $this->executeRedisCommand(
+            function () use ($maxAge) {
+                $pattern = "$this->keyPrefix:pending_response:*";
+                $keys = $this->redis->keys($pattern);
+                $deletedCount = 0;
+
+                foreach ($keys as $key) {
+                    // Check if key has expired based on TTL
+                    $ttl = $this->redis->ttl($key);
+                    if ($ttl === -1 || $ttl > $this->messageTtl) {
+                        // Key doesn't have TTL or TTL is too long, check creation time
+                        // Since we can't get creation time from Redis directly,
+                        // we'll rely on the TTL mechanism for cleanup
+                        continue;
+                    }
+
+                    // For keys that are close to expiring, we can clean them up
+                    if ($ttl < ($this->messageTtl - $maxAge)) {
+                        $this->redis->del($key);
+                        $deletedCount++;
+                    }
+                }
+
+                $this->logger?->debug('Cleaned up old pending responses', [
+                    'deletedCount' => $deletedCount,
+                    'maxAge' => $maxAge,
+                ]);
+
+                return $deletedCount;
+            },
+            'Failed to cleanup old pending responses'
+        );
     }
 
     /**

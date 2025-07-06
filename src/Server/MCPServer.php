@@ -20,6 +20,7 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingResponseHandler;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -114,13 +115,14 @@ final class MCPServer implements MCPServerInterface
         ProgressNotifierRepository $progressNotifierRepository,
         string $name,
         string $version,
+        ?SamplingClient $samplingClient = null,
         ?ServerCapabilitiesInterface $capabilities = null
     ): self {
         return new self($protocol,
             $progressNotifierRepository, [
                 'name' => $name,
                 'version' => $version,
-            ], null, $capabilities);
+            ], $samplingClient, $capabilities);
     }
 
     /**
@@ -160,6 +162,26 @@ final class MCPServer implements MCPServerInterface
         $this->registerRequestHandler(new PromptsListHandler($promptRepository));
         $this->registerRequestHandler(new PromptsGetHandler($promptRepository, $this->samplingClient));
         $this->capabilities->withPrompts($promptRepository->getPromptSchemas());
+
+        return $this;
+    }
+
+    /**
+     * Registers the sampling response handler if sampling client is available.
+     * This enables proper handling of sampling responses from clients.
+     *
+     * @return self The current MCPServer instance for method chaining.
+     */
+    public function registerSamplingResponseHandler(): self
+    {
+        if ($this->samplingClient !== null) {
+            $this->samplingClient->getLogger()->info($this->protocolVersion ?? "null" . " protocol version");
+            $handler = new SamplingResponseHandler(
+                $this->samplingClient,
+                $this->samplingClient->getLogger()
+            );
+            $this->protocol->registerResponseHandler($handler);
+        }
 
         return $this;
     }

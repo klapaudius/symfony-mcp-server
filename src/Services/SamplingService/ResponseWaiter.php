@@ -6,6 +6,7 @@ namespace KLP\KlpMcpServer\Services\SamplingService;
 
 use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -14,7 +15,7 @@ use Psr\Log\LoggerInterface;
 class ResponseWaiter
 {
     /**
-     * @var array<string, array{response: mixed|null, timestamp: int}>
+     * @var array<string|int, array{response: mixed|null, timestamp: int}>
      */
     private array $pendingResponses = [];
 
@@ -27,6 +28,7 @@ class ResponseWaiter
 
     public function __construct(
         private LoggerInterface $logger,
+        private ?SseAdapterInterface $adapter = null,
         int $defaultTimeout = 30
     ) {
         $this->defaultTimeout = $defaultTimeout;
@@ -45,11 +47,25 @@ class ResponseWaiter
         $timeout = $timeout ?? $this->defaultTimeout;
         $startTime = time();
 
-        // Register the pending response
-        $this->pendingResponses[$messageId] = [
+        // Register the pending response (both in memory and persistent storage)
+        $responseData = [
             'response' => null,
             'timestamp' => $startTime,
         ];
+        
+        $this->pendingResponses[$messageId] = $responseData;
+        
+        // Store in adapter if available
+        if ($this->adapter !== null) {
+            try {
+                $this->adapter->storePendingResponse($messageId, $responseData);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Failed to store pending response in adapter', [
+                    'messageId' => $messageId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $this->logger->debug('Waiting for response', [
             'messageId' => $messageId,
@@ -61,10 +77,21 @@ class ResponseWaiter
         $iterations = 0;
 
         while ($iterations < $maxIterations) {
-            // Check if response has arrived
-            if (isset($this->pendingResponses[$messageId]) && $this->pendingResponses[$messageId]['response'] !== null) {
-                $response = $this->pendingResponses[$messageId]['response'];
+            // Check if response has arrived (check both memory and adapter)
+            $response = $this->checkForResponse($messageId);
+            if ($response !== null) {
+                // Clean up
                 unset($this->pendingResponses[$messageId]);
+                if ($this->adapter !== null) {
+                    try {
+                        $this->adapter->removePendingResponse($messageId);
+                    } catch (\Throwable $e) {
+                        $this->logger->warning('Failed to remove pending response from adapter', [
+                            'messageId' => $messageId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
 
                 $this->logger->debug('Response received', [
                     'messageId' => $messageId,
@@ -84,8 +111,18 @@ class ResponseWaiter
             $iterations++;
         }
 
-        // Timeout reached
+        // Timeout reached - clean up
         unset($this->pendingResponses[$messageId]);
+        if ($this->adapter !== null) {
+            try {
+                $this->adapter->removePendingResponse($messageId);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Failed to remove timed out response from adapter', [
+                    'messageId' => $messageId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $this->logger->error('Response timeout', [
             'messageId' => $messageId,
@@ -96,6 +133,39 @@ class ResponseWaiter
             'Sampling request timed out after ' . $timeout . ' seconds',
             JsonRpcErrorCode::INTERNAL_ERROR
         );
+    }
+
+    /**
+     * Check for a response (both in memory and adapter)
+     *
+     * @param string $messageId The message ID to check
+     * @return mixed The response data or null if not found
+     */
+    private function checkForResponse(string $messageId): mixed
+    {
+        // Check in-memory first
+        if (isset($this->pendingResponses[$messageId]) && $this->pendingResponses[$messageId]['response'] !== null) {
+            return $this->pendingResponses[$messageId]['response'];
+        }
+
+        // Check adapter if available
+        if ($this->adapter !== null) {
+            try {
+                $storedData = $this->adapter->getPendingResponse($messageId);
+                if ($storedData !== null && isset($storedData['response']) && $storedData['response'] !== null) {
+                    // Update in-memory cache
+                    $this->pendingResponses[$messageId] = $storedData;
+                    return $storedData['response'];
+                }
+            } catch (\Throwable $e) {
+                $this->logger->warning('Failed to check adapter for response', [
+                    'messageId' => $messageId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -111,8 +181,8 @@ class ResponseWaiter
 
         $messageId = $message['id'];
 
-        // Check if this is a response we're waiting for
-        if (!isset($this->pendingResponses[$messageId])) {
+        // Check if this is a response we're waiting for (check both memory and adapter)
+        if (!$this->isWaitingFor($messageId)) {
             return;
         }
 
@@ -120,21 +190,43 @@ class ResponseWaiter
             'messageId' => $messageId,
         ]);
 
+        $responseValue = null;
+
         // Check for error response
         if (isset($message['error'])) {
             $error = $message['error'];
             $errorMessage = $error['message'] ?? 'Unknown error';
             $errorCode = $error['code'] ?? JsonRpcErrorCode::INTERNAL_ERROR->value;
 
-            $this->pendingResponses[$messageId]['response'] = new JsonRpcErrorException(
+            $responseValue = new JsonRpcErrorException(
                 $errorMessage,
                 JsonRpcErrorCode::tryFrom($errorCode) ?? JsonRpcErrorCode::INTERNAL_ERROR
             );
-            return;
+        } else {
+            // Store the result
+            $responseValue = $message['result'] ?? null;
         }
 
-        // Store the result
-        $this->pendingResponses[$messageId]['response'] = $message['result'] ?? null;
+        // Update in-memory storage
+        if (isset($this->pendingResponses[$messageId])) {
+            $this->pendingResponses[$messageId]['response'] = $responseValue;
+        }
+
+        // Update adapter storage
+        if ($this->adapter !== null) {
+            try {
+                $storedData = $this->adapter->getPendingResponse($messageId);
+                if ($storedData !== null) {
+                    $storedData['response'] = $responseValue;
+                    $this->adapter->storePendingResponse($messageId, $storedData);
+                }
+            } catch (\Throwable $e) {
+                $this->logger->warning('Failed to update response in adapter', [
+                    'messageId' => $messageId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         // Execute any registered callback
         if (isset($this->responseCallbacks[$messageId])) {
@@ -142,7 +234,7 @@ class ResponseWaiter
             unset($this->responseCallbacks[$messageId]);
 
             try {
-                $callback($message['result'] ?? null);
+                $callback($responseValue);
             } catch (\Throwable $e) {
                 $this->logger->error('Response callback error', [
                     'messageId' => $messageId,
@@ -187,8 +279,25 @@ class ResponseWaiter
     /**
      * Check if we're waiting for a specific message ID
      */
-    public function isWaitingFor(string $messageId): bool
+    public function isWaitingFor(string|int $messageId): bool
     {
-        return isset($this->pendingResponses[$messageId]);
+        // Check in-memory first
+        if (isset($this->pendingResponses[$messageId])) {
+            return true;
+        }
+
+        // Check adapter if available
+        if ($this->adapter !== null) {
+            try {
+                return $this->adapter->hasPendingResponse((string)$messageId);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Failed to check adapter for pending response', [
+                    'messageId' => $messageId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return false;
     }
 }

@@ -98,6 +98,16 @@ class ProfileGeneratorToolTest extends TestCase
 
         $this->tool->setProgressNotifier($progressNotifier);
 
+        // Set up sampling client to avoid uninitialized property error
+        $samplingClient = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\SamplingClient::class);
+        $samplingClient->method('createTextRequest')->willReturn(
+            new \KLP\KlpMcpServer\Services\SamplingService\SamplingResponse(
+                'assistant',
+                new \KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent('text', 'Welcome!')
+            )
+        );
+        $this->tool->setSamplingClient($samplingClient);
+
         $result = $this->tool->execute(['name' => 'Test', 'role' => 'Test']);
         $this->assertInstanceOf(CollectionToolResult::class, $result);
     }

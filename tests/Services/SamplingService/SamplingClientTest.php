@@ -110,11 +110,41 @@ class SamplingClientTest extends TestCase
             ->with($clientId)
             ->willReturn(true);
 
+        $capturedMessageId = null;
+        $messageCallback = null;
+
+        // Capture the onMessage callback
+        $this->transport->expects($this->once())
+            ->method('onMessage')
+            ->willReturnCallback(function ($callback) use (&$messageCallback) {
+                $messageCallback = $callback;
+            });
+
+        // Set up the response waiter to intercept waiting and respond immediately
+        $responseWaiter = new \ReflectionClass($this->samplingClient);
+        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
+        
+        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter->expects($this->once())
+            ->method('waitForResponse')
+            ->willReturn([
+                'role' => 'assistant',
+                'content' => [
+                    'type' => 'text',
+                    'text' => 'Test response'
+                ],
+                'model' => 'test-model',
+                'stopReason' => 'endTurn'
+            ]);
+        
+        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+
         $this->transport->expects($this->once())
             ->method('pushMessage')
             ->with(
                 $clientId,
-                $this->callback(function ($message) {
+                $this->callback(function ($message) use (&$capturedMessageId) {
+                    $capturedMessageId = $message['id'] ?? null;
                     return $message['jsonrpc'] === '2.0'
                         && $message['method'] === 'sampling/createMessage'
                         && isset($message['id'])
@@ -126,12 +156,10 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        try {
-            $this->samplingClient->createTextRequest('Test prompt');
-        } catch (JsonRpcErrorException $e) {
-            // Expected exception for unimplemented response handling
-            $this->assertStringContainsString('response handling not yet implemented', $e->getMessage());
-        }
+        $response = $this->samplingClient->createTextRequest('Test prompt');
+
+        $this->assertEquals('assistant', $response->getRole());
+        $this->assertEquals('Test response', $response->getContent()->getText());
     }
 
     public function test_create_text_request_with_all_parameters(): void
@@ -150,11 +178,41 @@ class SamplingClientTest extends TestCase
             0.7
         );
 
+        $capturedMessageId = null;
+        $messageCallback = null;
+
+        // Capture the onMessage callback
+        $this->transport->expects($this->once())
+            ->method('onMessage')
+            ->willReturnCallback(function ($callback) use (&$messageCallback) {
+                $messageCallback = $callback;
+            });
+
+        // Set up the response waiter to intercept waiting and respond immediately
+        $responseWaiter = new \ReflectionClass($this->samplingClient);
+        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
+        
+        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter->expects($this->once())
+            ->method('waitForResponse')
+            ->willReturn([
+                'role' => 'assistant',
+                'content' => [
+                    'type' => 'text',
+                    'text' => 'Test response with preferences'
+                ],
+                'model' => 'claude-3-sonnet',
+                'stopReason' => 'endTurn'
+            ]);
+        
+        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+
         $this->transport->expects($this->once())
             ->method('pushMessage')
             ->with(
                 $clientId,
-                $this->callback(function ($message) {
+                $this->callback(function ($message) use (&$capturedMessageId) {
+                    $capturedMessageId = $message['id'] ?? null;
                     return $message['jsonrpc'] === '2.0'
                         && $message['method'] === 'sampling/createMessage'
                         && isset($message['params']['modelPreferences'])
@@ -165,16 +223,15 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        try {
-            $this->samplingClient->createTextRequest(
-                'Test prompt',
-                $modelPreferences,
-                'You are a helpful assistant',
-                1000
-            );
-        } catch (JsonRpcErrorException $e) {
-            $this->assertStringContainsString('response handling not yet implemented', $e->getMessage());
-        }
+        $response = $this->samplingClient->createTextRequest(
+            'Test prompt',
+            $modelPreferences,
+            'You are a helpful assistant',
+            1000
+        );
+
+        $this->assertEquals('assistant', $response->getRole());
+        $this->assertEquals('Test response with preferences', $response->getContent()->getText());
     }
 
     public function test_create_request_throws_exception_when_cannot_sample(): void
@@ -211,11 +268,41 @@ class SamplingClientTest extends TestCase
                 ]
             );
 
+        $capturedMessageId = null;
+        $messageCallback = null;
+
+        // Capture the onMessage callback
+        $this->transport->expects($this->once())
+            ->method('onMessage')
+            ->willReturnCallback(function ($callback) use (&$messageCallback) {
+                $messageCallback = $callback;
+            });
+
+        // Set up the response waiter to intercept waiting and respond immediately
+        $responseWaiter = new \ReflectionClass($this->samplingClient);
+        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
+        
+        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter->expects($this->once())
+            ->method('waitForResponse')
+            ->willReturn([
+                'role' => 'assistant',
+                'content' => [
+                    'type' => 'text',
+                    'text' => 'Multi-message response'
+                ],
+                'model' => 'test-model',
+                'stopReason' => 'endTurn'
+            ]);
+        
+        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
+
         $this->transport->expects($this->once())
             ->method('pushMessage')
             ->with(
                 $clientId,
-                $this->callback(function ($message) {
+                $this->callback(function ($message) use (&$capturedMessageId) {
+                    $capturedMessageId = $message['id'] ?? null;
                     return $message['jsonrpc'] === '2.0'
                         && $message['method'] === 'sampling/createMessage'
                         && isset($message['params']['messages'])
@@ -226,11 +313,10 @@ class SamplingClientTest extends TestCase
                 })
             );
 
-        try {
-            $this->samplingClient->createRequest($messages);
-        } catch (JsonRpcErrorException $e) {
-            $this->assertStringContainsString('response handling not yet implemented', $e->getMessage());
-        }
+        $response = $this->samplingClient->createRequest($messages);
+
+        $this->assertEquals('assistant', $response->getRole());
+        $this->assertEquals('Multi-message response', $response->getContent()->getText());
     }
 
     public function test_can_sample_returns_false_when_adapter_is_null(): void
@@ -296,6 +382,33 @@ class SamplingClientTest extends TestCase
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
         $capturedIds = [];
+        $messageCallback = null;
+
+        // Capture the onMessage callback - only called once as the handler is registered once
+        $this->transport->expects($this->once())
+            ->method('onMessage')
+            ->willReturnCallback(function ($callback) use (&$messageCallback) {
+                $messageCallback = $callback;
+            });
+
+        // Set up the response waiter to intercept waiting and respond immediately
+        $responseWaiter = new \ReflectionClass($this->samplingClient);
+        $responseWaiterProperty = $responseWaiter->getProperty('responseWaiter');
+        
+        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter->expects($this->exactly(2))
+            ->method('waitForResponse')
+            ->willReturn([
+                'role' => 'assistant',
+                'content' => [
+                    'type' => 'text',
+                    'text' => 'Response'
+                ],
+                'model' => 'test-model',
+                'stopReason' => 'endTurn'
+            ]);
+        
+        $responseWaiterProperty->setValue($this->samplingClient, $mockResponseWaiter);
 
         $this->transport->expects($this->exactly(2))
             ->method('pushMessage')
@@ -303,22 +416,12 @@ class SamplingClientTest extends TestCase
                 $clientId,
                 $this->callback(function ($message) use (&$capturedIds) {
                     $capturedIds[] = $message['id'];
-
                     return true;
                 })
             );
 
-        try {
-            $this->samplingClient->createTextRequest('First request');
-        } catch (JsonRpcErrorException $e) {
-            // Expected
-        }
-
-        try {
-            $this->samplingClient->createTextRequest('Second request');
-        } catch (JsonRpcErrorException $e) {
-            // Expected
-        }
+        $this->samplingClient->createTextRequest('First request');
+        $this->samplingClient->createTextRequest('Second request');
 
         $this->assertCount(2, $capturedIds);
         $this->assertNotSame($capturedIds[0], $capturedIds[1]);

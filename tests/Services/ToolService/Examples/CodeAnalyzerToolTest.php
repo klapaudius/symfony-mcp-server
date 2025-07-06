@@ -27,7 +27,7 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_get_name(): void
     {
-        $this->assertSame('code_analyzer', $this->tool->getName());
+        $this->assertSame('code-analyzer', $this->tool->getName());
     }
 
     public function test_get_description(): void

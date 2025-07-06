@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Protocol;
 use Exception;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler;
 
 /**
  * MCPProtocol
@@ -31,6 +32,8 @@ interface MCPProtocolInterface
     public function disconnect(): void;
 
     public function registerRequestHandler(RequestHandler $handler): void;
+
+    public function registerResponseHandler(ResponseHandler $handler): void;
 
     public function registerNotificationHandler(NotificationHandler $handler): void;
 
