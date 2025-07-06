@@ -1,111 +1,74 @@
-# 🚀 Symfony MCP Server 1.4.0 - Unleashing Agentic Potential with Sampling
+<h1 align="center">Symfony MCP Server</h1>
 
-We're thrilled to announce the release of **Symfony MCP Server 1.4.0**, featuring a groundbreaking addition that transforms how your MCP tools can interact with Large Language Models. This release introduces comprehensive **Sampling Support**, enabling true agentic behavior in your Symfony applications.
+<p align="center">
+  <strong>Build Intelligent AI Agents with Symfony</strong><br>
+  Transform your Symfony applications into powerful AI-driven systems
+</p>
 
-## 🧠 What is Sampling and Why It Matters
+<p align="center">
+<a href="https://github.com/klapaudius/symfony-mcp-server/actions"><img src="https://github.com/klapaudius/symfony-mcp-server/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
+<a href="https://codecov.io/gh/klapaudius/symfony-mcp-server" >  <img src="https://codecov.io/gh/klapaudius/symfony-mcp-server/graph/badge.svg?token=5FXOJVXPZ1" alt="Coverage"/></a>
+<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/l/klapaudius/symfony-mcp-server" alt="License"></a>
+<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/v/klapaudius/symfony-mcp-server" alt="Latest Stable Version"></a>
 
-Sampling is a revolutionary feature that allows your MCP tools to request LLM assistance during execution, creating a powerful feedback loop between your application logic and AI reasoning. This opens up a new paradigm of **agentic applications** where tools can:
+[//]: # (<a href="https://packagist.org/packages/klapaudius/symfony-mcp-server"><img src="https://img.shields.io/packagist/dt/klapaudius/symfony-mcp-server" alt="Total Downloads"></a>)
+</p>
 
-- **Think and reason** about complex problems by consulting LLMs
-- **Make intelligent decisions** based on dynamic context
-- **Generate sophisticated responses** that adapt to user needs
-- **Collaborate with AI** to solve problems beyond traditional tool capabilities
+## 🤖 Unleash the Power of AI Agents in Your Symfony Apps
 
-## 🔥 Key Features in 1.4.0
+Symfony MCP Server enables you to build **intelligent, context-aware AI agents** that can reason, make decisions, and interact with your application's business logic. By implementing the Model Context Protocol (MCP), your Symfony application becomes a platform for sophisticated AI-driven automation and intelligence.
 
-### 🎯 Comprehensive Sampling Architecture
+### 🎯 Why Build Agents with Symfony MCP Server?
 
-- **`SamplingAwareToolInterface`**: Transform your tools into intelligent agents
-- **`SamplingClient`**: Powerful service for managing LLM interactions
-- **Model Preferences**: Fine-tune LLM selection based on cost, speed, and intelligence priorities
-- **Multi-Message Conversations**: Enable complex reasoning with context preservation
+**Transform Static Tools into Intelligent Agents:**
+- 🧠 **AI-Powered Reasoning**: Tools can consult LLMs mid-execution to make smart decisions
+- 🔄 **Dynamic Adaptation**: Agents adapt their behavior based on context and real-time analysis
+- 💡 **Complex Problem Solving**: Break down complex tasks and solve them iteratively with AI assistance
+- 🎨 **Creative Generation**: Generate content and solutions that evolve with user needs
 
-### 🛠️ Smart Tool Integration
+**Enterprise-Grade Security:**
+- 🔒 **Secure Transports**: StreamableHTTP and SSE instead of STDIO for production environments
+- 🛡️ **Protected APIs**: Keep your internal systems safe while exposing AI capabilities
+- 🎛️ **Fine-Grained Control**: Manage authentication, authorization, and access at every level
 
-Tools implementing `SamplingAwareToolInterface` automatically receive the `SamplingClient` service, making it effortless to add AI-powered reasoning to your existing tools.
+## 🚀 Agent-First Features
 
-### 🎨 Flexible Sampling Types
+### 🧪 Sampling: The Core of Agentic Behavior (v1.4.0+)
 
-- **Text Sampling**: Simple text-based AI requests
-- **Multi-Message Sampling**: Complex conversations with preserved context
-- **Dynamic Model Selection**: Choose the right LLM for each task
+Transform your tools into autonomous agents that can think and reason:
 
-## 🌟 Real-World Agentic Examples
-
-### Intelligent Code Analysis
 ```php
-class CodeAnalyzerTool implements SamplingAwareToolInterface
+class IntelligentAnalyzer implements SamplingAwareToolInterface
 {
     private SamplingClient $samplingClient;
 
     public function execute(array $arguments): ToolResultInterface
     {
-        // Check if sampling is available before using it
-        if ($this->samplingClient->canSample()) {
+        // Check if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->isEnabled()) {
             try {
-                // Use AI to analyze code for security vulnerabilities
+                // Let AI analyze and reason about complex data
                 $response = $this->samplingClient->createTextRequest(
-                    'Analyze this code for security issues: ' . $arguments['code'],
-                    new ModelPreferences(
-                        [['name' => 'claude-3-sonnet']],
-                        0.2, // costPriority
-                        0.8, // intelligencePriority 
-                        0.2  // speedPriority
-                    ),
-                    'You are a security expert analyzing code for vulnerabilities.',
-                    2000
-                );
-                
-                // Return the AI analysis result
-                return new TextToolResult($response->getContent()->getText());
-            } catch (\Exception $e) {
-                // Fallback if sampling fails
-                return new TextToolResult('Static analysis: Please review code manually for security issues.');
-            }
-        }
-        
-        // Fallback when sampling is not available
-        return new TextToolResult('Code analysis requires AI sampling capability.');
-    }
-    
-    public function setSamplingClient(SamplingClient $samplingClient): void
-    {
-        $this->samplingClient = $samplingClient;
-    }
-}
-```
-
-### Dynamic Content Generation
-```php
-class ContentGeneratorTool implements SamplingAwareToolInterface
-{
-    private SamplingClient $samplingClient;
-
-    public function execute(array $arguments): ToolResultInterface
-    {
-        if ($this->samplingClient->canSample()) {
-            try {
-                // Generate personalized content using AI
-                $response = $this->samplingClient->createTextRequest(
-                    "Generate a blog post about {$arguments['topic']} " .
-                    "targeting {$arguments['audience']} with tone: {$arguments['tone']}",
+                    "Analyze this data and suggest optimizations: {$arguments['data']}",
                     new ModelPreferences(
                         [['name' => 'claude-3-sonnet']],
                         0.3, // costPriority
-                        0.7, // intelligencePriority
-                        0.4  // speedPriority
+                        0.8, // intelligencePriority
+                        0.2  // speedPriority
                     ),
-                    'You are a professional content writer creating engaging blog posts.',
-                    1500
+                    'You are a data analysis expert.',
+                    2000
                 );
                 
+                // Execute actions based on AI reasoning
                 return new TextToolResult($response->getContent()->getText());
             } catch (\Exception $e) {
-                return new TextToolResult('Content generation failed. Please try again.');
+                // Fallback to basic analysis
+                return new TextToolResult('Basic analysis: Data structure appears valid.');
             }
         }
         
-        return new TextToolResult('Content generation requires AI sampling capability.');
+        return new TextToolResult('Advanced analysis requires AI capabilities.');
     }
     
     public function setSamplingClient(SamplingClient $samplingClient): void
@@ -115,65 +78,310 @@ class ContentGeneratorTool implements SamplingAwareToolInterface
 }
 ```
 
-## 🚀 Agentic Potential Unlocked
+### 🛠️ Tool System: Building Blocks for Agents
 
-With sampling, your MCP tools become **true AI agents** capable of:
+Create powerful tools that AI agents can orchestrate:
+- **StreamableToolInterface**: Real-time progress updates for long-running operations
+- **Multi-Result Support**: Return text, images, audio, or resources
+- **Progress Notifications**: Keep users informed during complex agent operations
+- **Dynamic Tool Discovery**: Agents can discover and use tools based on capabilities
 
-### 🧩 Complex Problem Solving
-Tools can break down complex tasks, consult AI for reasoning, and provide sophisticated solutions that adapt to context.
+### 🎭 Prompt Engineering for Agent Behavior
 
-### 🤖 Intelligent Decision Making
-Make smart choices based on real-time analysis rather than static rules, enabling dynamic behavior that scales with problem complexity.
+Define agent personalities and behaviors through sophisticated prompt systems:
+- **Context-Aware Prompts**: Guide agent behavior based on application state
+- **Multi-Modal Support**: Text, image, audio, and resource-based prompts
+- **Dynamic Prompt Generation**: Prompts that adapt based on user interaction
 
-### 🔄 Iterative Refinement
-Tools can engage in back-and-forth conversations with LLMs, refining responses and improving output quality through multiple iterations.
+### 📚 Resource Management for Agent Memory
 
-### 📊 Context-Aware Processing
-Leverage AI's understanding of context to provide more relevant and personalized responses to user requests.
+Give your agents access to structured knowledge:
+- **Dynamic Resource Loading**: Agents can access and reason about your data
+- **Template-Based Resources**: Generate resources on-the-fly based on context
+- **Multi-Provider Support**: File system, database, API, or custom providers
 
-## 🛡️ Enterprise-Ready Features
+## 🎯 Real-World Agent Examples
 
-- **Automatic Capability Detection**: Graceful fallback when sampling isn't available
-- **Secure Transport**: Maintains the package's commitment to secure StreamableHTTP and SSE transport
-- **Model Preference Controls**: Fine-tune costs and performance based on business requirements
-- **Comprehensive Documentation**: Full guides and examples for immediate implementation
+### 🔍 Intelligent Code Review Agent
+```php
+class CodeReviewAgent implements SamplingAwareToolInterface
+{
+    private SamplingClient $samplingClient;
 
-## 🎯 Getting Started with Sampling
-
-1. **Update your tools** to implement `SamplingAwareToolInterface`
-2. **Inject the SamplingClient** (automatically provided)
-3. **Create sampling requests** with your desired prompts
-4. **Set model preferences** for optimal performance
-5. **Deploy agentic behavior** in your applications
-
-## 🔧 Additional Improvements
-
-- **Bug Fixes**: Resolved #45 - Renamed "arguments" to "input" in TestMcpPromptCommand for consistency
-- **Enhanced Documentation**: Comprehensive sampling guides and updated README
-- **Better Testing**: Improved test coverage for sampling components
-
-## 📚 Resources
-
-- **[Sampling Documentation](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/sampling.md)**: Complete guide with examples
-- **[Building Tools](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**: Updated with sampling integration
-- **[Example Tools](https://github.com/klapaudius/symfony-mcp-server/tree/master/src/Services/ToolService/Examples)**: See `CodeAnalyzerTool` for sampling in action
-
-## 🌈 What's Next?
-
-This release represents a significant leap toward truly agentic applications. With sampling, your Symfony MCP Server becomes a platform for building intelligent, adaptive tools that can reason, learn, and evolve with your users' needs.
-
-The future of web applications is agentic, and Symfony MCP Server 1.4.0 puts that power in your hands.
-
----
-
-**Ready to build the next generation of intelligent applications?**
-
-```bash
-composer require klapaudius/symfony-mcp-server:^1.4.0
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // Check if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->isEnabled()) {
+            try {
+                // AI analyzes code for patterns, security, and best practices
+                $review = $this->samplingClient->createTextRequest(
+                    "Review this code for security vulnerabilities, performance issues, and suggest improvements: {$arguments['code']}",
+                    new ModelPreferences(
+                        [['name' => 'claude-3-sonnet']],
+                        0.2, // costPriority
+                        0.8, // intelligencePriority
+                        0.2  // speedPriority
+                    ),
+                    'You are a senior code reviewer with expertise in security and performance.',
+                    2000
+                );
+                
+                // Generate actionable recommendations
+                return new TextToolResult($this->formatReview($review->getContent()->getText()));
+            } catch (\Exception $e) {
+                // Fallback to basic analysis
+                return new TextToolResult('Basic code review: Structure appears valid.');
+            }
+        }
+        
+        return new TextToolResult('Advanced code review requires AI capabilities.');
+    }
+    
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+}
 ```
 
-**Join the discussion** in our [GitHub Discussions](https://github.com/klapaudius/symfony-mcp-server/discussions) and share your agentic creations!
+### 📊 Data Analysis Agent
+```php
+class DataInsightAgent implements SamplingAwareToolInterface, StreamableToolInterface
+{
+    private SamplingClient $samplingClient;
+    private ?ProgressNotifierInterface $progressNotifier = null;
+
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // Check if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->isEnabled()) {
+            try {
+                // Multi-step reasoning process
+                $steps = [
+                    'Identify patterns and anomalies',
+                    'Generate statistical insights',
+                    'Create visualizations',
+                    'Recommend actions'
+                ];
+                $this->progressNotifier?->sendProgress(
+                    progress: 0,
+                    total: count($steps)+1,
+                    message: "Analyzing dataset..."
+                );
+                
+                $insights = [];
+                foreach ($steps as $i => $step) {
+                    $response = $this->samplingClient->createTextRequest(
+                        "$step for this data: {$arguments['data']}",
+                        new ModelPreferences(
+                            [['name' => 'claude-3-sonnet']],
+                            0.2, // costPriority
+                            0.8, // intelligencePriority
+                            0.2  // speedPriority
+                        ),
+                        'You are a data analysis expert.',
+                        2000
+                    );
+                    $insights[] = $response->getContent()->getText();
+                    $this->progressNotifier?->sendProgress(
+                        progress: $i+1,
+                        total: count($steps)+1,
+                        message: $step
+                    );
+                }
+                
+                return new TextToolResult($this->compileReport($insights));
+            } catch (\Exception $e) {
+                return new TextToolResult('Basic data analysis: Dataset appears well-formed.');
+            }
+        }
+        
+        return new TextToolResult('Advanced data analysis requires AI capabilities.');
+    }
+    
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+    
+    public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+    {
+        $this->progressNotifier = $progressNotifier;
+    }
+}
+```
+
+### 🤝 Customer Support Agent
+```php
+class SupportAgent implements SamplingAwareToolInterface
+{
+    private SamplingClient $samplingClient;
+
+    public function execute(array $arguments): ToolResultInterface
+    {
+        // Check if sampling is available
+        if ($this->samplingClient !== null && $this->samplingClient->isEnabled()) {
+            try {
+                // Load customer context
+                $context = $this->loadCustomerHistory($arguments['customer_id']);
+                
+                // AI determines best response strategy
+                $response = $this->samplingClient->createTextRequest(
+                    "Customer issue: {$arguments['issue']}\nHistory: $context\nDetermine the best resolution approach.",
+                    new ModelPreferences(
+                        [['name' => 'claude-3-sonnet']],
+                        0.2, // costPriority
+                        0.8, // intelligencePriority
+                        0.2  // speedPriority
+                    ),
+                    'You are an expert customer support agent.',
+                    2000
+                );
+                
+                // Send back the strategy for user approval
+                return new TextToolResult($response->getContent()->getText());
+            } catch (\Exception $e) {
+                return new TextToolResult('Standard support response: We will review your issue and respond within 24 hours.');
+            }
+        }
+        
+        return new TextToolResult('Personalized support requires AI capabilities.');
+    }
+    
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+    }
+}
+```
+
+## 🚀 Quick Start: Build Your First Agent
+
+### 1. Requirements
+
+- PHP >=8.2
+- Symfony >=6.4
+
+### 2. Install Symfony MCP Server
+
+#### Create the configuration file config/packages/klp_mcp_server.yaml and paste into it:
+
+    ```yaml
+    klp_mcp_server:
+        enabled: true
+        server:
+            name: 'My MCP Server'
+            version: '1.0.0'
+        default_path: 'mcp'
+        ping:
+            enabled: true  # Read the warning section in the default configuration file before disable it
+            interval: 30
+        server_providers: ['streamable_http','sse']
+        sse_adapter: 'cache'
+        adapters:
+            cache:
+                prefix: 'mcp_sse_'
+                ttl: 100
+        tools:
+            - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool     # Agentic tool sample
+            - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
+        prompts:
+            - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt   # Agentic prompt sample
+            - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
+        resources:
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource # Agentic resource sample
+        resources_templates:
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\DynamicAnalysisResource # Agentic resource template sample
+            - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
+    ```
+For more detailed explanations, you can open the default configuration file
+[from that link.](src/Resources/config/packages/klp_mcp_server.yaml)
+
+#### Install the package via Composer:
+
+   ```bash
+   composer require klapaudius/symfony-mcp-server
+   ```
+
+#### Add routes in your `config/routes.yaml`
+
+```yaml
+klp_mcp_server:
+    resource: '@KlpMcpServerBundle/Resources/config/routes.php'
+    type: php
+```
+
+**You're all done!** Upon completing this setup, your project will include 3 new API endpoints:
+
+- **Streaming Endpoint for MCP Clients**: `GET /{default_path}/sse`
+- **Request Submission Endpoint**: `POST /{default_path}/messages`
+- **Streamable HTTP Endpoint**: `GET|POST /{default_path}`
+
+### Docker Setup (Optional)
+
+The project includes a Docker setup that can be used for development. The Docker setup includes Nginx, PHP-FPM with Redis extension, and Redis server.
+
+For detailed instructions on how to set up and use the Docker containers, please refer to the [Development Guidelines](CONTRIBUTING.md#docker-setup).
+
+
+### 3. Create Your First Tool
+
+```bash
+# Generate a new tool
+php bin/console make:mcp-tool MyCustomTool
+
+# Test your tool locally
+php bin/console mcp:test-tool MyCustomTool --input='{"task":"analyze this code"}'
+```
+
+### 4. Connect AI Clients
+
+Your agents are now accessible to:
+- 🤖 Claude Desktop / Claude.ai
+- 🧠 Custom AI applications
+- 🔗 Any MCP-compatible client
+
+## 🏗️ Architecture for Agent Builders
+
+### Secure Agent Communication
+- **StreamableHTTP**: Direct, secure agent-to-client communication
+- **SSE (Server-Sent Events)**: Real-time updates for long-running agent tasks
+- **No STDIO**: Enterprise-safe, no system exposure
+
+### Scalable Agent Infrastructure
+- **Pub/Sub Messaging**: Handle multiple agent sessions concurrently
+- **Redis/Cache Adapters**: Scale your agent platform horizontally
+- **Progress Streaming**: Real-time feedback for complex agent operations
+
+### Agent Development Tools
+- **MCP Inspector**: Visualize and debug agent behavior
+- **Test Commands**: Rapid agent development and testing
+
+## 🎓 Agent Development Resources
+
+- 📖 **[Building Intelligent Tools](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**: Complete guide to creating AI-powered tools
+- 🧠 **[Sampling Documentation](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/sampling.md)**: Master agent reasoning capabilities
+- 🎭 **[Prompt Engineering](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_prompts.md)**: Design agent behaviors and personalities
+- 📚 **[Resource Management](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_resources.md)**: Give agents access to knowledge
+
+## 🌟 Join the Agent Revolution
+
+Build the next generation of AI-powered applications with Symfony MCP Server. Your tools aren't just functions anymore – they're intelligent agents capable of reasoning, learning, and evolving.
+
+### Community
+
+- 💬 [GitHub Discussions](https://github.com/klapaudius/symfony-mcp-server/discussions): Share your agent creations
+- 🐛 [Issue Tracker](https://github.com/klapaudius/symfony-mcp-server/issues): Report bugs and request features
+- 🌟 [Examples](https://github.com/klapaudius/symfony-mcp-server/tree/master/src/Services/ToolService/Examples): Learn from working agents
+
+## 📜 License
+
+MIT License - Build freely!
 
 ---
 
-*Built with ❤️ by [Boris AUBE](https://github.com/klapaudius) and the amazing [contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)* - Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)*
+*Built with ❤️ by [Boris AUBE](https://github.com/klapaudius) and the [contributors](https://github.com/klapaudius/symfony-mcp-server/contributors) - Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)*
