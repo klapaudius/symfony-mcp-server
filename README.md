@@ -176,4 +176,4 @@ composer require klapaudius/symfony-mcp-server:^1.4.0
 
 ---
 
-*Built with ❤️ by [Boris AUBE](https://github.com/klapaudius) and the amazing [contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)*
+*Built with ❤️ by [Boris AUBE](https://github.com/klapaudius) and the amazing [contributors](https://github.com/klapaudius/symfony-mcp-server/contributors)* - Inspired by [OP.GG/laravel-mcp-server](https://github.com/opgginc/laravel-mcp-server)*
