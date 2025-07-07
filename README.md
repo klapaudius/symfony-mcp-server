@@ -1,7 +1,8 @@
 <h1 align="center">Symfony MCP Server</h1>
 
 <p align="center">
-  <strong>Build Intelligent AI Agents with Symfony</strong><br>
+  A powerful Symfony package to build a Model Context Protocol Server seamlessly and
+  <strong>build Intelligent AI Agents.</strong><br>
   Transform your Symfony applications into powerful AI-driven systems
 </p>
 
@@ -347,7 +348,17 @@ php bin/console make:mcp-tool MyCustomTool
 php bin/console mcp:test-tool MyCustomTool --input='{"task":"analyze this code"}'
 ```
 
-### 4. Connect AI Clients
+### 4. Visualizing with Inspector
+
+You can use the Model Context Protocol Inspector to visualize and test your MCP tools:
+
+```bash
+# Run the MCP Inspector without installation
+npx @modelcontextprotocol/inspector node build/index.js
+```
+This will typically open a web interface at `localhost:6274`. To test your MCP server:
+
+### 5. Connect AI Clients
 
 Your agents are now accessible to:
 - 🤖 Claude Desktop / Claude.ai
@@ -390,6 +401,11 @@ Build the next generation of AI-powered applications with Symfony MCP Server. Yo
 ## 📜 License
 
 MIT License - Build freely!
+
+## MCP Registries referencing
+https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
+
+https://mcp.so/server/symfony-mcp-server/klapaudius
 
 ---
 

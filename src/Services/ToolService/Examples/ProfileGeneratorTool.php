@@ -11,7 +11,6 @@ use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
-use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -19,7 +18,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
  *
  * This tool demonstrates how to return multiple result types using CollectionToolResult.
  */
-class ProfileGeneratorTool implements SamplingAwareToolInterface, StreamableToolInterface
+class ProfileGeneratorTool implements SamplingAwareToolInterface
 {
     private string $baseDir;
 
