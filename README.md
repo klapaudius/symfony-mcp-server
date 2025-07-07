@@ -31,6 +31,12 @@ Symfony MCP Server enables you to build **intelligent, context-aware AI agents**
 - 🛡️ **Protected APIs**: Keep your internal systems safe while exposing AI capabilities
 - 🎛️ **Fine-Grained Control**: Manage authentication, authorization, and access at every level
 
+**Key Features:**
+- 🛠️ **Tools**: Create powerful, executable functions that LLM can invoke to interact with your application
+- 💬 **Prompts**: Define conversation starters and templates to guide AI behavior and interactions
+- 📚 **Resources**: Expose structured data and documents that AI can read and reason about
+- 🧠 **Sampling**: Enable tools to consult AI models mid-execution for intelligent decision-making
+
 ## 🚀 Agent-First Features
 
 ### 🧪 Sampling: The Core of Agentic Behavior (v1.4.0+)
