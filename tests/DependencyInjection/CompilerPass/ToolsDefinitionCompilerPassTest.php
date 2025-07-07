@@ -113,12 +113,13 @@ class ToolsDefinitionCompilerPassTest extends TestCase
 
         $invocations = [
             ['registerToolRepository', [$toolRepositoryDefinition], false],
-            ['registerSamplingResponseHandler', [], false]
+            ['registerSamplingResponseHandler', [], false],
         ];
         $serverDefinition->expects($matcher = $this->exactly(count($invocations)))
             ->method('addMethodCall')
-            ->with($this->callback(function(...$args) use ($invocations, $matcher) {
+            ->with($this->callback(function (...$args) use ($invocations, $matcher) {
                 $this->assertEquals($args, $invocations[$matcher->numberOfInvocations() - 1]);
+
                 return true;
             }));
 

@@ -355,6 +355,7 @@ final class RedisAdapter implements SseAdapterInterface
                 }
 
                 $decoded = json_decode($data, true);
+
                 return is_array($decoded) ? $decoded : null;
             },
             'Failed to retrieve pending response'
@@ -388,6 +389,7 @@ final class RedisAdapter implements SseAdapterInterface
         return $this->executeRedisCommand(
             function () use ($messageId) {
                 $key = $this->generatePendingResponseKey($messageId);
+
                 return $this->redis->exists($key) > 0;
             },
             'Failed to check pending response'

@@ -37,12 +37,13 @@ class ResponseWaiter
     /**
      * Register a request and wait for its response
      *
-     * @param string $messageId The unique message ID
-     * @param int|null $timeout Timeout in seconds (null for default)
+     * @param  string  $messageId  The unique message ID
+     * @param  int|null  $timeout  Timeout in seconds (null for default)
      * @return mixed The response data
+     *
      * @throws JsonRpcErrorException If timeout occurs or response is an error
      */
-    public function waitForResponse(string $messageId, int|null $timeout = null): mixed
+    public function waitForResponse(string $messageId, ?int $timeout = null): mixed
     {
         $timeout = $timeout ?? $this->defaultTimeout;
         $startTime = time();
@@ -52,9 +53,9 @@ class ResponseWaiter
             'response' => null,
             'timestamp' => $startTime,
         ];
-        
+
         $this->pendingResponses[$messageId] = $responseData;
-        
+
         // Store in adapter if available
         if ($this->adapter !== null) {
             try {
@@ -130,7 +131,7 @@ class ResponseWaiter
         ]);
 
         throw new JsonRpcErrorException(
-            'Sampling request timed out after ' . $timeout . ' seconds',
+            'Sampling request timed out after '.$timeout.' seconds',
             JsonRpcErrorCode::INTERNAL_ERROR
         );
     }
@@ -138,7 +139,7 @@ class ResponseWaiter
     /**
      * Check for a response (both in memory and adapter)
      *
-     * @param string $messageId The message ID to check
+     * @param  string  $messageId  The message ID to check
      * @return mixed The response data or null if not found
      */
     private function checkForResponse(string $messageId): mixed
@@ -155,6 +156,7 @@ class ResponseWaiter
                 if ($storedData !== null && isset($storedData['response']) && $storedData['response'] !== null) {
                     // Update in-memory cache
                     $this->pendingResponses[$messageId] = $storedData;
+
                     return $storedData['response'];
                 }
             } catch (\Throwable $e) {
@@ -171,18 +173,18 @@ class ResponseWaiter
     /**
      * Handle an incoming response message
      *
-     * @param array<string, mixed> $message The response message
+     * @param  array<string, mixed>  $message  The response message
      */
     public function handleResponse(array $message): void
     {
-        if (!isset($message['id']) || !is_string($message['id'])) {
+        if (! isset($message['id']) || ! is_string($message['id'])) {
             return;
         }
 
         $messageId = $message['id'];
 
         // Check if this is a response we're waiting for (check both memory and adapter)
-        if (!$this->isWaitingFor($messageId)) {
+        if (! $this->isWaitingFor($messageId)) {
             return;
         }
 
@@ -247,8 +249,8 @@ class ResponseWaiter
     /**
      * Register a callback to be executed when a response is received
      *
-     * @param string $messageId The message ID to wait for
-     * @param callable $callback The callback to execute with the response
+     * @param  string  $messageId  The message ID to wait for
+     * @param  callable  $callback  The callback to execute with the response
      */
     public function registerCallback(string $messageId, callable $callback): void
     {
@@ -289,7 +291,7 @@ class ResponseWaiter
         // Check adapter if available
         if ($this->adapter !== null) {
             try {
-                return $this->adapter->hasPendingResponse((string)$messageId);
+                return $this->adapter->hasPendingResponse((string) $messageId);
             } catch (\Throwable $e) {
                 $this->logger->warning('Failed to check adapter for pending response', [
                     'messageId' => $messageId,

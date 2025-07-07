@@ -51,6 +51,7 @@ class SamplingClient implements SamplingInterface
                 'enabled' => $this->enabled,
                 'currentClientId' => $this->currentClientId,
             ]);
+
             return false;
         }
 
@@ -59,6 +60,7 @@ class SamplingClient implements SamplingInterface
             $adapter = $transport->getAdapter();
             if ($adapter === null) {
                 $this->logger->debug('SamplingClient::canSample - No adapter available');
+
                 return false;
             }
 
@@ -67,12 +69,14 @@ class SamplingClient implements SamplingInterface
                 'clientId' => $this->currentClientId,
                 'hasSamplingCapability' => $hasSampling,
             ]);
+
             return $hasSampling;
         } catch (TransportFactoryException $e) {
             // Transport not initialized yet, sampling not available
             $this->logger->debug('SamplingClient::canSample - Transport exception', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -170,6 +174,7 @@ class SamplingClient implements SamplingInterface
     {
         // Always create a new ResponseWaiter since the adapter is request-specific
         $adapter = $this->getTransport()->getAdapter();
+
         return new ResponseWaiter($this->logger, $adapter, $this->defaultTimeout);
     }
 
@@ -189,14 +194,14 @@ class SamplingClient implements SamplingInterface
      */
     public function handleIncomingMessage(string $clientId, array $message): void
     {
-        $this->logger->info("Current Client Id: " . $this->currentClientId);
+        $this->logger->info('Current Client Id: '.$this->currentClientId);
         // Only handle messages for our current client
         if ($clientId !== $this->currentClientId) {
             return;
         }
 
         // Only handle response messages (messages with an ID)
-        if (!isset($message['id'])) {
+        if (! isset($message['id'])) {
             return;
         }
 
@@ -210,7 +215,7 @@ class SamplingClient implements SamplingInterface
     private function createSamplingResponse(mixed $responseData): SamplingResponse
     {
         // If the response data is null or not an array, create a simple error response
-        if (!is_array($responseData)) {
+        if (! is_array($responseData)) {
             return new SamplingResponse(
                 'assistant',
                 new SamplingContent('text', 'Error: Invalid response format'),
@@ -226,7 +231,7 @@ class SamplingClient implements SamplingInterface
             // If parsing fails, create an error response
             return new SamplingResponse(
                 'assistant',
-                new SamplingContent('text', 'Error: Failed to parse response - ' . $e->getMessage()),
+                new SamplingContent('text', 'Error: Failed to parse response - '.$e->getMessage()),
                 null,
                 'error'
             );

@@ -55,14 +55,14 @@ class SamplingResponse
 
     public static function fromArray(array $data): self
     {
-        if (!isset($data['role'])) {
+        if (! isset($data['role'])) {
             throw new \InvalidArgumentException('Missing required field: role');
         }
-        
-        if (!isset($data['content'])) {
+
+        if (! isset($data['content'])) {
             throw new \InvalidArgumentException('Missing required field: content');
         }
-        
+
         return new self(
             $data['role'],
             SamplingContent::fromArray($data['content']),

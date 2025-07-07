@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
  *
  * This tool demonstrates how to return multiple result types using CollectionToolResult.
  */
-class ProfileGeneratorTool implements StreamableToolInterface, SamplingAwareToolInterface
+class ProfileGeneratorTool implements SamplingAwareToolInterface, StreamableToolInterface
 {
     private string $baseDir;
 
@@ -122,18 +122,18 @@ class ProfileGeneratorTool implements StreamableToolInterface, SamplingAwareTool
             total: 4,
             message: 'Generating welcome message...'
         );
-        
+
         $welcome = 'Welcome to the MCP!'; // Default welcome message
-        
+
         // Try to use sampling if available
         if ($this->samplingClient !== null && $this->samplingClient->isEnabled()) {
             try {
                 $request = $this->samplingClient->createTextRequest(
-                    "Generate a quick welcome message for a user with the following details: \n\n" .
-                    "Name: {$name}\n" .
+                    "Generate a quick welcome message for a user with the following details: \n\n".
+                    "Name: {$name}\n".
                     "Role: {$role}\n",
                     new ModelPreferences(
-                        [["name" => "claude-3-sonnet"]],
+                        [['name' => 'claude-3-sonnet']],
                         0.2,
                         0.8,
                         0.2

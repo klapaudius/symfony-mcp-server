@@ -154,7 +154,7 @@ class CachePoolAdapter implements SseAdapterInterface
             $cacheItem->set($hasSamplingCapability);
             $cacheItem->expiresAfter(60 * 60 * 24);
             $this->cache->save($cacheItem);
-            
+
             $this->logger?->debug('Stored sampling capability', [
                 'clientId' => $clientId,
                 'key' => $key,
@@ -176,7 +176,7 @@ class CachePoolAdapter implements SseAdapterInterface
             $cacheItem = $this->cache->getItem($key);
             $isHit = $cacheItem->isHit();
             $value = $cacheItem->get();
-            
+
             $this->logger?->debug('Retrieved sampling capability', [
                 'clientId' => $clientId,
                 'key' => $key,
@@ -233,11 +233,12 @@ class CachePoolAdapter implements SseAdapterInterface
             $key = $this->generatePendingResponseKey($messageId);
             $cacheItem = $this->cache->getItem($key);
 
-            if (!$cacheItem->isHit()) {
+            if (! $cacheItem->isHit()) {
                 return null;
             }
 
             $data = $cacheItem->get();
+
             return is_array($data) ? $data : null;
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to retrieve pending response: '.$e->getMessage());
@@ -272,6 +273,7 @@ class CachePoolAdapter implements SseAdapterInterface
         try {
             $key = $this->generatePendingResponseKey($messageId);
             $cacheItem = $this->cache->getItem($key);
+
             return $cacheItem->isHit();
         } catch (InvalidArgumentException $e) {
             $this->logger?->error('Failed to check pending response: '.$e->getMessage());

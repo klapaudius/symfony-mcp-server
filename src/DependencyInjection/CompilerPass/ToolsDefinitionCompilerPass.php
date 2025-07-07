@@ -30,7 +30,7 @@ final class ToolsDefinitionCompilerPass implements CompilerPassInterface
         $server = $container->getDefinition('klp_mcp_server.server');
         $toolRepository = $container->getDefinition('klp_mcp_server.tool_repository');
         $server->addMethodCall('registerToolRepository', [$toolRepository]);
-        
+
         // Register the sampling response handler if a sampling client is available
         $server->addMethodCall('registerSamplingResponseHandler', []);
     }
