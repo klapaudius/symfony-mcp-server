@@ -4,6 +4,7 @@ namespace {{ namespace }};
 
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
@@ -12,7 +13,7 @@ class {{ className }} implements StreamableToolInterface
     /**
      * Progress notifier for streaming operations
      */
-    private ?ProgressNotifier $progressNotifier = null;
+    private ?ProgressNotifierInterface $progressNotifier = null;
 
     /**
      * Get the tool name.
@@ -75,7 +76,7 @@ class {{ className }} implements StreamableToolInterface
         $param1 = $arguments['param1'] ?? 'default';
 
         // Implement your tool logic here
-        return "Tool executed with parameter: {$param1}";
+        return new TextToolResult("Tool executed with parameter: {$param1}");
     }
 
     /**
@@ -94,7 +95,7 @@ class {{ className }} implements StreamableToolInterface
     /**
      * Set the progress notifier for streaming operations
      *
-     * @param ProgressNotifier $progressNotifier The progress notifier instance
+     * @param ProgressNotifierInterface $progressNotifier The progress notifier instance
      */
     public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
     {
