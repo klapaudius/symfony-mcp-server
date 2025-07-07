@@ -36,6 +36,9 @@ Symfony MCP Server enables you to build **intelligent, context-aware AI agents**
 - 💬 **Prompts**: Define conversation starters and templates to guide AI behavior and interactions
 - 📚 **Resources**: Expose structured data and documents that AI can read and reason about
 - 🧠 **Sampling**: Enable tools to consult AI models mid-execution for intelligent decision-making
+- 📊 **Progress Streaming**: Real-time progress notifications for long-running operations
+- 🎨 **Multi-Modal Results**: Support for Text, Image, Audio, and Resource outputs from tools
+- 🔌 **Flexible Architecture**: Adapter-based design with Pub/Sub messaging for scalable deployments
 
 ## 🚀 Agent-First Features
 
