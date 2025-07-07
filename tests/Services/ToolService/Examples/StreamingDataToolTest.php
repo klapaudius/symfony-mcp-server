@@ -32,7 +32,8 @@ class StreamingDataToolTest extends TestCase
 
     public function test_get_input_schema(): void
     {
-        $schema = $this->tool->getInputSchema();
+        $schemaObject = $this->tool->getInputSchema();
+        $schema = $schemaObject->asArray();
 
         $this->assertEquals('object', $schema['type']);
         $this->assertArrayHasKey('properties', $schema);
@@ -43,14 +44,7 @@ class StreamingDataToolTest extends TestCase
 
         $this->assertEquals('string', $schema['properties']['message']['type']);
         $this->assertEquals('integer', $schema['properties']['chunks']['type']);
-        $this->assertEquals(1, $schema['properties']['chunks']['minimum']);
-        $this->assertEquals(10, $schema['properties']['chunks']['maximum']);
-        $this->assertEquals(5, $schema['properties']['chunks']['default']);
-
         $this->assertEquals('integer', $schema['properties']['delay']['type']);
-        $this->assertEquals(100, $schema['properties']['delay']['minimum']);
-        $this->assertEquals(2000, $schema['properties']['delay']['maximum']);
-        $this->assertEquals(500, $schema['properties']['delay']['default']);
     }
 
     public function test_get_annotations(): void

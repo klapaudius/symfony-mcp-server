@@ -6,6 +6,9 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class {{ className }} implements StreamableToolInterface
@@ -38,21 +41,44 @@ class {{ className }} implements StreamableToolInterface
     /**
      * Get the input schema for the tool.
      *
-     * @return array
+     * @return StructuredSchema
      */
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'param1' => [
-                    'type' => 'string',
-                    'description' => 'First parameter description',
-                ],
-                // Add more parameters as needed
-            ],
-            'required' => ['param1'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'param1',
+                type: PropertyType::STRING,
+                description: 'First parameter description',
+                enum: ['default', 'other'],
+                default: 'default',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'param2',
+                type: PropertyType::STRING,
+                description: 'Second parameter description',
+                required: true
+            )
+            // ...
+        );
+    }
+
+    /**
+     * Gets the JSON Schema definition for the tool's output.
+     *
+     * The output schema defines the structure and types of the data that will be
+     * returned by the tool's execute() method. This helps LLM clients understand
+     * and properly handle the tool's output.
+     *
+     * @return StructuredSchema|null The JSON Schema for the tool's output, or null if the tool
+     *                               doesn't provide a structured output schema. When provided,
+     *                               this schema helps with type safety and output validation.
+     * @see https://modelcontextprotocol.io/specification/2025-06-18/server/tools
+     */
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return null;
     }
 
     /**
@@ -62,7 +88,9 @@ class {{ className }} implements StreamableToolInterface
      */
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation;
+        return new ToolAnnotation(
+            title: 'Title of {{ className }}'
+        );
     }
 
     /**
@@ -74,9 +102,10 @@ class {{ className }} implements StreamableToolInterface
     public function execute(array $arguments): ToolResultInterface
     {
         $param1 = $arguments['param1'] ?? 'default';
+        $param2 = $arguments['param2'] ?? 'something';
 
         // Implement your tool logic here
-        return new TextToolResult("Tool executed with parameter: {$param1}");
+        return new TextToolResult("Tool executed with parameters: {$param1}, {$param2}");
     }
 
     /**

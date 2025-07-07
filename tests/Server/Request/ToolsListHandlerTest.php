@@ -26,7 +26,15 @@ class ToolsListHandlerTest extends TestCase
      */
     public function test_execute_returns_tool_schemas(): void
     {
-        $expectedSchemas = (new VersionCheckTool)->getInputSchema();
+        $tool = new VersionCheckTool();
+        $expectedSchemas = [
+            [
+                'name' => $tool->getName(),
+                'description' => $tool->getDescription(),
+                'inputSchema' => $tool->getInputSchema()->asArray(),
+                'annotations' => $tool->getAnnotations()->toArray(),
+            ]
+        ];
 
         $this->toolRepository
             ->expects($this->once())

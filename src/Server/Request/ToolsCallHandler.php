@@ -12,9 +12,11 @@ use KLP\KlpMcpServer\Services\ToolService\Result\AudioToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\StructuredToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
@@ -68,8 +70,22 @@ class ToolsCallHandler implements RequestHandler
 
         $arguments = $params['arguments'] ?? [];
         $progressToken = $params['_meta']['progressToken'] ?? null;
+        if (is_array($inputSchema = $tool->getInputSchema())) {
+            @trigger_deprecation(
+                'klapaudius/symfony-mcp-server',
+                '1.5.0',
+                sprintf(
+                    '%s::getInputSchema() should return instance of %s instead of an array. '.
+                    'Array return type will be removed in 2.0.0.',
+                    get_class($tool),
+                    StructuredSchema::class
+                )
+            );
+        } else {
+            $inputSchema = $inputSchema->asArray();
+        }
 
-        ToolParamsValidator::validate($tool->getInputSchema(), $arguments);
+        ToolParamsValidator::validate($inputSchema, $arguments);
 
         if ($tool instanceof StreamableToolInterface
             && $tool->isStreaming()
@@ -112,9 +128,14 @@ class ToolsCallHandler implements RequestHandler
                 ? $result->getSanitizedResult()
                 : [$result->getSanitizedResult()];
 
-            return [
+            $return = [
                 'content' => $content,
             ];
+            if ($result instanceof StructuredToolResult) {
+                $return['structuredContent'] = $result->getStructuredValue();
+            }
+
+            return $return;
         } else {
             return [
                 'result' => $result,

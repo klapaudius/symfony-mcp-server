@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Command;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifier;
 use KLP\KlpMcpServer\Services\ToolService\BaseToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -277,9 +278,14 @@ EOT
     /**
      * Get input data from user.
      */
-    public function askForInputData(array $schema): ?array
+    public function askForInputData(StructuredSchema|array $schema): ?array
     {
         $input = [];
+        if ($schema instanceof StructuredSchema) {
+            $schema = $schema->asArray();
+        } else {
+            $this->io->warning('The getInputSchema() method should return an instance of StructuredSchema. Using array is deprecated and will be removed in a future version.');
+        }
 
         if (! isset($schema['properties']) || ! is_array($schema['properties'])) {
             return $input;

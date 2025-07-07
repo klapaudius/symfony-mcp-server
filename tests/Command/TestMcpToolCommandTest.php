@@ -627,9 +627,17 @@ class TestMcpToolCommandTest extends TestCase
             ->willReturn('');
 
         $this->ioMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('warning')
-            ->with('Required field skipped. Using empty string.');
+            ->willReturnCallback(function ($message) {
+                static $callCount = 0;
+                $callCount++;
+                if ($callCount === 1) {
+                    $this->assertSame('The getInputSchema() method should return an instance of StructuredSchema. Using array is deprecated and will be removed in a future version.', $message);
+                } elseif ($callCount === 2) {
+                    $this->assertSame('Required field skipped. Using empty string.', $message);
+                }
+            });
 
         $result = $this->command->askForInputData($schema);
 
@@ -837,9 +845,17 @@ class TestMcpToolCommandTest extends TestCase
             ->with('Value', false)
             ->willReturn('twenty');
         $this->ioMock
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('warning')
-            ->with('Required field skipped. Using 0.');
+            ->willReturnCallback(function ($message) {
+                static $callCount = 0;
+                $callCount++;
+                if ($callCount === 1) {
+                    $this->assertSame('The getInputSchema() method should return an instance of StructuredSchema. Using array is deprecated and will be removed in a future version.', $message);
+                } elseif ($callCount === 2) {
+                    $this->assertSame('Required field skipped. Using 0.', $message);
+                }
+            });
 
         $result = $this->command->askForInputData($schema);
 

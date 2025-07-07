@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Services\ToolService;
 
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 
 class ToolParamsValidator
 {
@@ -44,22 +45,33 @@ class ToolParamsValidator
     /**
      * Validates the provided arguments against the tool schema.
      *
-     * @param  array<string, mixed>  $toolSchema  The schema defining required arguments and their types.
+     * @param  StructuredSchema|array<string, mixed>  $toolSchema  The schema defining required arguments and their types.
      * @param  array<string, mixed>  $arguments  The arguments to be validated.
      *
      * @throws ToolParamsValidatorException if validation fails.
+     * @todo remove the array type hint for $toolSchema on v2.0.0.
      */
-    public static function validate(array $toolSchema, array $arguments): void
+    public static function validate(StructuredSchema|array $toolSchema, array $arguments): void
     {
         self::getInstance();
+        if ( $toolSchema instanceof StructuredSchema ) {
+            $toolSchema = $toolSchema->asArray();
+        }
 
         $valid = true;
+        $properties = $toolSchema['properties'] ?? [];
+
+        // Convert stdClass to array for easier access
+        if ($properties instanceof \stdClass) {
+            $properties = (array) $properties;
+        }
+
         foreach ($arguments as $argument => $value) {
-            $test = isset($toolSchema['properties'][$argument])
-                && self::validateType($toolSchema['properties'][$argument]['type'], $value);
+            $test = isset($properties[$argument])
+                && self::validateType($properties[$argument]['type'], $value);
             if (! $test) {
-                self::$errors[] = isset($toolSchema['properties'][$argument])
-                    ? "Invalid argument type for: $argument. Expected: {$toolSchema['properties'][$argument]['type']}, got: ".gettype($value)
+                self::$errors[] = isset($properties[$argument])
+                    ? "Invalid argument type for: $argument. Expected: {$properties[$argument]['type']}, got: ".gettype($value)
                     : "Unknown argument: $argument";
             }
             $valid &= $test;

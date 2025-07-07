@@ -8,8 +8,6 @@ namespace KLP\KlpMcpServer\Services\ProgressService;
  * Handles sending progress notifications according to MCP specification.
  * Progress notifications allow tracking long-running operations.
  *
- * @internal
- *
  * @see https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
  */
 interface ProgressNotifierInterface

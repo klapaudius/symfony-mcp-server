@@ -23,6 +23,7 @@ use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -67,7 +68,10 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_throws_exception_for_invalid_arguments(): void
     {
         $toolMock = $this->createMock(VersionCheckTool::class);
-        $toolMock->method('getInputSchema')->willReturn(['type' => 'object']);
+        
+        // Create a real VersionCheckTool to get its actual schema for the validation test
+        $realTool = new VersionCheckTool();
+        $toolMock->method('getInputSchema')->willReturn($realTool->getInputSchema());
 
         $this->toolRepository
             ->method('getTool')
@@ -75,8 +79,6 @@ class ToolsCallHandlerTest extends TestCase
             ->willReturn($toolMock);
 
         $this->expectException(ToolParamsValidatorException::class);
-
-        ToolParamsValidator::validate(['type' => 'object'], ['invalid' => 'data']);
 
         $this->toolsCallHandler->execute('tools/call', 'client1', 3, ['name' => 'VersionCheckTool', 'arguments' => ['invalid' => 'data']]);
     }
@@ -510,9 +512,9 @@ class ToolsCallHandlerTest extends TestCase
                 return 'Tool with empty args';
             }
 
-            public function getInputSchema(): array
+            public function getInputSchema(): StructuredSchema
             {
-                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+                return new StructuredSchema();
             }
 
             public function getAnnotations(): ToolAnnotation
@@ -781,9 +783,9 @@ class ToolsCallHandlerTest extends TestCase
                 return 'Tool with both streaming and sampling';
             }
 
-            public function getInputSchema(): array
+            public function getInputSchema(): StructuredSchema
             {
-                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+                return new StructuredSchema();
             }
 
             public function getAnnotations(): ToolAnnotation

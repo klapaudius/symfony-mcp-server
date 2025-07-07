@@ -32,6 +32,9 @@
             <argument type="service" id="kernel" />
             <tag name="console.command" />
         </service>
+        <service id="klp_mcp_server.command.migrate_tool" class="KLP\KlpMcpServer\Command\MigrateToolSchemaCommand">
+            <tag name="console.command" />
+        </service>
         <service id="klp_mcp_server.command.test_prompt" class="KLP\KlpMcpServer\Command\TestMcpPromptCommand">
             <argument type="service" id="klp_mcp_server.prompt_repository" />
             <tag name="console.command" />
