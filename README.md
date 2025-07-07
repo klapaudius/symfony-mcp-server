@@ -402,7 +402,7 @@ Build the next generation of AI-powered applications with Symfony MCP Server. Yo
 
 MIT License - Build freely!
 
-## MCP Registries referencing
+## 📰 MCP Registries referencing
 https://mcpreview.com/mcp-servers/klapaudius/symfony-mcp-server
 
 https://mcp.so/server/symfony-mcp-server/klapaudius
