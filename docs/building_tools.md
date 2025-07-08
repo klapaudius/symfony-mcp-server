@@ -30,7 +30,7 @@ This Symfony MCP Server implementation supports multiple transport protocols for
 MCP Tools are the building blocks that expose your application's functionality to LLM clients. Each tool:
 
 - Has a unique name and description
-- Defines a specific input schema using JSON Schema
+- Defines a specific input and output schema using a structured format
 - Implements execution logic that processes inputs and returns results
 - Can be discovered and invoked by LLM clients
 
@@ -60,16 +60,20 @@ namespace App\MCP\Tools;
 
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class MyCustomTool implements StreamableToolInterface
 {
-    private ?ProgressNotifier $progressNotifier = null;
+    private ?ProgressNotifierInterface $progressNotifier = null;
 
     public function getName(): string
     {
-        return 'my-custom'; // Kebab-case name
+        return 'my-custom-tool'; // Kebab-case name
     }
 
     public function getDescription(): string
@@ -77,32 +81,34 @@ class MyCustomTool implements StreamableToolInterface
         return 'Description of MyCustomTool';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'param1' => [
-                    'type' => 'string',
-                    'description' => 'First parameter description',
-                ],
-                // Add more parameters as needed
-            ],
-            'required' => ['param1'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'param1',
+                type: PropertyType::STRING,
+                description: 'First parameter description',
+                required: true
+            )
+        );
+    }
+
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return null;
     }
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation;
+        return new ToolAnnotation();
     }
 
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $param1 = $arguments['param1'] ?? 'default';
 
         // Implement your tool logic here
-        return "Tool executed with parameter: {$param1}";
+        return new TextToolResult("Tool executed with parameter: {$param1}");
     }
 
     public function isStreaming(): bool
@@ -132,7 +138,7 @@ klp_mcp_server:
 
 ## Understanding the Tool Interface
 
-All MCP tools must implement the `StreamableToolInterface`, which requires methods:
+All MCP tools must implement the `StreamableToolInterface`, which requires the following methods:
 
 ### 1. getName(): string
 
@@ -145,44 +151,67 @@ Returns a unique identifier for your tool. Best practices:
 
 Provides a human-readable description of what your tool does. This helps LLM clients understand when to use your tool.
 
-### 3. getInputSchema(): array
+### 3. getInputSchema(): StructuredSchema
 
-Defines the expected input format using JSON Schema. This is crucial for:
-- Input validation
-- Providing type hints to LLM clients
-- Documenting required vs. optional parameters
+Defines the expected input format using a structured schema. This is crucial for input validation, providing type hints to LLM clients, and documenting parameters.
 
-Example schema with multiple parameters:
+The `StructuredSchema` object is composed of one or more `SchemaProperty` objects.
+
+**Example schema with multiple parameters:**
 
 ```php
-public function getInputSchema(): array
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+
+public function getInputSchema(): StructuredSchema
 {
-    return [
-        'type' => 'object',
-        'properties' => [
-            'username' => [
-                'type' => 'string',
-                'description' => 'The username to look up',
-            ],
-            'includeDetails' => [
-                'type' => 'boolean',
-                'description' => 'Whether to include detailed information',
-                'default' => false,
-            ],
-            'limit' => [
-                'type' => 'integer',
-                'description' => 'Maximum number of results',
-                'minimum' => 1,
-                'maximum' => 100,
-                'default' => 10,
-            ],
-        ],
-        'required' => ['username'],
-    ];
+    return new StructuredSchema(
+        new SchemaProperty(
+            name: 'username',
+            type: PropertyType::STRING,
+            description: 'The username to look up',
+            required: true
+        ),
+        new SchemaProperty(
+            name: 'limit',
+            type: PropertyType::INTEGER,
+            description: 'Maximum number of results',
+            default: 10
+        )
+    );
 }
 ```
 
-### 4. getAnnotations(): ToolAnnotation
+The `PropertyType` enum provides a list of supported data types: `STRING`, `INTEGER`
+
+### 4. getOutputSchema(): ?StructuredSchema
+
+Similarly to `getInputSchema`, this method defines the structure of the tool's output. Providing an output schema is optional but recommended, as it helps LLM clients understand and handle the tool's output correctly.
+
+**Example output schema:**
+
+```php
+public function getOutputSchema(): ?StructuredSchema
+{
+    return new StructuredSchema(
+        new SchemaProperty(
+            name: 'status',
+            type: PropertyType::STRING,
+            description: 'The status of the operation (e.g., "success", "error")'
+        ),
+        new SchemaProperty(
+            name: 'message',
+            type: PropertyType::STRING,
+            description: 'A descriptive message'
+        )
+    );
+}
+```
+
+If your tool returns a simple text result, you can return `null`.
+
+### 5. getAnnotations(): ToolAnnotation
 
 According to the official specification, tool annotations provide additional metadata about a tool’s behavior, helping clients understand how to present and manage tools. These annotations are hints that describe the nature and impact of a tool, but should not be relied upon for security decisions.
 
@@ -195,26 +224,25 @@ public function getAnnotations(): ToolAnnotation
         title: '-',             # string  default '-'   A human-readable title for the tool, useful for UI display
         readOnlyHint: false,    # boolean default false If true, indicates the tool does not modify its environment
         destructiveHint: true,  # boolean default true  If true, the tool may perform destructive updates (only meaningful when readOnlyHint is false)
-        idemptentHint: false,   # boolean default false If true, calling the tool repeatedly with the same arguments has no additional effect (only meaningful when readOnlyHint is false)
+        idempotentHint: false,   # boolean default false If true, calling the tool repeatedly with the same arguments has no additional effect (only meaningful when readOnlyHint is false)
         openWorldHint: true     # boolean default true  If true, the tool may interact with an “open world” of external entities
     );
 }
 ```
 
-### 5. execute(array $arguments): ToolResultInterface
+### 6. execute(array $arguments): ToolResultInterface
 
 Contains the actual logic of your tool. This method:
-- Receives validated input arguments
-- Performs the tool's functionality
-- Returns results
+- Receives validated input arguments as an associative array.
+- Performs the tool's functionality.
+- Returns a result object that implements `ToolResultInterface`.
 
 **Best practices:**
-- Validate inputs even though the framework does basic validation
-- Handle exceptions gracefully
-- Return clear, structured responses
-- Keep execution time reasonable
+- Handle exceptions gracefully.
+- Return clear, structured responses using the appropriate `ToolResultInterface` implementation.
+- Keep execution time reasonable for non-streaming tools.
 
-### 6. isStreaming(): bool
+### 7. isStreaming(): bool
 
 Determines whether the tool supports streaming responses with real-time progress updates. This method is crucial for enabling the MCP server to provide live feedback during long-running operations.
 
@@ -234,7 +262,7 @@ Determines whether the tool supports streaming responses with real-time progress
 - Only tools returning `true` will receive progress notifier instances
 - Progress notifications are only sent when `isStreaming()` returns `true`
 
-### 7. setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
+### 8. setProgressNotifier(ProgressNotifierInterface $progressNotifier): void
 
 Injects a progress notifier instance that allows the tool to send real-time progress updates to the client during execution. This method is called automatically by the framework for streaming tools.
 
@@ -291,9 +319,9 @@ public function execute(array $arguments): ToolResultInterface
 5. Framework sends real-time notifications to client via SSE/HTTP streaming
 6. Client receives progress updates and can display them to the user
 
-### Tool Result Types
+## Tool Result Types
 
-Streaming tools must return objects that implement `ToolResultInterface`. The framework provides several built-in result types:
+All tools must return objects that implement `ToolResultInterface`. The framework provides several built-in result types:
 
 #### TextToolResult
 For plain text responses:
@@ -334,7 +362,7 @@ $collection->addItem(new ImageToolResult($imageData, 'image/png'));
 return $collection;
 ```
 
-You can add any type of ToolResultInterface object to a CollectionToolResult, except another CollectionToolResult (nesting is not supported).
+You can add any type of `ToolResultInterface` object to a `CollectionToolResult`, except another `CollectionToolResult` (nesting is not supported).
 
 ## Testing Your MCP Tools
 
@@ -387,7 +415,7 @@ The MCP Server supports streaming tools that can provide real-time progress upda
 
 ### Creating a Streaming Tool
 
-Streaming tools implement the `StreamableToolInterface` and return `ToolResultInterface` objects instead of simple strings. They also support progress notifications through the `ProgressNotifierInterface`.
+Streaming tools implement the `StreamableToolInterface` and return `ToolResultInterface` objects. They also support progress notifications through the `ProgressNotifierInterface`.
 
 Here's a complete example of a streaming tool:
 
@@ -400,6 +428,9 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class DataProcessingTool implements StreamableToolInterface
@@ -416,25 +447,30 @@ class DataProcessingTool implements StreamableToolInterface
         return 'Processes data with real-time progress updates';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'dataset' => [
-                    'type' => 'string',
-                    'description' => 'The dataset to process',
-                ],
-                'batchSize' => [
-                    'type' => 'integer',
-                    'description' => 'Number of items to process per batch',
-                    'minimum' => 1,
-                    'maximum' => 100,
-                    'default' => 10,
-                ],
-            ],
-            'required' => ['dataset'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'dataset',
+                type: PropertyType::STRING,
+                description: 'The dataset to process',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'batchSize',
+                type: PropertyType::INTEGER,
+                description: 'Number of items to process per batch',
+                default: 10
+            )
+        );
+    }
+
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return new StructuredSchema(
+            new SchemaProperty(name: 'status', type: PropertyType::STRING),
+            new SchemaProperty(name: 'processed_batches', type: PropertyType::INTEGER)
+        );
     }
 
     public function getAnnotations(): ToolAnnotation
@@ -595,6 +631,10 @@ The test command will show progress notifications in real-time during execution.
 Here's a complete example of a streaming tool that processes multiple files:
 
 ```php
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+
 class FileProcessingTool implements StreamableToolInterface
 {
     private ?ProgressNotifierInterface $progressNotifier = null;
@@ -609,24 +649,28 @@ class FileProcessingTool implements StreamableToolInterface
         return 'Process multiple files with progress tracking';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'filePaths' => [
-                    'type' => 'array',
-                    'items' => ['type' => 'string'],
-                    'description' => 'Array of file paths to process',
-                ],
-                'operation' => [
-                    'type' => 'string',
-                    'enum' => ['validate', 'convert', 'analyze'],
-                    'description' => 'Operation to perform on files',
-                ],
-            ],
-            'required' => ['filePaths', 'operation'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'filePaths',
+                type: PropertyType::STRING,
+                description: 'The comma separated file paths',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'operation',
+                type: PropertyType::STRING,
+                description: 'Operation to perform on files',
+                enum: ['validate', 'convert', 'analyze'],
+                required: true
+            )
+        );
+    }
+
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return null;
     }
 
     public function getAnnotations(): ToolAnnotation
@@ -728,10 +772,13 @@ Use sampling in tools that need:
 use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 
 class MyAnalysisTool implements SamplingAwareToolInterface
 {
     private ?SamplingClient $samplingClient = null;
+
+    // ... other required methods of StreamableToolInterface
 
     public function setSamplingClient(SamplingClient $samplingClient): void
     {
@@ -770,43 +817,15 @@ class MyAnalysisTool implements SamplingAwareToolInterface
 
 ## Advanced Tool Development
 
-### Handling Complex Inputs
-
-Your tools can accept complex nested objects and arrays:
-
-```php
-public function getInputSchema(): array
-{
-    return [
-        'type' => 'object',
-        'properties' => [
-            'user' => [
-                'type' => 'object',
-                'properties' => [
-                    'name' => ['type' => 'string'],
-                    'age' => ['type' => 'integer'],
-                    'roles' => [
-                        'type' => 'array',
-                        'items' => ['type' => 'string'],
-                    ],
-                ],
-                'required' => ['name'],
-            ],
-            'options' => [
-                'type' => 'object',
-                'additionalProperties' => true,
-            ],
-        ],
-        'required' => ['user'],
-    ];
-}
-```
-
 ### Accessing Services
 
-For tools that need to access Symfony services, use dependency injection:
+For tools that need to access Symfony services, use dependency injection in your tool's constructor.
 
 ```php
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+
 class DatabaseQueryTool implements StreamableToolInterface
 {
     public function __construct(
@@ -816,7 +835,7 @@ class DatabaseQueryTool implements StreamableToolInterface
     
     // ... other methods
     
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $this->logger->info('Executing database query tool');
         
@@ -825,44 +844,27 @@ class DatabaseQueryTool implements StreamableToolInterface
             ->findBy(['username' => $arguments['username']]);
             
         // Process and return results
-        return json_encode($result);
+        return new TextToolResult(json_encode($result));
     }
-}
-```
-
-### Returning Different Data Types
-
-While tools often return strings, you can return any JSON encodable data:
-
-```php
-public function execute(array $arguments): array
-{
-    // Return a structured array
-    return [
-        'status' => 'success',
-        'data' => [
-            'id' => 123,
-            'name' => $arguments['name'],
-            'created' => new \DateTime(),
-        ],
-    ];
 }
 ```
 
 ### Error Handling
 
-Proper error handling improves the user experience:
+Proper error handling improves the user experience.
 
 ```php
-public function execute(array $arguments): string
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+
+public function execute(array $arguments): ToolResultInterface
 {
     try {
         // Attempt to perform operation
         $result = $this->someService->performOperation($arguments);
-        return "Operation successful: {$result}";
+        return new TextToolResult("Operation successful: {$result}");
     } catch (NotFoundException $e) {
         // Handle specific exceptions with informative messages
-        return "Resource not found: {$e->getMessage()}";
+        return new TextToolResult("Resource not found: {$e->getMessage()}");
     } catch (\Exception $e) {
         // Log unexpected errors but return a user-friendly message
         $this->logger->error('Tool execution failed', [
@@ -871,7 +873,7 @@ public function execute(array $arguments): string
             'trace' => $e->getTraceAsString(),
         ]);
         
-        return "Operation failed: An unexpected error occurred";
+        return new TextToolResult("Operation failed: An unexpected error occurred");
     }
 }
 ```
@@ -884,70 +886,41 @@ Each tool should do one thing well. Instead of creating a single complex tool, c
 
 ### 2. Provide Clear Documentation
 
-- Write clear, concise descriptions
-- Document each parameter thoroughly
+- Write clear, concise descriptions for the tool and its parameters.
+- Document each parameter thoroughly in the `SchemaProperty`.
 
 ### 3. Validate Inputs Thoroughly
 
-While the framework performs basic validation against your schema, add additional validation for business rules:
+While the framework performs basic validation against your schema, add additional validation for business rules within your `execute` method.
 
 ```php
-public function execute(array $arguments): string
+public function execute(array $arguments): ToolResultInterface
 {
     $username = $arguments['username'] ?? '';
     
     // Additional validation beyond schema
     if (strlen($username) < 3) {
-        return "Error: Username must be at least 3 characters long";
+        return new TextToolResult("Error: Username must be at least 3 characters long");
     }
     
     // Continue with execution...
+    return new TextToolResult("Username is valid.");
 }
 ```
 
 ### 4. Handle Rate Limiting
 
-For resource-intensive tools, consider implementing rate limiting:
-
-```php
-public function execute(array $arguments): string
-{
-    $clientId = $arguments['_client_id'] ?? 'unknown';
-    
-    if (!$this->rateLimiter->allowRequest('tool_execution', $clientId)) {
-        return "Rate limit exceeded. Please try again later.";
-    }
-    
-    // Continue with execution...
-}
-```
+For resource-intensive tools, consider implementing rate limiting using Symfony's Rate Limiter component.
 
 ### 5. Return Structured Responses
 
-Consistent response formats make it easier for LLM clients to parse results:
-
-```php
-public function execute(array $arguments): array
-{
-    // ... tool logic
-    
-    // Return a consistently structured response
-    return [
-        'status' => 'success',
-        'data' => $result,
-        'metadata' => [
-            'processingTime' => $processingTime,
-            'resultCount' => count($result),
-        ],
-    ];
-}
-```
+Whenever possible, define an `outputSchema` and return structured data that conforms to it. This makes it easier for LLM clients to parse and use the results.
 
 ### 6. Test Edge Cases
 
 Use the testing command to verify your tool handles edge cases correctly:
 - Missing optional parameters
-- Invalid inputs
+- Invalid inputs (e.g., wrong data types)
 - Empty results
 - Very large inputs/outputs
 
@@ -955,11 +928,21 @@ Use the testing command to verify your tool handles edge cases correctly:
 
 ### Example 1: Hello World Tool
 
-A simple tool that greets a user:
+A simple tool that greets a user.
 
 ```php
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+
 class HelloWorldTool implements StreamableToolInterface
 {
+    // ... boilerplate methods: isStreaming, setProgressNotifier, getOutputSchema (returning null)
+
     public function getName(): string
     {
         return 'hello-world';
@@ -970,41 +953,48 @@ class HelloWorldTool implements StreamableToolInterface
         return 'Say HelloWorld to a developer.';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'name' => [
-                    'type' => 'string',
-                    'description' => 'Developer Name',
-                ],
-            ],
-            'required' => ['name'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'name',
+                type: PropertyType::STRING,
+                description: 'Developer Name',
+                required: true
+            )
+        );
     }
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation;
+        return new ToolAnnotation();
     }
 
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $name = $arguments['name'] ?? 'MCP';
 
-        return "Hello, HelloWorld `{$name}` developer.";
+        return new TextToolResult("Hello, HelloWorld `{$name}` developer.");
     }
 }
 ```
 
 ### Example 2: Version Check Tool
 
-A tool that returns the current Symfony version:
+A tool that returns the current Symfony version.
 
 ```php
+use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use Symfony\Component\HttpKernel\Kernel;
+
 final class VersionCheckTool implements StreamableToolInterface
 {
+    // ... boilerplate methods: isStreaming, setProgressNotifier, getOutputSchema (returning null)
+
     public function getName(): string
     {
         return 'check-version';
@@ -1015,26 +1005,22 @@ final class VersionCheckTool implements StreamableToolInterface
         return 'Check the current Symfony version.';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => new stdClass,
-            'required' => [],
-        ];
+        return new StructuredSchema(); // No input parameters
     }
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation;
+        return new ToolAnnotation();
     }
 
-    public function execute(array $arguments): string
+    public function execute(array $arguments): ToolResultInterface
     {
         $now = (new \DateTime('now'))->format('Y-m-d H:i:s');
         $version = Kernel::VERSION;
 
-        return "current Version: {$version} - {$now}";
+        return new TextToolResult("current Version: {$version} - {$now}");
     }
 }
 ```

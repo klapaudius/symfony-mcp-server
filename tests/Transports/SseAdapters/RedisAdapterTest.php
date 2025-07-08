@@ -22,32 +22,11 @@ final class RedisAdapterTest extends TestCase
 
     protected function setUp(): void
     {
-        if (! class_exists(\Redis::class)) {
-            eval(<<<'PHPUNIT_EVAL'
-                class Redis {
-                    const OPT_PREFIX = 2;
-                    public function __call($name, $arguments) {}
-                    public function connect($host, $port) {}
-                    public function setOption($option, $value) {}
-                    public function rpush($key, $value) {}
-                    public function expire($key, $ttl) {}
-                    public function lpop($key) {}
-                    public function llen($key) {}
-                    public function del($key) {}
-                    public function set($key, $value) {}
-                    public function get($key) {}
-                    public function pexpire($key, $ttl) {}
-                    public function pexpireat($key, $timestamp) {}
-                    public function pttl($key) {}
-                    public function psetex($key, $ttl, $value) {}
-                    public function exists($key) {}
-                    public function keys($pattern) {}
-                    public function ttl($key) {}
-                }
-            PHPUNIT_EVAL);
-        }
+        $this->redisMock = $this->getMockBuilder(\Redis::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['connect', 'setOption', 'rpush', 'expire', 'lpop', 'llen', 'del', 'set', 'get', 'pexpire', 'pexpireat', 'pttl', 'psetex', 'exists', 'keys', 'ttl'])
+            ->getMock();
 
-        $this->redisMock = $this->createMock(Redis::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
         $this->redisAdapter = new RedisAdapter(

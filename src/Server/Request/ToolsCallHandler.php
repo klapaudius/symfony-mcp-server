@@ -55,8 +55,9 @@ class ToolsCallHandler implements RequestHandler
      *
      * @throws JsonRpcErrorException If the tool name is missing or the tool is not found
      * @throws ToolParamsValidatorException If the provided arguments are invalid.
+     * @throws JsonRpcErrorException If the tool is not a streamable tool and a progress token is provided.
      */
-    public function execute(string $method, string $clientId, string|int $messageId, ?array $params = null): array
+    public function execute(string $method, string|int $clientId, string|int $messageId, ?array $params = null): array
     {
         $name = $params['name'] ?? null;
         if ($name === null) {
