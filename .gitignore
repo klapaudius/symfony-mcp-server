@@ -24,6 +24,9 @@ _ide_helper_models.php
 /.fleet
 /.vscode
 
+# MacOS
+.DS_Store
+
 # Misc
 phpunit.xml
 phpstan.neon
