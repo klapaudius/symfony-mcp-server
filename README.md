@@ -381,6 +381,12 @@ Your agents are now accessible to:
 - **MCP Inspector**: Visualize and debug agent behavior
 - **Test Commands**: Rapid agent development and testing
 
+### Current Available MCP Features
+
+| Ressources | Prompts | Tools | Discovery | Sampling | Roots | Elicitation |
+|:----------:|:-------:|:-----:|:---------:|:--------:|:-----:|:-----------:|
+|     ✅      |    ✅    |   ✅   |   ❌   |    ✅     |   ❌   |   ❌   |
+
 ## 🎓 Agent Development Resources
 
 - 📖 **[Building Intelligent Tools](https://github.com/klapaudius/symfony-mcp-server/blob/master/docs/building_tools.md)**: Complete guide to creating AI-powered tools
