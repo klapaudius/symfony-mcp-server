@@ -70,7 +70,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations for postHandle
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('requestMessage')
@@ -127,7 +127,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $this->mockServer->expects($this->never())
             ->method('getClientId');
@@ -177,7 +177,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $this->mockServer->expects($this->never())
             ->method('getClientId');
@@ -236,7 +236,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('getClientId')
@@ -304,7 +304,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock to throw an exception
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('requestMessage')

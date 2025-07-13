@@ -38,7 +38,7 @@ final readonly class StreamableHttpController
 
     public function postHandle(Request $request): StreamedResponse|JsonResponse
     {
-        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         $clientId =
             $request->headers->get('mcp-session-id') ??

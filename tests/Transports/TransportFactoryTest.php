@@ -36,7 +36,7 @@ class TransportFactoryTest extends TestCase
     public function test_create_returns_sse_transport_for_sse_protocol_version(): void
     {
         // Act
-        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         // Assert
         $this->assertInstanceOf(SseTransport::class, $transport);
@@ -46,7 +46,7 @@ class TransportFactoryTest extends TestCase
     public function test_create_returns_streamable_http_transport_for_streamable_http_protocol_version(): void
     {
         // Act
-        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         // Assert
         $this->assertInstanceOf(StreamableHttpTransport::class, $transport);
@@ -72,7 +72,7 @@ class TransportFactoryTest extends TestCase
         $factory = new TransportFactory($this->router, $this->adapter, $this->logger, true, 15);
 
         // Act
-        $transport = $factory->create(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $transport = $factory->create(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         // Assert
         $this->assertInstanceOf(SseTransport::class, $transport);
@@ -90,7 +90,7 @@ class TransportFactoryTest extends TestCase
     public function test_create_uses_default_config_when_not_provided(): void
     {
         // Act
-        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         // Assert
         $this->assertInstanceOf(SseTransport::class, $transport);
@@ -115,14 +115,14 @@ class TransportFactoryTest extends TestCase
         // Assert
         $this->assertIsArray($versions);
         $this->assertCount(2, $versions);
-        $this->assertContains(MCPProtocolInterface::PROTOCOL_VERSION_SSE, $versions);
-        $this->assertContains(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP, $versions);
+        $this->assertContains(MCPProtocolInterface::PROTOCOL_FIRST_VERSION, $versions);
+        $this->assertContains(MCPProtocolInterface::PROTOCOL_SECOND_VERSION, $versions);
     }
 
     public function test_factory_passes_dependencies_to_created_transport(): void
     {
         // Act
-        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         // Assert
         $this->assertInstanceOf(SseTransport::class, $transport);

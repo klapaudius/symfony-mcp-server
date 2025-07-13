@@ -14,7 +14,7 @@ class InitializeResource
      * The version of the Model Context Protocol being used.
      * Defaults to the version defined in MCPProtocol.
      */
-    public string $protocolVersion = MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+    public string $protocolVersion = MCPProtocolInterface::PROTOCOL_FIRST_VERSION;
 
     /**
      * An array describing the capabilities of the server.
@@ -42,7 +42,7 @@ class InitializeResource
         string $name,
         string $version,
         array $capabilities,
-        string $protocolVersion = MCPProtocolInterface::PROTOCOL_VERSION_SSE)
+        string $protocolVersion = MCPProtocolInterface::PROTOCOL_FIRST_VERSION)
     {
         $this->serverInfo = [
             'name' => $name,

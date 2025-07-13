@@ -50,14 +50,14 @@ final class TransportFactory implements TransportFactoryInterface
         $this->setProtocolVersion($protocolVersion);
         // Create the appropriate transport based on the protocol version
         $this->transport = match ($this->protocolVersion) {
-            MCPProtocolInterface::PROTOCOL_VERSION_SSE => new SseTransport(
+            MCPProtocolInterface::PROTOCOL_FIRST_VERSION => new SseTransport(
                 router: $this->router,
                 adapter: $this->adapter,
                 logger: $this->logger,
                 pingEnabled: $this->pingEnabled,
                 pingInterval: $this->pingInterval
             ),
-            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP => new StreamableHttpTransport(
+            MCPProtocolInterface::PROTOCOL_SECOND_VERSION => new StreamableHttpTransport(
                 router: $this->router,
                 adapter: $this->adapter,
                 logger: $this->logger,
@@ -99,8 +99,8 @@ final class TransportFactory implements TransportFactoryInterface
     public function getSupportedVersions(): array
     {
         return [
-            MCPProtocolInterface::PROTOCOL_VERSION_SSE,
-            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP,
+            MCPProtocolInterface::PROTOCOL_FIRST_VERSION,
+            MCPProtocolInterface::PROTOCOL_SECOND_VERSION,
         ];
     }
 
