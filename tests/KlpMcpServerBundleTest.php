@@ -2,6 +2,8 @@
 
 namespace KLP\KlpMcpServer\Tests;
 
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ConditionalRoutePass;
+use KLP\KlpMcpServer\DependencyInjection\CompilerPass\PromptsDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ResourcesDefinitionCompilerPass;
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use KLP\KlpMcpServer\KlpMcpServerBundle;
@@ -14,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class KlpMcpServerBundleTest extends TestCase
 {
     /**
-     * Tests that the build method adds the ToolsDefinitionCompilerPass to the container.
+     * Tests that the build method adds all compiler passes to the container.
      */
     public function test_build_adds_compiler_pass()
     {
@@ -24,9 +26,11 @@ class KlpMcpServerBundleTest extends TestCase
         $invocations = [
             ToolsDefinitionCompilerPass::class,
             ResourcesDefinitionCompilerPass::class,
+            PromptsDefinitionCompilerPass::class,
+            ConditionalRoutePass::class,
         ];
         $containerBuilder
-            ->expects($matcher = $this->exactly(2))
+            ->expects($matcher = $this->exactly(4))
             ->method('addCompilerPass')
             ->with($this->callback(function ($argument) use ($invocations, $matcher) {
                 $this->assertInstanceOf($invocations[$matcher->numberOfInvocations() - 1], $argument);

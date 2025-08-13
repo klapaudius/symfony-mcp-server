@@ -111,9 +111,17 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             }))
             ->willReturnOnConsecutiveCalls($serverDefinition, $toolRepositoryDefinition);
 
-        $serverDefinition->expects($this->once())
+        $invocations = [
+            ['registerToolRepository', [$toolRepositoryDefinition], false],
+            ['registerSamplingResponseHandler', [], false],
+        ];
+        $serverDefinition->expects($matcher = $this->exactly(count($invocations)))
             ->method('addMethodCall')
-            ->with('registerToolRepository', [$toolRepositoryDefinition]);
+            ->with($this->callback(function (...$args) use ($invocations, $matcher) {
+                $this->assertEquals($args, $invocations[$matcher->numberOfInvocations() - 1]);
+
+                return true;
+            }));
 
         $compilerPass = new ToolsDefinitionCompilerPass;
         $compilerPass->process($container);

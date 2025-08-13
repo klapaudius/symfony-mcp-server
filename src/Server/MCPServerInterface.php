@@ -7,6 +7,8 @@ use KLP\KlpMcpServer\Data\Resources\InitializeResource;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 
 /**
@@ -22,6 +24,19 @@ use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 interface MCPServerInterface
 {
     /**
+     * Sets the protocol version for the current communication session.
+     * Can accept one of the following values:
+     * - '2024-11-05' for SSE transport
+     * - '2025-03-26' for StreamableHTTP transport
+     *
+     * If the protocol version is not set, the server will use the default version for the transport type.
+     * If the protocol version is set to null, the server will unset the protocol version.
+     *
+     * @param  string  $protocolVersion  The protocol version to be set.
+     */
+    public function setProtocolVersion(string $protocolVersion): void;
+
+    /**
      * Registers a request handler with the protocol layer.
      * Request handlers process incoming method calls from the client.
      *
@@ -35,7 +50,23 @@ interface MCPServerInterface
      *
      * @param  ToolRepository  $toolRepository  The repository containing available tools.
      */
-    public function registerToolRepository(ToolRepository $toolRepository): \KLP\KlpMcpServer\Server\MCPServer;
+    public function registerToolRepository(ToolRepository $toolRepository): self;
+
+    /**
+     * Registers the necessary request handlers for MCP Resources functionality.
+     * This typically includes handlers for 'resources/list' and 'resources/read'.
+     *
+     * @param  ResourceRepository  $resourceRepository  The repository containing available resources.
+     */
+    public function registerResourceRepository(ResourceRepository $resourceRepository): self;
+
+    /**
+     * Registers the necessary request handlers for MCP Prompts functionality.
+     * This typically includes handlers for 'prompts/list' and 'prompts/get'.
+     *
+     * @param  PromptRepository  $promptRepository  The repository containing available prompts.
+     */
+    public function registerPromptRepository(PromptRepository $promptRepository): self;
 
     /**
      * Initiates the connection process via the protocol handler.
@@ -58,7 +89,7 @@ interface MCPServerInterface
 
     /**
      * Handles the 'initialize' request from the client.
-     * Stores client capabilities, checks protocol version, and marks the server as initialized.
+     * Stores client capabilities, checks the protocol version, and marks the server as initialized.
      * Throws an error if the server is already initialized.
      *
      * @param  InitializeData  $data  The data object containing initialization parameters from the client.
@@ -76,4 +107,13 @@ interface MCPServerInterface
      * @param  array<string, mixed>  $message  The request message payload (following JSON-RPC structure).
      */
     public function requestMessage(string $clientId, array $message): void;
+
+    public function getResponseResult(string $clientId): array;
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string;
 }

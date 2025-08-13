@@ -24,7 +24,7 @@ class InitializeHandler implements RequestHandler
     /**
      * @throws JsonRpcErrorException
      */
-    public function execute(string $method, string|int $messageId, ?array $params = null): array
+    public function execute(string $method, string $clientId, string|int $messageId, ?array $params = null): array
     {
         $data = InitializeData::fromArray(data: $params);
         $result = $this->server->initialize(data: $data);

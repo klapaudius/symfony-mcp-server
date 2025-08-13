@@ -2,10 +2,10 @@
 
 namespace KLP\KlpMcpServer\Tests\Transports;
 
+use KLP\KlpMcpServer\Transports\Exception\SseTransportException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\SseTransport;
-use KLP\KlpMcpServer\Transports\SseTransportException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -67,12 +67,11 @@ class SseTransportTest extends TestCase
             ->expects($this->once())
             ->method('generate')
             ->willReturnCallback(function (string $name, array $parameters = []): string {
-                $this->assertEquals('message_route', $name);
+                $this->assertEquals('klp_mcp_server_sse_message', $name);
                 $this->assertArrayHasKey('sessionId', $parameters);
 
                 return '/default-path/messages?sessionId='.$parameters['sessionId'];
-            })
-        ;
+            });
         // Act
         ob_start();
         try {
@@ -102,8 +101,8 @@ class SseTransportTest extends TestCase
         $this->routerMock
             ->expects($this->once())
             ->method('generate')
-            ->with('message_route', ['sessionId' => $existingClientId])
-            ->willReturn('/default-path/messages?sessionId=' . $existingClientId);
+            ->with('klp_mcp_server_sse_message', ['sessionId' => $existingClientId])
+            ->willReturn('/default-path/messages?sessionId='.$existingClientId);
 
         // Act
         ob_start();
@@ -311,13 +310,13 @@ class SseTransportTest extends TestCase
         // Arrange
         $this->setProtectedProperty($this->instance, 'connected', true);
         $invocations = [
-            'Error in SSE close handler: Handler Exception',
+            'SSE Transport. Error in close handler: Handler Exception',
             'Error cleaning up SSE adapter resources on close: Adapter Exception',
         ];
         $this->loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
-                $this->assertEquals($arg, $invocations[$matcher->numberOfInvocations() - 1]);
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
 
                 return true;
             }));
@@ -552,7 +551,7 @@ class SseTransportTest extends TestCase
         $message = 'Error Message';
         $invocations = [
             'SSE Transport error: Error Message',
-            'Error in SSE error handler itself: Test Exception',
+            'Error in SSE Transport error handler itself: Test Exception',
         ];
         $this->loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')

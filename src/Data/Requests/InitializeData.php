@@ -2,6 +2,8 @@
 
 namespace KLP\KlpMcpServer\Data\Requests;
 
+use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
+
 /**
  * Initial connection request data.
  */
@@ -11,10 +13,13 @@ class InitializeData
 
     public array $capabilities;
 
-    public function __construct(string $version, array $capabilities)
+    public string $protocolVersion;
+
+    public function __construct(string $version, array $capabilities, ?string $protocolVersion = null)
     {
         $this->version = $version;
         $this->capabilities = $capabilities;
+        $this->protocolVersion = $protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
     }
 
     public static function fromArray(array $data): self
@@ -25,7 +30,8 @@ class InitializeData
                 'prompts' => [],
                 'tools' => [],
                 'resources' => [],
-            ]
+            ],
+            $data['protocolVersion'] ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE,
         );
     }
 

@@ -8,34 +8,49 @@
             <argument type="service" id="klp_mcp_server.server" />
             <tag name="controller.service_arguments" />
         </service>
-        <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" />
+        <service id="klp_mcp_server.controller.sse" alias="KLP\KlpMcpServer\Controllers\SseController" public="true" />
+        <service id="KLP\KlpMcpServer\Controllers\StreamableHttpController" class="KLP\KlpMcpServer\Controllers\StreamableHttpController">
+            <argument type="service" id="klp_mcp_server.server" />
+            <argument type="service" id="logger" on-invalid="null" />
+            <tag name="controller.service_arguments" />
+        </service>
+        <service id="klp_mcp_server.controller.streamable_http" alias="KLP\KlpMcpServer\Controllers\StreamableHttpController" public="true" />
 
         <service id="KLP\KlpMcpServer\Controllers\MessageController" class="KLP\KlpMcpServer\Controllers\MessageController">
             <argument type="service" id="klp_mcp_server.server" />
             <argument type="service" id="logger" on-invalid="null" />
             <tag name="controller.service_arguments" />
         </service>
-        <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" />
+        <service id="klp_mcp_server.controller.message" alias="KLP\KlpMcpServer\Controllers\MessageController" public="true" />
 
         <service id="KLP\KlpMcpServer\Server\ServerCapabilitiesInterface" class="KLP\KlpMcpServer\Server\ServerCapabilities" />
-        <service id="klp_mcp_server.command.make" class="KLP\KlpMcpServer\Command\MakeMcpToolCommand">
+        <service id="klp_mcp_server.command.make_prompt" class="KLP\KlpMcpServer\Command\MakeMcpPromptCommand">
             <argument type="service" id="kernel" />
             <tag name="console.command" />
         </service>
-        <service id="klp_mcp_server.command.test" class="KLP\KlpMcpServer\Command\TestMcpToolCommand">
+        <service id="klp_mcp_server.command.make_tool" class="KLP\KlpMcpServer\Command\MakeMcpToolCommand">
+            <argument type="service" id="kernel" />
+            <tag name="console.command" />
+        </service>
+        <service id="klp_mcp_server.command.test_prompt" class="KLP\KlpMcpServer\Command\TestMcpPromptCommand">
+            <argument type="service" id="klp_mcp_server.prompt_repository" />
+            <tag name="console.command" />
+        </service>
+        <service id="klp_mcp_server.command.test_tool" class="KLP\KlpMcpServer\Command\TestMcpToolCommand">
             <argument type="service" id="service_container" />
             <tag name="console.command" />
+        </service>
+
+        <service id="klp_mcp_server.route_loader" class="KLP\KlpMcpServer\Routing\Loader\McpRouteLoader">
+            <tag name="routing.loader" />
         </service>
 
         <service id="klp_mcp_server.adapter.factory" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory">
             <argument type="service" id="service_container" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
 
-        <service id="klp_mcp_server.adapter" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface">
-            <factory service="klp_mcp_server.adapter.factory" method="create" />
-        </service>
-
-        <service id="klp_mcp_server.transport.sse" class="KLP\KlpMcpServer\Transports\SseTransport">
+        <service id="klp_mcp_server.transport.factory" class="KLP\KlpMcpServer\Transports\Factory\TransportFactory">
             <argument type="service" id="router" />
             <argument type="service" id="klp_mcp_server.adapter" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
@@ -43,19 +58,29 @@
             <argument type="string">%klp_mcp_server.ping.interval%</argument>
         </service>
 
+        <service id="klp_mcp_server.adapter" class="KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface">
+            <factory service="klp_mcp_server.adapter.factory" method="create" />
+        </service>
+
         <service id="klp_mcp_server.protocol" class="KLP\KlpMcpServer\Protocol\MCPProtocol">
-            <argument type="service" id="klp_mcp_server.transport.sse" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.transport.factory" on-invalid="null" />
         </service>
         <service id="klp_mcp_server.server" class="KLP\KlpMcpServer\Server\MCPServer">
             <argument type="service" id="klp_mcp_server.protocol" on-invalid="null" />
+            <argument type="service" id="klp_mcp_server.progress_notifier_repository" on-invalid="null" />
             <argument type="collection">
                 <argument key="name">%klp_mcp_server.server.name%</argument>
                 <argument key="version">%klp_mcp_server.server.version%</argument>
             </argument>
+            <argument type="service" id="klp_mcp_server.sampling_client" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <service id="klp_mcp_server.progress_notifier_repository" class="KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository">
+            <argument type="service" id="klp_mcp_server.transport.factory" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.capabilities" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
@@ -65,6 +90,17 @@
         <!-- Resource services -->
         <service id="klp_mcp_server.resource_repository" class="KLP\KlpMcpServer\Services\ResourceService\ResourceRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <!-- Prompt services -->
+        <service id="klp_mcp_server.prompt_repository" class="KLP\KlpMcpServer\Services\PromptService\PromptRepository">
+            <argument type="service" id="service_container" on-invalid="null" />
+        </service>
+
+        <!-- Sampling services -->
+        <service id="klp_mcp_server.sampling_client" class="KLP\KlpMcpServer\Services\SamplingService\SamplingClient">
+            <argument type="service" id="klp_mcp_server.transport.factory" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
     </services>
 

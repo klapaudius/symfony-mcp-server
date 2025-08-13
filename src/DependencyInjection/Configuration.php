@@ -15,6 +15,7 @@ class Configuration implements ConfigurationInterface
         $supportedAdaptersServices = array_map(function ($item) {
             return $item;
         }, $supportedAdapters);
+        $supportedProviders = ['streamable_http', 'sse'];
         $rootNode
             ->addDefaultsIfNotSet()
             ->children()
@@ -25,6 +26,7 @@ class Configuration implements ConfigurationInterface
 
                 // Server Information
             ->arrayNode('server')
+            ->addDefaultsIfNotSet()
             ->children()
             ->scalarNode('name')
             ->defaultValue('KLP MCP Server')
@@ -45,6 +47,7 @@ class Configuration implements ConfigurationInterface
 
                 // ping feature
             ->arrayNode('ping')
+            ->addDefaultsIfNotSet()
             ->children()
             ->booleanNode('enabled')
             ->defaultFalse()
@@ -55,14 +58,21 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
-                // Server Provider
-            ->scalarNode('server_provider')
-            ->defaultValue('sse')
+            // Server Providers
+            ->arrayNode('server_providers')
+            ->prototype('scalar')
+            ->defaultValue(['streamable_http', 'sse'])
             ->cannotBeEmpty()
             ->validate()
-            ->ifNotInArray(['sse'])
-            ->thenInvalid('The server provider "%s" is not supported. Currently only "sse" is supported.')
+            ->ifNotInArray($supportedProviders)
+            ->thenInvalid('The server provider "%s" is not supported. Please choose one of '.implode(', ', $supportedProviders))
             ->end()
+            ->end()
+            ->end()
+
+                // Server Provider
+            ->scalarNode('server_provider')
+            ->setDeprecated('klapaudius/symfony-mcp-server', '1.2', 'The "server_provider" option is deprecated since version 1.2 and will be removed in 2.0. Use "server_providers" instead.')
             ->end()
 
                 // SSE Adapter
@@ -103,11 +113,15 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
-                // Prompts Comming Next
-//            ->arrayNode('prompts')
-//            ->prototype('scalar')
-//            ->end()
-//            ->end()
+                // Prompts
+            ->arrayNode('prompts')
+            ->prototype('scalar')
+            ->validate()
+            ->ifTrue(static fn ($v) => ! class_exists($v))
+            ->thenInvalid('The prompt "%s" must be a valid fully qualified class name.')
+            ->end()
+            ->end()
+            ->end()
 
                 // Resources
             ->arrayNode('resources')

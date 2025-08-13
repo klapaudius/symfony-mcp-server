@@ -35,9 +35,10 @@ klp_mcp_server:
         enable: true
         interval: 30
 
-    # Server-Sent Events Provider
-    # The type of server provider to use. Currently, only 'sse' is supported.
-    server_provider: 'sse'
+    # Server-Sent Events Providers
+    # The type of server providers to use. Currently, only 'streamable_http' and
+    # 'sse' are supported.
+    server_providers: [ 'streamable_http', 'sse' ]
 
     # SSE Adapters Configuration
     # Configuration for the different SSE adapters available in the MCP server.
@@ -67,19 +68,28 @@ klp_mcp_server:
     # generating the tool list for the client.
     # Register your tools here
     tools:
+        - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool               # Agentic Tool Sample
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
 
     # Prompts List
-    # Comming soon
     # https://modelcontextprotocol.io/docs/concepts/prompts
-    # prompts: []
+    # List of prompts supported by the MCP server. These values are used when
+    # generating the prompt list for the client.
+    # Register your prompts here
+    prompts:
+      - KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt
+      - KLP\KlpMcpServer\Services\PromptService\Examples\CodeReviewPrompt               # Agentic Prompt Sample
 
     # Resources List
     # https://modelcontextprotocol.io/docs/concepts/resources
     resources:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\HelloWorldResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\ProjectSummaryResource     # Agentic Resource Sample
 
     resources_templates:
         - KLP\KlpMcpServer\Services\ResourceService\Examples\McpDocumentationResource
+        - KLP\KlpMcpServer\Services\ResourceService\Examples\CodeDocumentationResource  # Agentic Resource Template Sample
 ---

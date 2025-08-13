@@ -12,6 +12,8 @@ class CachePoolAdapter implements SseAdapterInterface
 
     private const DEFAULT_MESSAGE_TTL = 100;
 
+    private const SAMPLING_KEY_SUFFIX = '|sampling';
+
     /**
      * Key prefix for SSE messages
      */
@@ -111,7 +113,7 @@ class CachePoolAdapter implements SseAdapterInterface
      */
     public function hasMessages(string $clientId): bool
     {
-        return $this->cache->getItem($this->generateQueueKey($clientId))->isHit();
+        return $this->getMessageCount($clientId) > 0;
     }
 
     /**
@@ -139,5 +141,158 @@ class CachePoolAdapter implements SseAdapterInterface
     public function getLastPongResponseTimestamp(string $clientId): ?int
     {
         return $this->cache->getItem($this->generateQueueKey($clientId).'|last_pong')->get();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void
+    {
+        try {
+            $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+            $cacheItem = $this->cache->getItem($key);
+            $cacheItem->set($hasSamplingCapability);
+            $cacheItem->expiresAfter(60 * 60 * 24);
+            $this->cache->save($cacheItem);
+
+            $this->logger?->debug('Stored sampling capability', [
+                'clientId' => $clientId,
+                'key' => $key,
+                'hasSamplingCapability' => $hasSamplingCapability,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to store sampling capability: '.$e->getMessage());
+            throw new SseAdapterException('Failed to store sampling capability', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasSamplingCapability(string $clientId): bool
+    {
+        try {
+            $key = $this->generateQueueKey($clientId).self::SAMPLING_KEY_SUFFIX;
+            $cacheItem = $this->cache->getItem($key);
+            $isHit = $cacheItem->isHit();
+            $value = $cacheItem->get();
+
+            $this->logger?->debug('Retrieved sampling capability', [
+                'clientId' => $clientId,
+                'key' => $key,
+                'isHit' => $isHit,
+                'value' => $value,
+            ]);
+
+            return $value ?? false;
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to retrieve sampling capability: '.$e->getMessage());
+            throw new SseAdapterException('Failed to retrieve sampling capability', 0, $e);
+        }
+    }
+
+    /**
+     * Get the cache key for a pending response
+     *
+     * @param  string  $messageId  The message ID
+     * @return string The cache key
+     */
+    private function generatePendingResponseKey(string $messageId): string
+    {
+        return "$this->keyPrefix|pending_response|$messageId";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function storePendingResponse(string $messageId, array $responseData): void
+    {
+        try {
+            $key = $this->generatePendingResponseKey($messageId);
+            $cacheItem = $this->cache->getItem($key);
+            $cacheItem->set($responseData);
+            $cacheItem->expiresAfter($this->messageTtl);
+            $this->cache->save($cacheItem);
+
+            $this->logger?->debug('Stored pending response', [
+                'messageId' => $messageId,
+                'key' => $key,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to store pending response: '.$e->getMessage());
+            throw new SseAdapterException('Failed to store pending response', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPendingResponse(string $messageId): ?array
+    {
+        try {
+            $key = $this->generatePendingResponseKey($messageId);
+            $cacheItem = $this->cache->getItem($key);
+
+            if (! $cacheItem->isHit()) {
+                return null;
+            }
+
+            $data = $cacheItem->get();
+
+            return is_array($data) ? $data : null;
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to retrieve pending response: '.$e->getMessage());
+            throw new SseAdapterException('Failed to retrieve pending response', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removePendingResponse(string $messageId): void
+    {
+        try {
+            $key = $this->generatePendingResponseKey($messageId);
+            $this->cache->deleteItem($key);
+
+            $this->logger?->debug('Removed pending response', [
+                'messageId' => $messageId,
+                'key' => $key,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to remove pending response: '.$e->getMessage());
+            throw new SseAdapterException('Failed to remove pending response', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasPendingResponse(string $messageId): bool
+    {
+        try {
+            $key = $this->generatePendingResponseKey($messageId);
+            $cacheItem = $this->cache->getItem($key);
+
+            return $cacheItem->isHit();
+        } catch (InvalidArgumentException $e) {
+            $this->logger?->error('Failed to check pending response: '.$e->getMessage());
+            throw new SseAdapterException('Failed to check pending response', 0, $e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanupOldPendingResponses(int $maxAge): int
+    {
+        // Note: This is a basic implementation that doesn't iterate over keys
+        // For a production implementation with many pending responses,
+        // consider using a separate tracking mechanism or Redis-specific commands
+        $this->logger?->debug('Cleanup requested', ['maxAge' => $maxAge]);
+
+        // Cache pools don't typically provide key iteration,
+        // so we rely on the TTL mechanism for cleanup
+        return 0;
     }
 }

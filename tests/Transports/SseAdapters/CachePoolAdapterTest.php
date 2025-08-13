@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\Transports\SseAdapters;
 
 use KLP\KlpMcpServer\Transports\SseAdapters\CachePoolAdapter;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
@@ -339,8 +340,8 @@ class CachePoolAdapterTest extends TestCase
             ->willReturn($this->cacheItemMock);
 
         $this->cacheItemMock
-            ->method('isHit')
-            ->willReturn(true);
+            ->method('get')
+            ->willReturn(['message']);
 
         $result = $this->adapter->hasMessages($clientId);
 
@@ -568,5 +569,756 @@ class CachePoolAdapterTest extends TestCase
             ->with($this->cacheItemMock);
 
         $this->adapter->storeLastPongResponseTimestamp($clientId);
+    }
+
+    /**
+     * Tests that storeSamplingCapability stores true sampling capability in the cache.
+     */
+    public function test_store_sampling_capability_stores_true_value(): void
+    {
+        $clientId = 'client123';
+        $hasSamplingCapability = true;
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with($hasSamplingCapability);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(86400);
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->cacheItemMock);
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that storeSamplingCapability stores false sampling capability in the cache.
+     */
+    public function test_store_sampling_capability_stores_false_value(): void
+    {
+        $clientId = 'client456';
+        $hasSamplingCapability = false;
+        $queueKey = 'test_prefix_|client|client456|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with($hasSamplingCapability);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(86400);
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->cacheItemMock);
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that storeSamplingCapability handles InvalidArgumentException and throws SseAdapterException.
+     */
+    public function test_store_sampling_capability_handles_invalid_argument_exception(): void
+    {
+        $clientId = 'client789';
+        $hasSamplingCapability = true;
+        $queueKey = 'test_prefix_|client|client789|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to store sampling capability'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to store sampling capability');
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns true when the client has sampling capability.
+     */
+    public function test_has_sampling_capability_returns_true_when_capability_exists(): void
+    {
+        $clientId = 'client123';
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(true);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns false when the client has no sampling capability stored.
+     */
+    public function test_has_sampling_capability_returns_false_when_capability_is_false(): void
+    {
+        $clientId = 'client456';
+        $queueKey = 'test_prefix_|client|client456|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(false);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability returns false when no sampling capability is stored (cache miss).
+     */
+    public function test_has_sampling_capability_returns_false_on_cache_miss(): void
+    {
+        $clientId = 'client789';
+        $queueKey = 'test_prefix_|client|client789|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn(null);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests that hasSamplingCapability handles InvalidArgumentException and throws SseAdapterException.
+     */
+    public function test_has_sampling_capability_handles_invalid_argument_exception(): void
+    {
+        $clientId = 'client123';
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to retrieve sampling capability'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to retrieve sampling capability');
+
+        $this->adapter->hasSamplingCapability($clientId);
+    }
+
+    /**
+     * Tests that storePendingResponse stores response data with correct key and TTL.
+     */
+    public function test_store_pending_response_stores_data_successfully(): void
+    {
+        $messageId = 'msg123';
+        $responseData = ['response' => 'test response', 'timestamp' => 1680000000];
+        $expectedKey = 'test_prefix_|pending_response|msg123';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with($responseData);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(50);
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->cacheItemMock);
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with('Stored pending response', [
+                'messageId' => $messageId,
+                'key' => $expectedKey,
+            ]);
+
+        $this->adapter->storePendingResponse($messageId, $responseData);
+    }
+
+    /**
+     * Tests that storePendingResponse throws SseAdapterException on InvalidArgumentException.
+     */
+    public function test_store_pending_response_handles_invalid_argument_exception(): void
+    {
+        $messageId = 'msg456';
+        $responseData = ['response' => 'test'];
+        $expectedKey = 'test_prefix_|pending_response|msg456';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to store pending response'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to store pending response');
+
+        $this->adapter->storePendingResponse($messageId, $responseData);
+    }
+
+    /**
+     * Tests that getPendingResponse retrieves stored response data.
+     */
+    public function test_get_pending_response_retrieves_stored_data(): void
+    {
+        $messageId = 'msg789';
+        $expectedData = ['response' => 'stored response', 'timestamp' => 1680000000];
+        $expectedKey = 'test_prefix_|pending_response|msg789';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(true);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn($expectedData);
+
+        $result = $this->adapter->getPendingResponse($messageId);
+
+        $this->assertSame($expectedData, $result);
+    }
+
+    /**
+     * Tests that getPendingResponse returns null when no data is found.
+     */
+    public function test_get_pending_response_returns_null_on_cache_miss(): void
+    {
+        $messageId = 'msg999';
+        $expectedKey = 'test_prefix_|pending_response|msg999';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        $result = $this->adapter->getPendingResponse($messageId);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests that getPendingResponse returns null when stored data is not an array.
+     */
+    public function test_get_pending_response_returns_null_for_non_array_data(): void
+    {
+        $messageId = 'msg111';
+        $expectedKey = 'test_prefix_|pending_response|msg111';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(true);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn('not_an_array');
+
+        $result = $this->adapter->getPendingResponse($messageId);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests that getPendingResponse throws SseAdapterException on InvalidArgumentException.
+     */
+    public function test_get_pending_response_handles_invalid_argument_exception(): void
+    {
+        $messageId = 'msg222';
+        $expectedKey = 'test_prefix_|pending_response|msg222';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to retrieve pending response'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to retrieve pending response');
+
+        $this->adapter->getPendingResponse($messageId);
+    }
+
+    /**
+     * Tests that removePendingResponse removes response data and logs debug message.
+     */
+    public function test_remove_pending_response_removes_data_successfully(): void
+    {
+        $messageId = 'msg333';
+        $expectedKey = 'test_prefix_|pending_response|msg333';
+
+        $this->cacheMock
+            ->expects($this->once())
+            ->method('deleteItem')
+            ->with($expectedKey);
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with('Removed pending response', [
+                'messageId' => $messageId,
+                'key' => $expectedKey,
+            ]);
+
+        $this->adapter->removePendingResponse($messageId);
+    }
+
+    /**
+     * Tests that removePendingResponse throws SseAdapterException on InvalidArgumentException.
+     */
+    public function test_remove_pending_response_handles_invalid_argument_exception(): void
+    {
+        $messageId = 'msg444';
+        $expectedKey = 'test_prefix_|pending_response|msg444';
+
+        $this->cacheMock
+            ->method('deleteItem')
+            ->with($expectedKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to remove pending response'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to remove pending response');
+
+        $this->adapter->removePendingResponse($messageId);
+    }
+
+    /**
+     * Tests that hasPendingResponse returns true when response data exists.
+     */
+    public function test_has_pending_response_returns_true_when_data_exists(): void
+    {
+        $messageId = 'msg555';
+        $expectedKey = 'test_prefix_|pending_response|msg555';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(true);
+
+        $result = $this->adapter->hasPendingResponse($messageId);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Tests that hasPendingResponse returns false when no response data exists.
+     */
+    public function test_has_pending_response_returns_false_when_no_data_exists(): void
+    {
+        $messageId = 'msg666';
+        $expectedKey = 'test_prefix_|pending_response|msg666';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        $result = $this->adapter->hasPendingResponse($messageId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests that hasPendingResponse throws SseAdapterException on InvalidArgumentException.
+     */
+    public function test_has_pending_response_handles_invalid_argument_exception(): void
+    {
+        $messageId = 'msg777';
+        $expectedKey = 'test_prefix_|pending_response|msg777';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('Failed to check pending response'));
+
+        $this->expectException(SseAdapterException::class);
+        $this->expectExceptionMessage('Failed to check pending response');
+
+        $this->adapter->hasPendingResponse($messageId);
+    }
+
+    /**
+     * Tests that cleanupOldPendingResponses logs debug message and returns 0 (basic implementation).
+     */
+    public function test_cleanup_old_pending_responses_logs_and_returns_zero(): void
+    {
+        $maxAge = 3600;
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with('Cleanup requested', ['maxAge' => $maxAge]);
+
+        $result = $this->adapter->cleanupOldPendingResponses($maxAge);
+
+        $this->assertSame(0, $result);
+    }
+
+    /**
+     * Tests constructor with default configuration values.
+     */
+    public function test_constructor_with_default_values(): void
+    {
+        $config = []; // Empty config to test defaults
+        $adapter = new CachePoolAdapter($config, $this->cacheMock, $this->loggerMock);
+
+        // Test that default prefix is used by checking generated key
+        $clientId = 'test_client';
+        $message = 'test message';
+        $expectedKey = 'mcp_sse_|client|test_client'; // Default prefix
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(100); // Default TTL
+
+        $adapter->pushMessage($clientId, $message);
+    }
+
+    /**
+     * Tests constructor with partial configuration (only prefix).
+     */
+    public function test_constructor_with_partial_config(): void
+    {
+        $config = ['prefix' => 'custom_prefix_']; // Only prefix, TTL should use default
+        $adapter = new CachePoolAdapter($config, $this->cacheMock, $this->loggerMock);
+
+        $clientId = 'test_client';
+        $message = 'test message';
+        $expectedKey = 'custom_prefix_|client|test_client';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('expiresAfter')
+            ->with(100); // Default TTL
+
+        $adapter->pushMessage($clientId, $message);
+    }
+
+    /**
+     * Tests constructor with null logger.
+     */
+    public function test_constructor_with_null_logger(): void
+    {
+        $config = ['prefix' => 'test_', 'ttl' => 30];
+        $adapter = new CachePoolAdapter($config, $this->cacheMock, null);
+
+        // Test that adapter works without logger (should not throw exception)
+        $clientId = 'test_client';
+        $message = 'test message';
+        $expectedKey = 'test_|client|test_client';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        // Should not throw any exception
+        $adapter->pushMessage($clientId, $message);
+
+        // Test error handling without logger
+        $this->cacheMock
+            ->method('deleteItem')
+            ->willThrowException($this->createMock(InvalidArgumentException::class));
+
+        // Should not throw any exception even though logger is null
+        $adapter->removeAllMessages($clientId);
+    }
+
+    /**
+     * Tests hasMessages with empty array from cache.
+     */
+    public function test_has_messages_returns_false_for_empty_array(): void
+    {
+        $clientId = 'client123';
+        $queueKey = 'test_prefix_|client|client123';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn([]); // Empty array
+
+        $result = $this->adapter->hasMessages($clientId);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * Tests popMessage returns null when messages array is empty.
+     */
+    public function test_pop_message_returns_null_when_messages_array_is_empty(): void
+    {
+        $clientId = 'client456';
+        $queueKey = 'test_prefix_|client|client456';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn([]); // Empty array
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with([]);
+
+        $result = $this->adapter->popMessage($clientId);
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * Tests debug logging in storeSamplingCapability method.
+     */
+    public function test_store_sampling_capability_logs_debug_information(): void
+    {
+        $clientId = 'client123';
+        $hasSamplingCapability = true;
+        $queueKey = 'test_prefix_|client|client123|sampling';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with('Stored sampling capability', [
+                'clientId' => $clientId,
+                'key' => $queueKey,
+                'hasSamplingCapability' => $hasSamplingCapability,
+            ]);
+
+        $this->adapter->storeSamplingCapability($clientId, $hasSamplingCapability);
+    }
+
+    /**
+     * Tests debug logging in hasSamplingCapability method.
+     */
+    public function test_has_sampling_capability_logs_debug_information(): void
+    {
+        $clientId = 'client456';
+        $queueKey = 'test_prefix_|client|client456|sampling';
+        $expectedValue = true;
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(true);
+
+        $this->cacheItemMock
+            ->method('get')
+            ->willReturn($expectedValue);
+
+        $this->loggerMock
+            ->expects($this->once())
+            ->method('debug')
+            ->with('Retrieved sampling capability', [
+                'clientId' => $clientId,
+                'key' => $queueKey,
+                'isHit' => true,
+                'value' => $expectedValue,
+            ]);
+
+        $result = $this->adapter->hasSamplingCapability($clientId);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * Tests edge case: Special characters in client ID.
+     */
+    public function test_special_characters_in_client_id(): void
+    {
+        $clientId = 'client@#$%^&*()_+{}|:<>?[]\;".,/~`';
+        $message = 'test message';
+        $expectedKey = "test_prefix_|client|$clientId";
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        // Should not throw exception
+        $this->adapter->pushMessage($clientId, $message);
+    }
+
+    /**
+     * Tests edge case: Very long client ID.
+     */
+    public function test_very_long_client_id(): void
+    {
+        $clientId = str_repeat('a', 1000); // 1000 character client ID
+        $message = 'test message';
+        $expectedKey = "test_prefix_|client|$clientId";
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($expectedKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        // Should not throw exception
+        $this->adapter->pushMessage($clientId, $message);
+    }
+
+    /**
+     * Tests edge case: Empty message string.
+     */
+    public function test_push_empty_message_string(): void
+    {
+        $clientId = 'client123';
+        $message = ''; // Empty message
+        $queueKey = 'test_prefix_|client|client123';
+
+        $this->cacheMock
+            ->method('getItem')
+            ->with($queueKey)
+            ->willReturn($this->cacheItemMock);
+
+        $this->cacheItemMock
+            ->method('isHit')
+            ->willReturn(false);
+
+        $this->cacheItemMock
+            ->expects($this->once())
+            ->method('set')
+            ->with(['']); // Should accept empty string
+
+        $this->adapter->pushMessage($clientId, $message);
     }
 }

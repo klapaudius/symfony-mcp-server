@@ -87,4 +87,71 @@ interface SseAdapterInterface
      * @throws SseAdapterException If the timestamp cannot be retrieved
      */
     public function getLastPongResponseTimestamp(string $clientId): ?int;
+
+    /**
+     * Store sampling capability information for a specific client
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @param  bool  $hasSamplingCapability  Whether the client supports sampling
+     *
+     * @throws SseAdapterException If the sampling capability cannot be stored
+     */
+    public function storeSamplingCapability(string $clientId, bool $hasSamplingCapability): void;
+
+    /**
+     * Check if a specific client has sampling capability
+     *
+     * @param  string  $clientId  The unique identifier for the client
+     * @return bool True if the client supports sampling, false otherwise
+     *
+     * @throws SseAdapterException If the sampling capability cannot be retrieved
+     */
+    public function hasSamplingCapability(string $clientId): bool;
+
+    /**
+     * Store pending response data for a specific message ID
+     *
+     * @param  string  $messageId  The unique message ID
+     * @param  array  $responseData  The response data to store
+     *
+     * @throws SseAdapterException If the response data cannot be stored
+     */
+    public function storePendingResponse(string $messageId, array $responseData): void;
+
+    /**
+     * Get pending response data for a specific message ID
+     *
+     * @param  string  $messageId  The unique message ID
+     * @return array|null The response data or null if not found
+     *
+     * @throws SseAdapterException If the response data cannot be retrieved
+     */
+    public function getPendingResponse(string $messageId): ?array;
+
+    /**
+     * Remove pending response data for a specific message ID
+     *
+     * @param  string  $messageId  The unique message ID
+     *
+     * @throws SseAdapterException If the response data cannot be removed
+     */
+    public function removePendingResponse(string $messageId): void;
+
+    /**
+     * Check if there is pending response data for a specific message ID
+     *
+     * @param  string  $messageId  The unique message ID
+     * @return bool True if there is pending response data, false otherwise
+     */
+    public function hasPendingResponse(string $messageId): bool;
+
+    /**
+     * Clean up old pending responses that have exceeded the maximum age
+     *
+     * @param  int  $maxAge  Maximum age in seconds
+     * @return int Number of responses cleaned up
+     *
+     * @throws SseAdapterException If the cleanup cannot be performed
+     */
+    public function cleanupOldPendingResponses(int $maxAge): int;
 }

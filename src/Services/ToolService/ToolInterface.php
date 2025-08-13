@@ -2,22 +2,17 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService;
 
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+trigger_deprecation(
+    'klapaudius/klp-mcp-server',
+    '1.2.0',
+    sprintf(
+        'Interface "%s" is deprecated, use "%s" instead.',
+        ToolInterface::class,
+        StreamableToolInterface::class
+    )
+);
 
-interface ToolInterface
-{
-    /**
-     * Retrieves the name.
-     *
-     * @return string The name.
-     */
-    public function getName(): string;
-
-    public function getDescription(): string;
-
-    public function getInputSchema(): array;
-
-    public function getAnnotations(): ToolAnnotation;
-
-    public function execute(array $arguments): mixed;
-}
+/**
+ * @deprecated The ToolInterface is deprecated. Use StreamableToolInterface instead.
+ */
+interface ToolInterface extends BaseToolInterface {}

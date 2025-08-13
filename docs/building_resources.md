@@ -1,5 +1,18 @@
 # Building MCP Resources - Complete Walkthrough
 
+## Table of Contents
+1. [Introduction to Resources in Model Context Protocol (MCP)](#introduction-to-resources-in-model-context-protocol-mcp)
+2. [What are MCP Resources?](#what-are-mcp-resources)
+3. [Types of Resources](#types-of-resources)
+4. [Creating Your First MCP Resource](#creating-your-first-mcp-resource)
+5. [Understanding the Resource Interfaces](#understanding-the-resource-interfaces)
+6. [SamplingAwareResourceInterface](#samplingawareresourceinterface)
+7. [Using the Resource Class](#using-the-resource-class)
+8. [Advanced Resource Development](#advanced-resource-development)
+9. [Best Practices for MCP Resource Development](#best-practices-for-mcp-resource-development)
+10. [Example Resources](#example-resources)
+11. [Conclusion](#conclusion)
+
 ## Introduction to Resources in Model Context Protocol (MCP)
 
 Resources in the Model Context Protocol (MCP) are data objects that can be accessed by Large Language Models (LLMs) through the MCP server. Unlike tools, which provide functionality, resources provide data that LLMs can reference or use in their processing. Resources enable LLMs to:
@@ -154,6 +167,79 @@ Resource templates must implement the `ResourceTemplateInterface`, which extends
 6. **resourceExists(string $uri): bool**
    - Checks if a resource with the given URI exists
    - Returns true if the resource exists, false otherwise
+
+## SamplingAwareResourceInterface
+
+For resources that need to make LLM sampling requests during data generation, implement the `SamplingAwareResourceInterface`. This interface extends `ResourceInterface` and provides access to a `SamplingClient` for creating nested LLM calls.
+
+### When to Use Sampling
+
+Use sampling in resources that need:
+- Dynamic content generation based on project data
+- AI-enhanced summaries or analysis
+- Content that adapts based on context
+- Natural language processing of existing data
+
+### Implementation
+
+```php
+use KLP\KlpMcpServer\Services\ResourceService\SamplingAwareResourceInterface;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+
+class ProjectAnalysisResource implements SamplingAwareResourceInterface
+{
+    private ?SamplingClient $samplingClient = null;
+    private ?string $cachedData = null;
+
+    public function setSamplingClient(SamplingClient $samplingClient): void
+    {
+        $this->samplingClient = $samplingClient;
+        $this->cachedData = null; // Clear cache when client changes
+    }
+
+    public function getData(): string
+    {
+        if ($this->cachedData !== null) {
+            return $this->cachedData;
+        }
+
+        if ($this->samplingClient === null || !$this->samplingClient->canSample()) {
+            return 'Static fallback content when sampling is not available';
+        }
+
+        try {
+            $projectInfo = $this->gatherProjectInfo();
+            $prompt = "Analyze this project: " . json_encode($projectInfo);
+            
+            $response = $this->samplingClient->createTextRequest(
+                $prompt,
+                new ModelPreferences(
+                    hints: [['name' => 'claude-3-sonnet']],
+                    intelligencePriority: 0.8
+                ),
+                null,
+                2000 // max tokens
+            );
+
+            $this->cachedData = $response->getContent()->getText() ?? 'No analysis generated';
+            return $this->cachedData;
+        } catch (\Exception $e) {
+            return 'Error generating analysis: ' . $e->getMessage();
+        }
+    }
+
+    // ... other required interface methods
+}
+```
+
+### Best Practices
+
+- Always check if sampling is available with `canSample()`
+- Implement caching to avoid repeated expensive LLM calls
+- Provide fallback content when sampling fails
+- Handle sampling failures gracefully
+- Clear cache when sampling client changes
 
 ## Using the Resource Class
 

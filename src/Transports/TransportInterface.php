@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Transports;
 
 use Exception;
+use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 
 /**
  * Interface TransportInterface
@@ -97,4 +98,25 @@ interface TransportInterface
      * @throws Exception If the message cannot be pushed to the client
      */
     public function pushMessage(string $clientId, array $message): void;
+
+    /**
+     * Retrieves the client ID. If the client ID is not already set, generates a unique ID.
+     *
+     * @return string The client ID.
+     */
+    public function getClientId(): string;
+
+    /**
+     * Sets the client sampling capability status.
+     *
+     * @param  bool  $hasSamplingCapability  Indicates whether the client has sampling capability.
+     */
+    public function setClientSamplingCapability(bool $hasSamplingCapability): void;
+
+    /**
+     * Get the adapter instance for this transport.
+     *
+     * @return SseAdapterInterface|null The adapter implementation, or null if no adapter is set.
+     */
+    public function getAdapter(): ?SseAdapterInterface;
 }

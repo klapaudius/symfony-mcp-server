@@ -23,7 +23,7 @@ class ResourcesReadHandlerTest extends TestCase
     protected function setUp(): void
     {
         $this->resourceRepository = $this->createMock(ResourceRepository::class);
-        $this->handler = new ResourcesReadHandler($this->resourceRepository);
+        $this->handler = new ResourcesReadHandler($this->resourceRepository, null);
     }
 
     /**
@@ -42,7 +42,7 @@ class ResourcesReadHandlerTest extends TestCase
             ->with('test-uri')
             ->willReturn($resourceMock);
 
-        $result = $this->handler->execute('resources/read', 123, ['uri' => 'test-uri']);
+        $result = $this->handler->execute('resources/read', 'test-client', 123, ['uri' => 'test-uri']);
 
         $this->assertEquals([
             'contents' => [
@@ -71,7 +71,7 @@ class ResourcesReadHandlerTest extends TestCase
             ->with('image-uri')
             ->willReturn($resourceMock);
 
-        $result = $this->handler->execute('resources/read', 456, ['uri' => 'image-uri']);
+        $result = $this->handler->execute('resources/read', 'test-client', 456, ['uri' => 'image-uri']);
 
         $this->assertEquals([
             'contents' => [
@@ -94,7 +94,7 @@ class ResourcesReadHandlerTest extends TestCase
             ->with('unknown-uri')
             ->willReturn(null);
 
-        $result = $this->handler->execute('resources/read', 789, ['uri' => 'unknown-uri']);
+        $result = $this->handler->execute('resources/read', 'test-client', 789, ['uri' => 'unknown-uri']);
 
         $this->assertEquals([], $result);
     }
