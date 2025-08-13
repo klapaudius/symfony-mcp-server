@@ -515,6 +515,11 @@ class ToolsCallHandlerTest extends TestCase
                 return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
             }
 
+            public function getOutputSchema(): array
+            {
+                return [];
+            }
+
             public function getAnnotations(): ToolAnnotation
             {
                 return new ToolAnnotation;
@@ -784,6 +789,11 @@ class ToolsCallHandlerTest extends TestCase
             public function getInputSchema(): array
             {
                 return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+            }
+
+            public function getOutputSchema(): array
+            {
+                return [];
             }
 
             public function getAnnotations(): ToolAnnotation

@@ -47,6 +47,24 @@ interface BaseToolInterface
     public function getInputSchema(): array;
 
     /**
+     * Gets the JSON Schema definition for the tool's output parameters.
+     *
+     * The schema defines the expected structure, types, and constraints for the
+     * expected output structure. This schema is used
+     * to provide type hints to LLM clients.
+     *
+     * @return array The JSON Schema as an associative array. Common structure:
+     *               [
+     *               'type' => 'object',
+     *               'properties' => [
+     *               'param' => ['type' => 'string', 'description' => '...'],
+     *               ],
+     *               'required' => ['param'],
+     *               ]
+     */
+    public function getOutputSchema(): array;
+
+    /**
      * Gets the behavioral annotations for the tool.
      *
      * Annotations provide metadata hints about the tool's behavior, helping

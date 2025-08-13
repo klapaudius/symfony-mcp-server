@@ -34,6 +34,11 @@ class HelloWorldTool implements StreamableToolInterface
         ];
     }
 
+    public function getOutputSchema(): array
+    {
+        return [];
+    }
+
     public function getAnnotations(): ToolAnnotation
     {
         return new ToolAnnotation;
