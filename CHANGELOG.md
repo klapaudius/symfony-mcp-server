@@ -6,10 +6,10 @@
 - **Enhancements:**
   - Refactor StreamableHttpController with better protocol version detection via headers
   - Add comprehensive validation for batch requests based on the protocol version
-  - Enhanced resource and tool response formatting with name and title fields
+  - #49 Add name and title in returned json on resource/call
   - Update the TransportFactory to support multiple protocol versions
 - **Architecture Improvements:**
-  - Refactor tool documentation to use StructuredSchema for input/output schemas
+  - #48 Refactor tools to use StructuredSchema for input/output schemas
   - Add comprehensive unit tests
   - Improve code organization with better separation of concerns in request handling
   - Add proper type declarations and final method modifiers where appropriate
@@ -17,6 +17,7 @@
   - Improve error handling for invalid protocol versions
 - **Documentation:**
   - Add MCP features status table in README
+  - Update tool documentation to use StructuredSchema for input/output schemas
 - **Migration Command**
   - Add the MigrateToolSchemaCommand to help developers on tools new StructuredSchema feature migration
 
