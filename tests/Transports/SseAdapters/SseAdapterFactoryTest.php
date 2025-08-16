@@ -39,6 +39,9 @@ class SseAdapterFactoryTest extends TestCase
                     public function pexpireat($key, $timestamp) {}
                     public function pttl($key) {}
                     public function psetex($key, $ttl, $value) {}
+                    public function exists($key) {}
+                    public function keys($pattern) {}
+                    public function ttl($key) {}
                 }
             PHPUNIT_EVAL);
         }
