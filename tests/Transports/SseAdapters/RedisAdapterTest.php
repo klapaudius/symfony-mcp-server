@@ -22,6 +22,30 @@ final class RedisAdapterTest extends TestCase
 
     protected function setUp(): void
     {
+        if (! class_exists(\Redis::class)) {
+            eval(<<<'PHPUNIT_EVAL'
+                class Redis {
+                    const OPT_PREFIX = 2;
+                    public function __call($name, $arguments) {}
+                    public function connect($host, $port) {}
+                    public function setOption($option, $value) {}
+                    public function rpush($key, $value) {}
+                    public function expire($key, $ttl) {}
+                    public function lpop($key) {}
+                    public function llen($key) {}
+                    public function del($key) {}
+                    public function set($key, $value) {}
+                    public function get($key) {}
+                    public function pexpire($key, $ttl) {}
+                    public function pexpireat($key, $timestamp) {}
+                    public function pttl($key) {}
+                    public function psetex($key, $ttl, $value) {}
+                    public function exists($key) {}
+                    public function keys($pattern) {}
+                    public function ttl($key) {}
+                }
+            PHPUNIT_EVAL);
+        }
         $this->redisMock = $this->getMockBuilder(\Redis::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['connect', 'setOption', 'rpush', 'expire', 'lpop', 'llen', 'del', 'set', 'get', 'pexpire', 'pexpireat', 'pttl', 'psetex', 'exists', 'keys', 'ttl'])
@@ -1106,7 +1130,7 @@ final class RedisAdapterTest extends TestCase
                 $deletedKeys[] = $key;
                 return 1;
             });
-        
+
         // After the test, we'll verify the correct keys were deleted
 
         $this->loggerMock->expects($this->once())
@@ -1119,7 +1143,7 @@ final class RedisAdapterTest extends TestCase
         $deletedCount = $this->redisAdapter->cleanupOldPendingResponses(60);
 
         $this->assertEquals(2, $deletedCount);
-        
+
         // Verify that the correct keys were deleted (keys with TTL < 60)
         $this->assertContains($keys[2], $deletedKeys);
         $this->assertContains($keys[3], $deletedKeys);
