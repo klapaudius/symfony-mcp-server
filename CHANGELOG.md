@@ -19,7 +19,8 @@
   - Add MCP features status table in README
   - Update tool documentation to use StructuredSchema for input/output schemas
 - **Migration Command**
-  - Add the MigrateToolSchemaCommand to help developers on tools new StructuredSchema feature migration
+  - Add the MigrateToolSchemaCommand to help developers on tools new StructuredSchema feature migration:
+      php bin/console mcp:migrate-tool-schema \\App\\MCP\\Tools\\MyLegacyTool
 
 ### Version 1.4.0
 - **Core Features:**

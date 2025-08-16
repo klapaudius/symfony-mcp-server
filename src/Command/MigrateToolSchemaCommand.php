@@ -11,6 +11,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * To be removed on 2.0.0
+ */
 #[AsCommand(
     name: 'mcp:migrate-tool-schema',
     description: 'Migrates a tool class from array-based schema to StructuredSchema',
