@@ -46,11 +46,7 @@ final class RedisAdapterTest extends TestCase
                 }
             PHPUNIT_EVAL);
         }
-        $this->redisMock = $this->getMockBuilder(\Redis::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['connect', 'setOption', 'rpush', 'expire', 'lpop', 'llen', 'del', 'set', 'get', 'pexpire', 'pexpireat', 'pttl', 'psetex', 'exists', 'keys', 'ttl'])
-            ->getMock();
-
+        $this->redisMock = $this->createMock(Redis::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
         $this->redisAdapter = new RedisAdapter(
