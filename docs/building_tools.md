@@ -100,7 +100,7 @@ class MyCustomTool implements StreamableToolInterface
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation();
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): ToolResultInterface
@@ -967,7 +967,7 @@ class HelloWorldTool implements StreamableToolInterface
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation();
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): ToolResultInterface
@@ -1007,12 +1007,12 @@ final class VersionCheckTool implements StreamableToolInterface
 
     public function getInputSchema(): StructuredSchema
     {
-        return new StructuredSchema(); // No input parameters
+        return new StructuredSchema; // No input parameters
     }
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation();
+        return new ToolAnnotation;
     }
 
     public function execute(array $arguments): ToolResultInterface
