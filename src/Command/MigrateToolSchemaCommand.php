@@ -57,7 +57,7 @@ class MigrateToolSchemaCommand extends Command
                 $method = $reflection->getMethod('getInputSchema');
                 $returnType = $method->getReturnType();
 
-                if (!$returnType || $returnType->getName() !== 'array') {
+                if ($returnType?->__toString() !== 'array') {
                     $io->warning('getInputSchema method does not return array type. Migration may not be needed.');
                 }
             } catch (\ReflectionException $e) {

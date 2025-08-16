@@ -26,7 +26,7 @@ class MigrateToolSchemaCommandTest extends TestCase
         $application = new Application();
         $application->add($this->command);
         $this->commandTester = new CommandTester($this->command);
-        
+
         // Create temporary directory for test files
         $this->tempDir = sys_get_temp_dir() . '/mcp_test_' . uniqid();
         mkdir($this->tempDir, 0777, true);
@@ -56,7 +56,7 @@ class MigrateToolSchemaCommandTest extends TestCase
     {
         $this->assertEquals('mcp:migrate-tool-schema', $this->command->getName());
         $this->assertEquals('Migrates a tool class from array-based schema to StructuredSchema', $this->command->getDescription());
-        
+
         $definition = $this->command->getDefinition();
         $this->assertTrue($definition->hasArgument('class'));
         $this->assertTrue($definition->hasOption('dry-run'));
@@ -95,10 +95,12 @@ class MigrateToolSchemaCommandTest extends TestCase
     public function test_execute_with_class_that_does_not_return_array(): void
     {
         // Create a test class that returns something other than array
-        $className = $this->createTestClass('TestClassReturnsString', '
-            class TestClassReturnsString {
-                public function getInputSchema(): string {
-                    return "not an array";
+        $className = $this->createTestClass('TestClassReturnsStructuredSchema', '
+            use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+
+            class TestClassReturnsStructuredSchema {
+                public function getInputSchema(): StructuredSchema {
+                    return new StructuredSchema;
                 }
             }
         ');
@@ -125,7 +127,7 @@ class MigrateToolSchemaCommandTest extends TestCase
                                 "description" => "User name"
                             ],
                             "age" => [
-                                "type" => "integer", 
+                                "type" => "integer",
                                 "description" => "User age"
                             ]
                         ],
@@ -142,7 +144,7 @@ class MigrateToolSchemaCommandTest extends TestCase
 
         $this->assertEquals(Command::SUCCESS, $this->commandTester->getStatusCode());
         $output = $this->commandTester->getDisplay();
-        
+
         $this->assertStringContainsString('Migrating tool schema for', $output);
         $this->assertStringContainsString('Generated Code', $output);
         $this->assertStringContainsString('StructuredSchema', $output);
@@ -157,7 +159,6 @@ class MigrateToolSchemaCommandTest extends TestCase
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateSchemaProperty');
-        $method->setAccessible(true);
 
         $config = [
             'type' => 'string',
@@ -179,7 +180,6 @@ class MigrateToolSchemaCommandTest extends TestCase
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateSchemaProperty');
-        $method->setAccessible(true);
 
         $config = ['type' => 'integer'];
         $result = $method->invoke($command, 'simpleProperty', $config, false);
@@ -196,7 +196,6 @@ class MigrateToolSchemaCommandTest extends TestCase
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('mapJsonSchemaTypeToPropertyType');
-        $method->setAccessible(true);
 
         $this->assertEquals('STRING', $method->invoke($command, 'string'));
         $this->assertEquals('INTEGER', $method->invoke($command, 'integer'));
@@ -209,7 +208,6 @@ class MigrateToolSchemaCommandTest extends TestCase
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateUseStatements');
-        $method->setAccessible(true);
 
         $contentWithExisting = '<?php
 namespace Test;
@@ -218,7 +216,7 @@ use SomeOtherClass;
 class TestClass {}';
 
         $result = $method->invoke($command, $contentWithExisting);
-        
+
         // Should not add StructuredSchema again, but should add the others
         $this->assertStringNotContainsString('use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;', $result);
         $this->assertStringContainsString('use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;', $result);
@@ -230,14 +228,13 @@ class TestClass {}';
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateUseStatements');
-        $method->setAccessible(true);
 
         $contentWithoutUse = '<?php
 namespace Test;
 class TestClass {}';
 
         $result = $method->invoke($command, $contentWithoutUse);
-        
+
         $this->assertStringContainsString('use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;', $result);
         $this->assertStringContainsString('use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;', $result);
         $this->assertStringContainsString('use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;', $result);
@@ -248,7 +245,6 @@ class TestClass {}';
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateStructuredSchemaMethod');
-        $method->setAccessible(true);
 
         $schema = [
             'type' => 'object',
@@ -282,7 +278,6 @@ class TestClass {}';
         $command = new MigrateToolSchemaCommand();
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateStructuredSchemaMethod');
-        $method->setAccessible(true);
 
         $schema = [
             'type' => 'object',
@@ -306,10 +301,10 @@ namespace TestNamespace;
 
         $filename = $this->tempDir . '/' . $className . '.php';
         file_put_contents($filename, $content);
-        
+
         // Include the file so the class is available
         include_once $filename;
-        
+
         return $fullClassName;
     }
 
