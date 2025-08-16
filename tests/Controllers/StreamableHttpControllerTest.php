@@ -70,7 +70,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations for postHandle
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+            ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('requestMessage')
@@ -127,7 +127,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+            ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         $this->mockServer->expects($this->never())
             ->method('getClientId');
@@ -154,7 +154,7 @@ class StreamableHttpControllerTest extends TestCase
         ob_end_clean();
     }
 
-    public function test_post_handle_with_multiple_messages(): void
+    public function test_post_handle_with_multiple_messages_on_protocol_second_version(): void
     {
         $clientId = 'test-client-id';
         $messages = [
@@ -173,6 +173,7 @@ class StreamableHttpControllerTest extends TestCase
             json_encode($messages)
         );
         $request->headers->set('mcp-session-id', $clientId);
+        $request->headers->set('mcp-protocol-version', MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
@@ -217,6 +218,49 @@ class StreamableHttpControllerTest extends TestCase
         ob_end_clean();
     }
 
+    public function test_post_handle_with_multiple_messages_on_protocol_third_version(): void
+    {
+        $clientId = 'test-client-id';
+        $messages = [
+            ['jsonrpc' => '2.0', 'method' => 'test1', 'params' => [], 'id' => 1],
+            ['jsonrpc' => '2.0', 'method' => 'test2', 'params' => [], 'id' => 2],
+        ];
+
+        // Create request with headers and content
+        $request = new Request(
+            [], // query parameters
+            [], // request parameters
+            [], // attributes
+            [], // cookies
+            [], // files
+            [], // server parameters
+            json_encode($messages)
+        );
+        $request->headers->set('mcp-session-id', $clientId);
+        $request->headers->set('mcp-protocol-version', MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
+
+        // Set up server mock expectations
+        $this->mockServer->expects($this->once())
+            ->method('setProtocolVersion')
+            ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
+
+        $this->mockServer->expects($this->never())
+            ->method('getClientId');
+
+        // For protocol version 3, batch requests should return an error
+        $response = $this->controller->postHandle($request);
+
+        // Assert
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertEquals(400, $response->getStatusCode());
+        
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertEquals('2.0', $responseData['jsonrpc']);
+        $this->assertArrayHasKey('error', $responseData);
+        $this->assertEquals(-32600, $responseData['error']['code']);
+        $this->assertStringContainsString('Batch requests are not supported', $responseData['error']['message']);
+    }
+
     public function test_post_handle_with_fallback_client_id(): void
     {
         $clientId = 'fallback-client-id';
@@ -236,7 +280,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock expectations
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+            ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('getClientId')
@@ -304,7 +348,7 @@ class StreamableHttpControllerTest extends TestCase
         // Set up server mock to throw an exception
         $this->mockServer->expects($this->once())
             ->method('setProtocolVersion')
-            ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+            ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         $this->mockServer->expects($this->once())
             ->method('requestMessage')

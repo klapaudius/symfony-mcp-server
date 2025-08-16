@@ -46,7 +46,7 @@ class TransportFactoryTest extends TestCase
     public function test_create_returns_streamable_http_transport_for_streamable_http_protocol_version(): void
     {
         // Act
-        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+        $transport = $this->factory->create(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         // Assert
         $this->assertInstanceOf(StreamableHttpTransport::class, $transport);
@@ -99,11 +99,9 @@ class TransportFactoryTest extends TestCase
         $reflection = new \ReflectionClass($transport);
 
         $pingEnabledProperty = $reflection->getProperty('pingEnabled');
-        $pingEnabledProperty->setAccessible(true);
         $this->assertFalse($pingEnabledProperty->getValue($transport));
 
         $pingIntervalProperty = $reflection->getProperty('pingInterval');
-        $pingIntervalProperty->setAccessible(true);
         $this->assertEquals(10, $pingIntervalProperty->getValue($transport));
     }
 
@@ -114,9 +112,10 @@ class TransportFactoryTest extends TestCase
 
         // Assert
         $this->assertIsArray($versions);
-        $this->assertCount(2, $versions);
+        $this->assertCount(3, $versions);
         $this->assertContains(MCPProtocolInterface::PROTOCOL_FIRST_VERSION, $versions);
         $this->assertContains(MCPProtocolInterface::PROTOCOL_SECOND_VERSION, $versions);
+        $this->assertContains(MCPProtocolInterface::PROTOCOL_THIRD_VERSION, $versions);
     }
 
     public function test_factory_passes_dependencies_to_created_transport(): void

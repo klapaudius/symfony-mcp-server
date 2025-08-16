@@ -57,7 +57,8 @@ final class TransportFactory implements TransportFactoryInterface
                 pingEnabled: $this->pingEnabled,
                 pingInterval: $this->pingInterval
             ),
-            MCPProtocolInterface::PROTOCOL_SECOND_VERSION => new StreamableHttpTransport(
+            MCPProtocolInterface::PROTOCOL_SECOND_VERSION,
+            MCPProtocolInterface::PROTOCOL_THIRD_VERSION => new StreamableHttpTransport(
                 router: $this->router,
                 adapter: $this->adapter,
                 logger: $this->logger,
@@ -101,6 +102,7 @@ final class TransportFactory implements TransportFactoryInterface
         return [
             MCPProtocolInterface::PROTOCOL_FIRST_VERSION,
             MCPProtocolInterface::PROTOCOL_SECOND_VERSION,
+            MCPProtocolInterface::PROTOCOL_THIRD_VERSION,
         ];
     }
 

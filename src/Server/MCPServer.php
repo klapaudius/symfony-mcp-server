@@ -191,7 +191,7 @@ final class MCPServer implements MCPServerInterface
      */
     public function connect(): void
     {
-        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
+        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -259,6 +259,7 @@ final class MCPServer implements MCPServerInterface
         $supportedVersions = [
             MCPProtocolInterface::PROTOCOL_FIRST_VERSION,
             MCPProtocolInterface::PROTOCOL_SECOND_VERSION,
+            MCPProtocolInterface::PROTOCOL_THIRD_VERSION,
         ];
 
         // If the requested version is supported, return it
@@ -267,7 +268,7 @@ final class MCPServer implements MCPServerInterface
         }
 
         // return latest version
-        return MCPProtocolInterface::PROTOCOL_SECOND_VERSION;
+        return MCPProtocolInterface::PROTOCOL_THIRD_VERSION;
     }
 
     /**
@@ -297,6 +298,10 @@ final class MCPServer implements MCPServerInterface
         return $this->protocol->getClientId();
     }
 
+    /**
+     * @param string $protocolVersion
+     * @throws \InvalidArgumentException If the protocol version is not supported.
+     */
     public function setProtocolVersion(string $protocolVersion): void
     {
         $this->protocolVersion = $protocolVersion;
