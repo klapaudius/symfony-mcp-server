@@ -30,8 +30,8 @@ class PropertyTypeTest extends TestCase
     public function test_all_cases_have_correct_names(): void
     {
         $expectedCases = ['STRING', 'INTEGER'];
-        $actualCases = array_map(fn($case) => $case->name, PropertyType::cases());
-        
+        $actualCases = array_map(fn ($case) => $case->name, PropertyType::cases());
+
         $this->assertEquals($expectedCases, $actualCases);
     }
 

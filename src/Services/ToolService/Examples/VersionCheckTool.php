@@ -5,13 +5,11 @@ namespace KLP\KlpMcpServer\Services\ToolService\Examples;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\StructuredToolResult;
-use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
 use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
-use stdClass;
 use Symfony\Component\HttpKernel\Kernel;
 
 class VersionCheckTool implements StreamableToolInterface
@@ -60,7 +58,7 @@ class VersionCheckTool implements StreamableToolInterface
     {
         return new StructuredToolResult([
             'version' => Kernel::VERSION,
-            'date' => (new \DateTime('now'))->format('Y-m-d H:i:s')
+            'date' => (new \DateTime('now'))->format('Y-m-d H:i:s'),
         ]);
     }
 

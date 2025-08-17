@@ -253,7 +253,7 @@ class StreamableHttpControllerTest extends TestCase
         // Assert
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(400, $response->getStatusCode());
-        
+
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('2.0', $responseData['jsonrpc']);
         $this->assertArrayHasKey('error', $responseData);

@@ -299,7 +299,6 @@ final class MCPServer implements MCPServerInterface
     }
 
     /**
-     * @param string $protocolVersion
      * @throws \InvalidArgumentException If the protocol version is not supported.
      */
     public function setProtocolVersion(string $protocolVersion): void

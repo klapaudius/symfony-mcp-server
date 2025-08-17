@@ -25,8 +25,7 @@ class MigrateToolSchemaCommand extends Command
         $this
             ->addArgument('class', InputArgument::REQUIRED, 'The fully qualified class name of the tool to migrate')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Show what would be changed without modifying files')
-            ->addOption('backup', null, InputOption::VALUE_NONE, 'Create a backup of the original file')
-        ;
+            ->addOption('backup', null, InputOption::VALUE_NONE, 'Create a backup of the original file');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -38,14 +37,14 @@ class MigrateToolSchemaCommand extends Command
             $backup = $input->getOption('backup');
 
             // Validate class exists
-            if (!class_exists($className)) {
+            if (! class_exists($className)) {
                 throw new Exception(sprintf('Class "%s" not found', $className));
             }
 
             $reflection = new \ReflectionClass($className);
             $filePath = $reflection->getFileName();
 
-            if (!$filePath) {
+            if (! $filePath) {
                 throw new Exception('Could not determine file path for class');
             }
 
@@ -71,7 +70,7 @@ class MigrateToolSchemaCommand extends Command
             $instance = $reflection->newInstance();
             $currentSchema = $instance->getInputSchema();
 
-            if (!is_array($currentSchema)) {
+            if (! is_array($currentSchema)) {
                 throw new Exception('getInputSchema does not return an array. Already migrated?');
             }
 
@@ -88,12 +87,13 @@ class MigrateToolSchemaCommand extends Command
 
             if ($dryRun) {
                 $io->success('Dry run completed. No files were modified.');
+
                 return Command::SUCCESS;
             }
 
             // Create backup if requested
             if ($backup) {
-                $backupPath = $filePath . '.bak';
+                $backupPath = $filePath.'.bak';
                 copy($filePath, $backupPath);
                 $io->text(sprintf('Backup created: %s', $backupPath));
             }
@@ -114,6 +114,7 @@ class MigrateToolSchemaCommand extends Command
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             $io->error($e->getMessage());
+
             return Command::FAILURE;
         }
     }
@@ -134,7 +135,7 @@ class MigrateToolSchemaCommand extends Command
 
         $code .= implode(",\n", $propertyLines);
         $code .= "\n        );\n";
-        $code .= "    }";
+        $code .= '    }';
 
         return $code;
     }
@@ -158,7 +159,7 @@ class MigrateToolSchemaCommand extends Command
         }
 
         $code .= sprintf("                required: %s\n", $required ? 'true' : 'false');
-        $code .= "            )";
+        $code .= '            )';
 
         return $code;
     }
@@ -177,13 +178,13 @@ class MigrateToolSchemaCommand extends Command
         $statements = [];
 
         // Check if these use statements already exist
-        if (!str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;')) {
+        if (! str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;')) {
             $statements[] = 'use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;';
         }
-        if (!str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;')) {
+        if (! str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;')) {
             $statements[] = 'use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;';
         }
-        if (!str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;')) {
+        if (! str_contains($content, 'use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;')) {
             $statements[] = 'use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;';
         }
 
@@ -195,16 +196,17 @@ class MigrateToolSchemaCommand extends Command
         // Add use statements after namespace
         if ($useStatements) {
             $pattern = '/(namespace [^;]+;)/';
-            $replacement = "$1\n\n" . $useStatements;
+            $replacement = "$1\n\n".$useStatements;
             $content = preg_replace($pattern, $replacement, $content, 1);
         }
 
         // Replace the getInputSchema method
         $pattern = '/public function getInputSchema\(\):\s*array\s*\{[^}]*\}(\s*\})?/s';
-        $content = preg_replace_callback($pattern, function($matches) use ($newMethod) {
+        $content = preg_replace_callback($pattern, function ($matches) use ($newMethod) {
             // Check if we matched a nested closing brace
             $extraBrace = isset($matches[1]) ? $matches[1] : '';
-            return $newMethod . $extraBrace;
+
+            return $newMethod.$extraBrace;
         }, $content);
 
         // Update the return type hint in interface implementations

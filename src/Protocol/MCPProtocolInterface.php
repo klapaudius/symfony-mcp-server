@@ -16,9 +16,10 @@ use KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler;
  */
 interface MCPProtocolInterface
 {
-
     public const PROTOCOL_FIRST_VERSION = '2024-11-05';
+
     public const PROTOCOL_SECOND_VERSION = '2025-03-26';
+
     public const PROTOCOL_THIRD_VERSION = '2025-06-18';
 
     /**
@@ -32,7 +33,6 @@ interface MCPProtocolInterface
     public const PROTOCOL_VERSION_STREAMABE_HTTP = self::PROTOCOL_SECOND_VERSION;
 
     /**
-     * @param string $version
      * @throws \InvalidArgumentException If the protocol version is not supported.
      */
     public function setProtocolVersion(string $version): void;

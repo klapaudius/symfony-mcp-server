@@ -54,10 +54,10 @@ final readonly class StreamableHttpController
 
             try {
                 $input = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
-                $this->logger?->debug('Received message from clientId:' . $clientId, ['message' => $input]);
+                $this->logger?->debug('Received message from clientId:'.$clientId, ['message' => $input]);
 
                 // Batch request MUST NOT be handled unless the protocol version is 2025-03-26
-                if ( $mcpProtocolVersion === MCPProtocolInterface::PROTOCOL_SECOND_VERSION ) {
+                if ($mcpProtocolVersion === MCPProtocolInterface::PROTOCOL_SECOND_VERSION) {
                     return $this->handleBatchableInput($clientId, $input);
                 } else {
                     return $this->handleInput($clientId, $input);
@@ -67,14 +67,14 @@ final readonly class StreamableHttpController
 
                 return new JsonResponse(['jsonrpc' => 2.0, 'error' => ['code' => -32700, 'message' => $message]], 400);
             }
-        }catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return new JsonResponse(['jsonrpc' => 2.0, 'error' => ['code' => -32600, 'message' => $e->getMessage()]], 400);
         }
     }
 
     private function handleBatchableInput(string $clientId, mixed $input): StreamedResponse
     {
-        $willStream = !isset($input['jsonrpc']) && isset($input[0]['jsonrpc']);
+        $willStream = ! isset($input['jsonrpc']) && isset($input[0]['jsonrpc']);
         $messages = $willStream ? $input : [$input];
 
         return new StreamedResponse(function () use ($clientId, $messages) {

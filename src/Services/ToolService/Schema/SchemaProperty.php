@@ -13,20 +13,20 @@ namespace KLP\KlpMcpServer\Services\ToolService\Schema;
 readonly class SchemaProperty
 {
     /**
-     * @param string $name  The property name as it will appear in the JSON Schema
-     * @param PropertyType $type  The JSON Schema type
-     * @param string $description  A human-readable description of the property
-     * @param array $enum  An array of allowed values for this property
-     * @param string $default  The default value for this property
-     * @param bool $required  Whether this property is required in the input schema
+     * @param  string  $name  The property name as it will appear in the JSON Schema
+     * @param  PropertyType  $type  The JSON Schema type
+     * @param  string  $description  A human-readable description of the property
+     * @param  array  $enum  An array of allowed values for this property
+     * @param  string  $default  The default value for this property
+     * @param  bool  $required  Whether this property is required in the input schema
      */
     public function __construct(
-        private string       $name,
+        private string $name,
         private PropertyType $type,
-        private string       $description = '',
-        private array        $enum = [],
-        private string       $default = '',
-        private bool         $required = false
+        private string $description = '',
+        private array $enum = [],
+        private string $default = '',
+        private bool $required = false
     ) {}
 
     /**
@@ -42,7 +42,7 @@ readonly class SchemaProperty
     /**
      * Gets the property type.
      *
-     * @return PropertyType  The JSON Schema type for this property
+     * @return PropertyType The JSON Schema type for this property
      */
     public function getType(): PropertyType
     {

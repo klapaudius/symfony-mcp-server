@@ -3,32 +3,31 @@
 namespace KLP\KlpMcpServer\Tests\Command;
 
 use KLP\KlpMcpServer\Command\MigrateToolSchemaCommand;
-use KLP\KlpMcpServer\Services\ToolService\BaseToolInterface;
-use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
-use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
-use ReflectionClass;
 
 #[Small]
 class MigrateToolSchemaCommandTest extends TestCase
 {
     private MigrateToolSchemaCommand $command;
+
     private CommandTester $commandTester;
+
     private string $tempDir;
 
     protected function setUp(): void
     {
-        $this->command = new MigrateToolSchemaCommand();
-        $application = new Application();
+        $this->command = new MigrateToolSchemaCommand;
+        $application = new Application;
         $application->add($this->command);
         $this->commandTester = new CommandTester($this->command);
 
         // Create temporary directory for test files
-        $this->tempDir = sys_get_temp_dir() . '/mcp_test_' . uniqid();
+        $this->tempDir = sys_get_temp_dir().'/mcp_test_'.uniqid();
         mkdir($this->tempDir, 0777, true);
     }
 
@@ -45,7 +44,7 @@ class MigrateToolSchemaCommandTest extends TestCase
         if (is_dir($dir)) {
             $files = array_diff(scandir($dir), ['.', '..']);
             foreach ($files as $file) {
-                $path = $dir . DIRECTORY_SEPARATOR . $file;
+                $path = $dir.DIRECTORY_SEPARATOR.$file;
                 is_dir($path) ? $this->removeDirectory($path) : unlink($path);
             }
             rmdir($dir);
@@ -66,7 +65,7 @@ class MigrateToolSchemaCommandTest extends TestCase
     public function test_execute_with_nonexistent_class(): void
     {
         $this->commandTester->execute([
-            'class' => 'NonExistentClass'
+            'class' => 'NonExistentClass',
         ]);
 
         $this->assertEquals(Command::FAILURE, $this->commandTester->getStatusCode());
@@ -85,7 +84,7 @@ class MigrateToolSchemaCommandTest extends TestCase
         ');
 
         $this->commandTester->execute([
-            'class' => $className
+            'class' => $className,
         ]);
 
         $this->assertEquals(Command::FAILURE, $this->commandTester->getStatusCode());
@@ -106,7 +105,7 @@ class MigrateToolSchemaCommandTest extends TestCase
         ');
 
         $this->commandTester->execute([
-            'class' => $className
+            'class' => $className,
         ]);
 
         $this->assertEquals(Command::FAILURE, $this->commandTester->getStatusCode());
@@ -139,7 +138,7 @@ class MigrateToolSchemaCommandTest extends TestCase
 
         $this->commandTester->execute([
             'class' => $className,
-            '--dry-run' => true
+            '--dry-run' => true,
         ]);
 
         $this->assertEquals(Command::SUCCESS, $this->commandTester->getStatusCode());
@@ -156,14 +155,14 @@ class MigrateToolSchemaCommandTest extends TestCase
 
     public function test_generate_schema_property_with_all_parameters(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateSchemaProperty');
 
         $config = [
             'type' => 'string',
             'description' => 'Test description',
-            'default' => 'defaultValue'
+            'default' => 'defaultValue',
         ];
 
         $result = $method->invoke($command, 'testProperty', $config, true);
@@ -177,7 +176,7 @@ class MigrateToolSchemaCommandTest extends TestCase
 
     public function test_generate_schema_property_minimal(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateSchemaProperty');
 
@@ -193,7 +192,7 @@ class MigrateToolSchemaCommandTest extends TestCase
 
     public function test_map_json_schema_type_to_property_type(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('mapJsonSchemaTypeToPropertyType');
 
@@ -205,7 +204,7 @@ class MigrateToolSchemaCommandTest extends TestCase
 
     public function test_generate_use_statements_with_existing_statements(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateUseStatements');
 
@@ -225,7 +224,7 @@ class TestClass {}';
 
     public function test_generate_use_statements_with_no_existing_statements(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateUseStatements');
 
@@ -242,7 +241,7 @@ class TestClass {}';
 
     public function test_generate_structured_schema_method(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateStructuredSchemaMethod');
 
@@ -251,14 +250,14 @@ class TestClass {}';
             'properties' => [
                 'name' => [
                     'type' => 'string',
-                    'description' => 'User name'
+                    'description' => 'User name',
                 ],
                 'age' => [
                     'type' => 'integer',
-                    'description' => 'User age'
-                ]
+                    'description' => 'User age',
+                ],
             ],
-            'required' => ['name']
+            'required' => ['name'],
         ];
 
         $result = $method->invoke($command, $schema);
@@ -275,14 +274,14 @@ class TestClass {}';
 
     public function test_generate_structured_schema_method_with_empty_schema(): void
     {
-        $command = new MigrateToolSchemaCommand();
+        $command = new MigrateToolSchemaCommand;
         $reflection = new ReflectionClass($command);
         $method = $reflection->getMethod('generateStructuredSchemaMethod');
 
         $schema = [
             'type' => 'object',
             'properties' => [],
-            'required' => []
+            'required' => [],
         ];
 
         $result = $method->invoke($command, $schema);
@@ -294,12 +293,12 @@ class TestClass {}';
 
     private function createTestClass(string $className, string $classDefinition): string
     {
-        $fullClassName = 'TestNamespace\\' . $className;
+        $fullClassName = 'TestNamespace\\'.$className;
         $content = '<?php
 namespace TestNamespace;
-' . $classDefinition;
+'.$classDefinition;
 
-        $filename = $this->tempDir . '/' . $className . '.php';
+        $filename = $this->tempDir.'/'.$className.'.php';
         file_put_contents($filename, $content);
 
         // Include the file so the class is available
@@ -321,7 +320,7 @@ namespace TestNamespace;
 
         $this->commandTester->execute([
             'class' => $className,
-            '--dry-run' => true
+            '--dry-run' => true,
         ]);
 
         $this->assertEquals(Command::FAILURE, $this->commandTester->getStatusCode());

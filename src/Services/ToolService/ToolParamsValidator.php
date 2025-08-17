@@ -49,12 +49,13 @@ class ToolParamsValidator
      * @param  array<string, mixed>  $arguments  The arguments to be validated.
      *
      * @throws ToolParamsValidatorException if validation fails.
+     *
      * @todo remove the array type hint for $toolSchema on v2.0.0.
      */
     public static function validate(StructuredSchema|array $toolSchema, array $arguments): void
     {
         self::getInstance();
-        if ( $toolSchema instanceof StructuredSchema ) {
+        if ($toolSchema instanceof StructuredSchema) {
             $toolSchema = $toolSchema->asArray();
         }
 

@@ -1124,6 +1124,7 @@ final class RedisAdapterTest extends TestCase
             ->method('del')
             ->willReturnCallback(function ($key) use (&$deletedKeys) {
                 $deletedKeys[] = $key;
+
                 return 1;
             });
 

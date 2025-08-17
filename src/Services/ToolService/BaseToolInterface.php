@@ -36,14 +36,15 @@ interface BaseToolInterface
      * for validation and to provide type hints to LLM clients.
      *
      * @return StructuredSchema|array The JSON Schema as an associative array. Common structure:
-     *               [
-     *                  'type' => 'object',
-     *                  'properties' => [
-     *                      'param' => ['type' => 'string', 'description' => '...'],
-     *                  ],
-     *                  'required' => ['param'],
-     *               ]
-     *               For tools with no parameters, use ['type' => 'object', 'properties' => new \stdClass].
+     *                                [
+     *                                'type' => 'object',
+     *                                'properties' => [
+     *                                'param' => ['type' => 'string', 'description' => '...'],
+     *                                ],
+     *                                'required' => ['param'],
+     *                                ]
+     *                                For tools with no parameters, use ['type' => 'object', 'properties' => new \stdClass].
+     *
      * @todo Remove the array type hint on v2.0.0.
      */
     public function getInputSchema(): StructuredSchema|array;
@@ -58,7 +59,9 @@ interface BaseToolInterface
      * @return StructuredSchema|null The JSON Schema for the tool's output, or null if the tool
      *                               doesn't provide a structured output schema. When provided,
      *                               this schema helps with type safety and output validation.
+     *
      * @see https://modelcontextprotocol.io/specification/2025-06-18/server/tools
+     *
      * @todo Uncomment the new method on v2.0.0.
      */
     // public function getOutputSchema(): ?StructuredSchema;
@@ -74,6 +77,7 @@ interface BaseToolInterface
      *                        - destructiveHint: true if the tool may perform destructive updates
      *                        - idempotentHint: true if repeated calls have no additional effect
      *                        - openWorldHint: true if the tool may interact with external entities
+     *
      * @see https://modelcontextprotocol.io/specification/2025-06-18/server/tools
      */
     public function getAnnotations(): ToolAnnotation;

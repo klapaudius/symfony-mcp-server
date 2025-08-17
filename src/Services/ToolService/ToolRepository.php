@@ -100,6 +100,7 @@ class ToolRepository
      *
      * @param  string  $name  The name of the tool to retrieve.
      * @return StreamableToolInterface|BaseToolInterface|null The tool instance if found, otherwise null.
+     *
      * @todo Set return type to ?StreamableToolInterface on v2.0.0.
      */
     public function getTool(string $name): StreamableToolInterface|BaseToolInterface|null
@@ -131,7 +132,6 @@ class ToolRepository
                 && $outputSchema = $tool->getOutputSchema()) {
                 $injectArray['outputSchema'] = $outputSchema->asArray();
             }
-
 
             $schemas[] = [
                 'name' => $tool->getName(),

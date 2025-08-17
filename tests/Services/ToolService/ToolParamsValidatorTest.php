@@ -3,10 +3,10 @@
 namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
-use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
-use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
-use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
 use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
@@ -194,7 +194,7 @@ class ToolParamsValidatorTest extends TestCase
 
         $arguments = [
             'name' => 'John Doe',
-            'age' => 30
+            'age' => 30,
         ];
 
         $this->expectNotToPerformAssertions();
@@ -222,7 +222,7 @@ class ToolParamsValidatorTest extends TestCase
         );
 
         $arguments = [
-            'name' => 'John Doe'
+            'name' => 'John Doe',
             // Missing required 'email'
         ];
 
@@ -259,7 +259,7 @@ class ToolParamsValidatorTest extends TestCase
 
         $arguments = [
             'name' => 123, // Should be string
-            'age' => 'thirty' // Should be integer
+            'age' => 'thirty', // Should be integer
         ];
 
         $this->expectException(ToolParamsValidatorException::class);
@@ -291,7 +291,7 @@ class ToolParamsValidatorTest extends TestCase
 
         $arguments = [
             'name' => 'John Doe',
-            'unknown_field' => 'some value'
+            'unknown_field' => 'some value',
         ];
 
         $this->expectException(ToolParamsValidatorException::class);
@@ -310,7 +310,7 @@ class ToolParamsValidatorTest extends TestCase
      */
     public function test_validate_with_empty_structured_schema(): void
     {
-        $schema = new StructuredSchema();
+        $schema = new StructuredSchema;
         $arguments = [];
 
         $this->expectNotToPerformAssertions();
@@ -322,7 +322,7 @@ class ToolParamsValidatorTest extends TestCase
      */
     public function test_validate_with_empty_structured_schema_with_arguments(): void
     {
-        $schema = new StructuredSchema();
+        $schema = new StructuredSchema;
         $arguments = ['unexpected' => 'value'];
 
         $this->expectException(ToolParamsValidatorException::class);
@@ -394,19 +394,19 @@ class ToolParamsValidatorTest extends TestCase
     public function test_validate_with_structured_schema_stdclass_handling(): void
     {
         // Create a schema that when converted to array will have stdClass for empty properties
-        $schema = new StructuredSchema();
+        $schema = new StructuredSchema;
         $schemaArray = $schema->asArray();
-        
+
         // Verify that properties is stdClass when empty
         $this->assertInstanceOf(\stdClass::class, $schemaArray['properties']);
         $this->assertEquals([], $schemaArray['required']);
 
         // Test validation with this schema
         $arguments = [];
-        
+
         // The test verifies stdClass handling works properly
         ToolParamsValidator::validate($schema, $arguments);
-        
+
         // If we reach here, the validation passed without throwing an exception
         $this->assertTrue(true);
     }
@@ -445,7 +445,7 @@ class ToolParamsValidatorTest extends TestCase
     {
         $instance1 = ToolParamsValidator::getInstance();
         $instance2 = ToolParamsValidator::getInstance();
-        
+
         $this->assertSame($instance1, $instance2);
         $this->assertInstanceOf(ToolParamsValidator::class, $instance1);
     }

@@ -10,11 +10,8 @@ namespace KLP\KlpMcpServer\Services\ToolService\Result;
  */
 final class StructuredToolResult extends AbstractToolResult
 {
-
     /**
      * The structured value to be returned.
-     *
-     * @var array
      */
     private array $structuredValue;
 

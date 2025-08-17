@@ -334,7 +334,8 @@ final class MCPProtocol implements MCPProtocolInterface
      * Configures the appropriate transport instance based on the provided version
      * and assigns handlers for messages, requests, and notifications.
      *
-     * @param string $version The version identifier used to initialize the transport.
+     * @param  string  $version  The version identifier used to initialize the transport.
+     *
      * @throws \InvalidArgumentException If the protocol version is not supported.
      */
     private function initTransport(string $version)

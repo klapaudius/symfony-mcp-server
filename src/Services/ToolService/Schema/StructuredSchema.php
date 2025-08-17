@@ -24,9 +24,10 @@ class StructuredSchema
     private array $properties;
 
     /**
-     * @param SchemaProperty ...$properties Variable number of schema properties that define the tool's input structure
+     * @param  SchemaProperty  ...$properties  Variable number of schema properties that define the tool's input structure
      */
-    public function __construct(SchemaProperty ...$properties) {
+    public function __construct(SchemaProperty ...$properties)
+    {
         $this->properties = $properties;
     }
 
@@ -56,7 +57,7 @@ class StructuredSchema
         foreach ($this->properties as $property) {
             $properties[$property->getName()] = [
                 'type' => $this->getPropertyType($property),
-                'description' => $property->getDescription()
+                'description' => $property->getDescription(),
             ];
 
             if ($property->isRequired()) {
@@ -66,8 +67,8 @@ class StructuredSchema
 
         return [
             'type' => 'object',
-            'properties' => $properties ?: new stdClass(),
-            'required' => $required
+            'properties' => $properties ?: new stdClass,
+            'required' => $required,
         ];
     }
 
