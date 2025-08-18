@@ -105,6 +105,7 @@ class ToolParamsValidator
             'boolean' => is_bool($actualValue),
             'array' => is_array($actualValue),
             'object' => is_object($actualValue),
+            'number' => is_numeric($actualValue),
             default => false
         };
     }

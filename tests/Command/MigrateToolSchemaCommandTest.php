@@ -198,8 +198,11 @@ class MigrateToolSchemaCommandTest extends TestCase
 
         $this->assertEquals('STRING', $method->invoke($command, 'string'));
         $this->assertEquals('INTEGER', $method->invoke($command, 'integer'));
+        $this->assertEquals('ARRAY', $method->invoke($command, 'array'));
+        $this->assertEquals('BOOLEAN', $method->invoke($command, 'boolean'));
+        $this->assertEquals('OBJECT', $method->invoke($command, 'object'));
+        $this->assertEquals('NUMBER', $method->invoke($command, 'number'));
         $this->assertEquals('STRING', $method->invoke($command, 'unknown')); // Fallback
-        $this->assertEquals('STRING', $method->invoke($command, 'boolean')); // Fallback
     }
 
     public function test_generate_use_statements_with_existing_statements(): void
