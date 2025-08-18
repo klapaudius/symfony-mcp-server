@@ -1,3 +1,11 @@
+### Version 1.5.1
+- **Enhancements:**
+  - Extend PropertyType enum with NUMBER, OBJECT, ARRAY, and BOOLEAN types (#55) by @trandbert37
+  - Add support for all JSON schema property types in StructuredSchema system
+  - Update MigrateToolSchemaCommand to handle all supported property types
+  - Improve ToolParamsValidator with proper validation for number type
+  - Enhanced test coverage for all property types
+
 ### Version 1.5.0
 - **Core Features:**
   - Add MCP Protocol Version 2025-06-18 support
