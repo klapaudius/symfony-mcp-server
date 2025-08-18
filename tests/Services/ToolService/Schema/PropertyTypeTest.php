@@ -12,7 +12,7 @@ class PropertyTypeTest extends TestCase
     public function test_enum_cases_exist(): void
     {
         $this->assertIsArray(PropertyType::cases());
-        $this->assertCount(2, PropertyType::cases());
+        $this->assertCount(6, PropertyType::cases());
     }
 
     public function test_string_case_exists(): void
@@ -29,7 +29,7 @@ class PropertyTypeTest extends TestCase
 
     public function test_all_cases_have_correct_names(): void
     {
-        $expectedCases = ['STRING', 'INTEGER'];
+        $expectedCases = ['STRING', 'INTEGER', 'NUMBER', 'OBJECT', 'ARRAY', 'BOOLEAN'];
         $actualCases = array_map(fn ($case) => $case->name, PropertyType::cases());
 
         $this->assertEquals($expectedCases, $actualCases);
@@ -38,7 +38,7 @@ class PropertyTypeTest extends TestCase
     public function test_enum_values_are_unique(): void
     {
         $cases = PropertyType::cases();
-        $this->assertCount(2, $cases);
+        $this->assertCount(6, $cases);
         $this->assertNotEquals($cases[0], $cases[1]);
     }
 

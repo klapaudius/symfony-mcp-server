@@ -77,6 +77,10 @@ class StructuredSchema
         return match ($property->getType()) {
             PropertyType::STRING => 'string',
             PropertyType::INTEGER => 'integer',
+            PropertyType::ARRAY => 'array',
+            PropertyType::BOOLEAN => 'boolean',
+            PropertyType::OBJECT => 'object',
+            PropertyType::NUMBER => 'number',
         };
     }
 }
