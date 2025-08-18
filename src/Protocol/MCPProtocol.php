@@ -329,6 +329,15 @@ final class MCPProtocol implements MCPProtocolInterface
         $this->initTransport($version);
     }
 
+    /**
+     * Initializes the transport mechanism for communication.
+     * Configures the appropriate transport instance based on the provided version
+     * and assigns handlers for messages, requests, and notifications.
+     *
+     * @param  string  $version  The version identifier used to initialize the transport.
+     *
+     * @throws \InvalidArgumentException If the protocol version is not supported.
+     */
     private function initTransport(string $version)
     {
         if (! $this->transport instanceof TransportInterface) {

@@ -62,7 +62,8 @@ class ProfileGeneratorToolTest extends TestCase
 
     public function test_get_input_schema(): void
     {
-        $schema = $this->tool->getInputSchema();
+        $schemaObject = $this->tool->getInputSchema();
+        $schema = $schemaObject->asArray();
 
         $this->assertEquals('object', $schema['type']);
         $this->assertArrayHasKey('properties', $schema);

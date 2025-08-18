@@ -76,7 +76,7 @@ abstract class AbstractTransport implements TransportInterface
      *
      * @return string The client ID.
      */
-    public function getClientId(): string
+    final public function getClientId(): string
     {
         if ($this->clientId === null) {
             $this->clientId = uniqid();

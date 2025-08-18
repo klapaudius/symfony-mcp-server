@@ -6,6 +6,9 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class HelloWorldTool implements StreamableToolInterface
@@ -20,18 +23,21 @@ class HelloWorldTool implements StreamableToolInterface
         return 'Say HelloWorld developer.';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'name' => [
-                    'type' => 'string',
-                    'description' => 'Developer Name',
-                ],
-            ],
-            'required' => ['name'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'name',
+                type: PropertyType::STRING,
+                description: 'Developer Name',
+                required: true
+            )
+        );
+    }
+
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return null;
     }
 
     public function getOutputSchema(): array

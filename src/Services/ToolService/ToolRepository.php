@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Services\ToolService;
 
 use InvalidArgumentException;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use stdClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
@@ -98,9 +99,11 @@ class ToolRepository
      * Retrieves a specific tool by its name.
      *
      * @param  string  $name  The name of the tool to retrieve.
-     * @return StreamableToolInterface|null The tool instance if found, otherwise null.
+     * @return StreamableToolInterface|BaseToolInterface|null The tool instance if found, otherwise null.
+     *
+     * @todo Set return type to ?StreamableToolInterface on v2.0.0.
      */
-    public function getTool(string $name): ?StreamableToolInterface
+    public function getTool(string $name): StreamableToolInterface|BaseToolInterface|null
     {
         return $this->tools[$name] ?? null;
     }
@@ -124,12 +127,16 @@ class ToolRepository
                     'required' => [],
                 ];
             }
+            $inputSchema = $tool->getInputSchema();
+            if (method_exists($tool, 'getOutputSchema')
+                && $outputSchema = $tool->getOutputSchema()) {
+                $injectArray['outputSchema'] = $outputSchema->asArray();
+            }
 
             $schemas[] = [
                 'name' => $tool->getName(),
                 'description' => $tool->getDescription(),
-                'inputSchema' => $tool->getInputSchema(),
-                'outputSchema' => $tool->getOutputSchema(),
+                'inputSchema' => $inputSchema instanceof StructuredSchema ? $inputSchema->asArray() : $inputSchema,
                 'annotations' => $tool->getAnnotations()->toArray(),
                 ...$injectArray,
             ];

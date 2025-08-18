@@ -20,8 +20,10 @@ use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
-use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -67,7 +69,10 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_throws_exception_for_invalid_arguments(): void
     {
         $toolMock = $this->createMock(VersionCheckTool::class);
-        $toolMock->method('getInputSchema')->willReturn(['type' => 'object']);
+
+        // Create a real VersionCheckTool to get its actual schema for the validation test
+        $realTool = new VersionCheckTool;
+        $toolMock->method('getInputSchema')->willReturn($realTool->getInputSchema());
 
         $this->toolRepository
             ->method('getTool')
@@ -75,8 +80,6 @@ class ToolsCallHandlerTest extends TestCase
             ->willReturn($toolMock);
 
         $this->expectException(ToolParamsValidatorException::class);
-
-        ToolParamsValidator::validate(['type' => 'object'], ['invalid' => 'data']);
 
         $this->toolsCallHandler->execute('tools/call', 'client1', 3, ['name' => 'VersionCheckTool', 'arguments' => ['invalid' => 'data']]);
     }
@@ -140,7 +143,7 @@ class ToolsCallHandlerTest extends TestCase
         $progressNotifier = $this->createMock(ProgressNotifier::class);
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
-        $streamingTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $streamingTool->method('isStreaming')->willReturn(true);
         $streamingTool->method('execute')->willReturn(new TextToolResult('Streaming result'));
 
@@ -184,7 +187,7 @@ class ToolsCallHandlerTest extends TestCase
         $streamingTool = $this->createMock(StreamableToolInterface::class);
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
-        $streamingTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $streamingTool->method('isStreaming')->willReturn(true);
         $streamingTool->method('execute')->willReturn(new TextToolResult('Non-streaming result'));
 
@@ -224,7 +227,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('non-streaming-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn(new TextToolResult('Regular result'));
 
@@ -265,7 +268,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('any-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn(new TextToolResult('Tool result'));
 
@@ -296,7 +299,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('test-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object', 'properties' => new \stdClass, 'required' => []]);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(true);
         $tool->method('execute')->willReturn(new TextToolResult('Result without meta'));
 
@@ -337,7 +340,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('test-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object', 'properties' => new \stdClass, 'required' => []]);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(true);
         $tool->method('execute')->willReturn(new TextToolResult('Result with null token'));
 
@@ -380,7 +383,7 @@ class ToolsCallHandlerTest extends TestCase
         $imageResult = new ImageToolResult($base64Data, 'image/png');
 
         $tool->method('getName')->willReturn('image-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn($imageResult);
 
@@ -419,7 +422,7 @@ class ToolsCallHandlerTest extends TestCase
         $audioResult = new AudioToolResult($base64Data, 'audio/wav');
 
         $tool->method('getName')->willReturn('audio-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn($audioResult);
 
@@ -461,7 +464,7 @@ class ToolsCallHandlerTest extends TestCase
         );
 
         $tool->method('getName')->willReturn('resource-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn($resourceResult);
 
@@ -510,9 +513,9 @@ class ToolsCallHandlerTest extends TestCase
                 return 'Tool with empty args';
             }
 
-            public function getInputSchema(): array
+            public function getInputSchema(): StructuredSchema
             {
-                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+                return new StructuredSchema;
             }
 
             public function getOutputSchema(): array
@@ -562,18 +565,10 @@ class ToolsCallHandlerTest extends TestCase
         $tool = $this->createMock(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('complex-tool');
-        $tool->method('getInputSchema')->willReturn([
-            'type' => 'object',
-            'properties' => [
-                'message' => [
-                    'type' => 'string',
-                ],
-                'count' => [
-                    'type' => 'integer',
-                ],
-            ],
-            'required' => [],
-        ]);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema(
+            new SchemaProperty('message', PropertyType::STRING),
+            new SchemaProperty('count', PropertyType::INTEGER)
+        ));
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn(new TextToolResult('Complex result'));
 
@@ -610,7 +605,7 @@ class ToolsCallHandlerTest extends TestCase
         $progressNotifier = $this->createMock(ProgressNotifier::class);
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
-        $streamingTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $streamingTool->method('isStreaming')->willReturn(true);
         $streamingTool->method('execute')->willReturn(new TextToolResult('Integer token result'));
 
@@ -687,7 +682,7 @@ class ToolsCallHandlerTest extends TestCase
         $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
 
         $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
-        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Sampling aware result'));
 
         $samplingClient->expects($this->once())
@@ -734,7 +729,7 @@ class ToolsCallHandlerTest extends TestCase
         $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
 
         $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
-        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Result without sampling'));
 
         $samplingAwareTool->expects($this->never())
@@ -786,9 +781,9 @@ class ToolsCallHandlerTest extends TestCase
                 return 'Tool with both streaming and sampling';
             }
 
-            public function getInputSchema(): array
+            public function getInputSchema(): StructuredSchema
             {
-                return ['type' => 'object', 'properties' => new \stdClass, 'required' => []];
+                return new StructuredSchema;
             }
 
             public function getOutputSchema(): array
@@ -878,7 +873,7 @@ class ToolsCallHandlerTest extends TestCase
         $regularTool = $this->createMock(StreamableToolInterface::class);
 
         $regularTool->method('getName')->willReturn('regular-tool');
-        $regularTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $regularTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $regularTool->method('isStreaming')->willReturn(false);
         $regularTool->method('execute')->willReturn(new TextToolResult('Regular tool result'));
 
@@ -923,7 +918,7 @@ class ToolsCallHandlerTest extends TestCase
         $samplingAwareTool = $this->createMock(SamplingAwareToolInterface::class);
 
         $samplingAwareTool->method('getName')->willReturn('sampling-aware-tool');
-        $samplingAwareTool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $samplingAwareTool->method('getInputSchema')->willReturn(new StructuredSchema);
         $samplingAwareTool->method('execute')->willReturn(new TextToolResult('Result for client2'));
 
         // Test with different client ID
@@ -977,7 +972,7 @@ class ToolsCallHandlerTest extends TestCase
         $collectionResult->addItem($textResult2);
 
         $tool->method('getName')->willReturn('collection-tool');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
         $tool->method('isStreaming')->willReturn(false);
         $tool->method('execute')->willReturn($collectionResult);
 

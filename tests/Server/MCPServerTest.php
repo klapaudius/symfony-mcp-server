@@ -446,7 +446,7 @@ class MCPServerTest extends TestCase
 
         // Assert
         $this->assertTrue($this->getPrivateProperty($server, 'initialized'));
-        $this->assertEquals(MCPProtocolInterface::PROTOCOL_VERSION_SSE, $initializeResource->protocolVersion);
+        $this->assertEquals(MCPProtocolInterface::PROTOCOL_FIRST_VERSION, $initializeResource->protocolVersion);
         $this->assertSame($serverInfo, $initializeResource->serverInfo);
     }
 
@@ -567,7 +567,7 @@ class MCPServerTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(InitializeResource::class, $initializeResource);
-        $this->assertEquals(MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP, $initializeResource->protocolVersion);
+        $this->assertEquals(MCPProtocolInterface::PROTOCOL_THIRD_VERSION, $initializeResource->protocolVersion);
         $this->assertEquals($serverInfo, $initializeResource->serverInfo);
     }
 }

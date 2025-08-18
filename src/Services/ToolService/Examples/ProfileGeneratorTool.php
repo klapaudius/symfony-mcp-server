@@ -11,6 +11,9 @@ use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -41,22 +44,22 @@ class ProfileGeneratorTool implements SamplingAwareToolInterface
         return 'Generates a user profile with text description and avatar image';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'name' => [
-                    'type' => 'string',
-                    'description' => 'The name of the user',
-                ],
-                'role' => [
-                    'type' => 'string',
-                    'description' => 'The role or profession of the user',
-                ],
-            ],
-            'required' => ['name', 'role'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'name',
+                type: PropertyType::STRING,
+                description: 'The name of the user',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'role',
+                type: PropertyType::STRING,
+                description: 'The role or profession of the user',
+                required: true
+            )
+        );
     }
 
     public function getOutputSchema(): array

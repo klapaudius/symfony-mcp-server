@@ -191,7 +191,7 @@ final class MCPServer implements MCPServerInterface
      */
     public function connect(): void
     {
-        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->protocol->connect($this->protocolVersion ?? MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -232,7 +232,7 @@ final class MCPServer implements MCPServerInterface
         $this->initialized = true;
 
         // Validate and determine the protocol version to use
-        $requestedProtocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+        $requestedProtocolVersion = $data->protocolVersion ?? MCPProtocolInterface::PROTOCOL_FIRST_VERSION;
         $protocolVersion = $this->getValidatedProtocolVersion($requestedProtocolVersion);
 
         $hasSamplingCapability = isset($data->capabilities['sampling']);
@@ -257,8 +257,9 @@ final class MCPServer implements MCPServerInterface
     private function getValidatedProtocolVersion(string $requestedVersion): string
     {
         $supportedVersions = [
-            MCPProtocolInterface::PROTOCOL_VERSION_SSE,
-            MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP,
+            MCPProtocolInterface::PROTOCOL_FIRST_VERSION,
+            MCPProtocolInterface::PROTOCOL_SECOND_VERSION,
+            MCPProtocolInterface::PROTOCOL_THIRD_VERSION,
         ];
 
         // If the requested version is supported, return it
@@ -267,7 +268,7 @@ final class MCPServer implements MCPServerInterface
         }
 
         // return latest version
-        return MCPProtocolInterface::PROTOCOL_VERSION_STREAMABE_HTTP;
+        return MCPProtocolInterface::PROTOCOL_THIRD_VERSION;
     }
 
     /**
@@ -297,6 +298,9 @@ final class MCPServer implements MCPServerInterface
         return $this->protocol->getClientId();
     }
 
+    /**
+     * @throws \InvalidArgumentException If the protocol version is not supported.
+     */
     public function setProtocolVersion(string $protocolVersion): void
     {
         $this->protocolVersion = $protocolVersion;

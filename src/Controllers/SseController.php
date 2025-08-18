@@ -12,7 +12,7 @@ final readonly class SseController
 
     public function handle(): StreamedResponse
     {
-        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         return new StreamedResponse(fn () => $this->server->connect(), headers: [
             'Content-Type' => 'text/event-stream',

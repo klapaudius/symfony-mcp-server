@@ -69,6 +69,8 @@ class ResourcesReadHandler implements RequestHandler
             'contents' => [
                 [
                     'uri' => $resource->getUri(),
+                    'name' => $resource->getName(),
+                    'title' => $resource->getDescription(),
                     'mimeType' => $resource->getMimeType(),
                     $this->getContentType($resource) => $resource->getData(),
                 ],

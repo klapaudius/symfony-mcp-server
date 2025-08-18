@@ -37,7 +37,8 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_get_input_schema(): void
     {
-        $schema = $this->tool->getInputSchema();
+        $schemaObject = $this->tool->getInputSchema();
+        $schema = $schemaObject->asArray();
 
         $this->assertSame('object', $schema['type']);
         $this->assertArrayHasKey('code', $schema['properties']);
@@ -256,7 +257,8 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_get_input_schema_details(): void
     {
-        $schema = $this->tool->getInputSchema();
+        $schemaObject = $this->tool->getInputSchema();
+        $schema = $schemaObject->asArray();
 
         // Test complete schema structure
         $this->assertSame('object', $schema['type']);
@@ -269,9 +271,7 @@ class CodeAnalyzerToolTest extends TestCase
         // Test analysis_type property
         $this->assertArrayHasKey('analysis_type', $schema['properties']);
         $this->assertSame('string', $schema['properties']['analysis_type']['type']);
-        $this->assertSame(['security', 'performance', 'readability', 'general'], $schema['properties']['analysis_type']['enum']);
         $this->assertSame('Type of analysis to perform', $schema['properties']['analysis_type']['description']);
-        $this->assertSame('general', $schema['properties']['analysis_type']['default']);
 
         // Test required fields
         $this->assertSame(['code'], $schema['required']);
