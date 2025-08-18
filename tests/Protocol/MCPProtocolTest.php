@@ -33,7 +33,7 @@ class MCPProtocolTest extends TestCase
             ->method('getClientId')
             ->willReturn($this->exampleClientId);
         $this->mcpProtocol = new MCPProtocol($this->mockTransportFactory);
-        $this->mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -53,14 +53,14 @@ class MCPProtocolTest extends TestCase
         $mockTransportFactory
             ->expects($this->once())
             ->method('create')
-            ->with($this->equalTo(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP))
+            ->with($this->equalTo(MCPProtocol::PROTOCOL_THIRD_VERSION))
             ->willReturn($this->mockTransport);
 
         $this->mockTransport
             ->expects($this->once())
             ->method('onMessage');
 
-        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_THIRD_VERSION);
 
         $this->assertEquals($this->exampleClientId, $mcpProtocol->getClientId());
     }
@@ -96,7 +96,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('onMessage');
 
-        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $mcpProtocol->setProtocolVersion(MCPProtocol::PROTOCOL_THIRD_VERSION);
 
         $this->assertEquals($this->exampleClientId, $mcpProtocol->getClientId());
     }
@@ -119,7 +119,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -154,7 +154,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -185,7 +185,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_THIRD_VERSION);
     }
 
     /**
@@ -216,7 +216,7 @@ class MCPProtocolTest extends TestCase
             ->expects($this->once())
             ->method('close');
 
-        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_VERSION_STREAMABE_HTTP);
+        $this->mcpProtocol->connect(MCPProtocol::PROTOCOL_THIRD_VERSION);
     }
 
     /**

@@ -36,6 +36,8 @@ class ResourcesReadHandlerTest extends TestCase
         $resourceMock->method('getUri')->willReturn('test-uri');
         $resourceMock->method('getMimeType')->willReturn('text/plain');
         $resourceMock->method('getData')->willReturn('Sample text data');
+        $resourceMock->method('getName')->willReturn('Sample text name');
+        $resourceMock->method('getDescription')->willReturn('Sample text description');
 
         $this->resourceRepository
             ->method('getResource')
@@ -50,6 +52,8 @@ class ResourcesReadHandlerTest extends TestCase
                     'uri' => 'test-uri',
                     'mimeType' => 'text/plain',
                     'text' => 'Sample text data',
+                    'name' => 'Sample text name',
+                    'title' => 'Sample text description',
                 ],
             ],
         ], $result);
@@ -65,6 +69,8 @@ class ResourcesReadHandlerTest extends TestCase
         $resourceMock->method('getUri')->willReturn('image-uri');
         $resourceMock->method('getMimeType')->willReturn('image/png');
         $resourceMock->method('getData')->willReturn('binarydata123');
+        $resourceMock->method('getName')->willReturn('image name');
+        $resourceMock->method('getDescription')->willReturn('image description');
 
         $this->resourceRepository
             ->method('getResource')
@@ -79,6 +85,8 @@ class ResourcesReadHandlerTest extends TestCase
                     'uri' => 'image-uri',
                     'mimeType' => 'image/png',
                     'blob' => 'binarydata123',
+                    'name' => 'image name',
+                    'title' => 'image description',
                 ],
             ],
         ], $result);

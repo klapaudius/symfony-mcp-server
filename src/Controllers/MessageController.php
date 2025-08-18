@@ -14,7 +14,7 @@ class MessageController
 
     public function handle(Request $request)
     {
-        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_VERSION_SSE);
+        $this->server->setProtocolVersion(MCPProtocolInterface::PROTOCOL_FIRST_VERSION);
 
         $sessionId = $request->request->get('sessionId') ?? $request->query->get('sessionId');
 

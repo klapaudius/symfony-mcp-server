@@ -19,7 +19,7 @@ class InitializeData
     {
         $this->version = $version;
         $this->capabilities = $capabilities;
-        $this->protocolVersion = $protocolVersion ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE;
+        $this->protocolVersion = $protocolVersion ?? MCPProtocolInterface::PROTOCOL_FIRST_VERSION;
     }
 
     public static function fromArray(array $data): self
@@ -31,7 +31,7 @@ class InitializeData
                 'tools' => [],
                 'resources' => [],
             ],
-            $data['protocolVersion'] ?? MCPProtocolInterface::PROTOCOL_VERSION_SSE,
+            $data['protocolVersion'] ?? MCPProtocolInterface::PROTOCOL_FIRST_VERSION,
         );
     }
 

@@ -11,6 +11,9 @@ use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 
 /**
  * Example tool that demonstrates how to use sampling to analyze code
@@ -31,24 +34,28 @@ class CodeAnalyzerTool implements SamplingAwareToolInterface
         return 'Analyzes code and provides insights using LLM assistance';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'code' => [
-                    'type' => 'string',
-                    'description' => 'The code to analyze',
-                ],
-                'analysis_type' => [
-                    'type' => 'string',
-                    'enum' => ['security', 'performance', 'readability', 'general'],
-                    'description' => 'Type of analysis to perform',
-                    'default' => 'general',
-                ],
-            ],
-            'required' => ['code'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'code',
+                type: PropertyType::STRING,
+                description: 'The code to analyze',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'analysis_type',
+                type: PropertyType::STRING,
+                description: 'Type of analysis to perform',
+                enum: ['security', 'performance', 'readability', 'general'],
+                default: 'general'
+            ),
+        );
+    }
+
+    public function getOutputSchema(): ?StructuredSchema
+    {
+        return null;
     }
 
     public function execute(array $arguments): ToolResultInterface

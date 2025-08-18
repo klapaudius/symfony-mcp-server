@@ -1,3 +1,29 @@
+### Version 1.5.0
+- **Core Features:**
+  - Add MCP Protocol Version 2025-06-18 support
+  - Enhanced protocol version handling with automatic version negotiation
+  - Improved batch request handling. Batch requests are only supported in protocol version 2025-03-26
+- **Enhancements:**
+  - Refactor StreamableHttpController with better protocol version detection via headers
+  - Add comprehensive validation for batch requests based on the protocol version
+  - #49 Add name and title in returned json on resource/call
+  - Update the TransportFactory to support multiple protocol versions
+- **Architecture Improvements:**
+  - #48 Refactor tools to use StructuredSchema for input/output schemas
+  - Add comprehensive unit tests
+  - Improve code organization with better separation of concerns in request handling
+  - Add proper type declarations and final method modifiers where appropriate
+- **Bug Fixes:**
+  - Improve error handling for invalid protocol versions
+- **Documentation:**
+  - Add MCP features status table in README
+  - Update tool documentation to use StructuredSchema for input/output schemas
+- **Migration Command**
+  - Add the MigrateToolSchemaCommand to help developers on tools new StructuredSchema feature migration:
+  ```php  
+  php bin/console mcp:migrate-tool-schema \\App\\MCP\\Tools\\MyLegacyTool
+  ```
+
 ### Version 1.4.0
 - **Core Features:**
   - Add comprehensive sampling support allowing tools to request LLM assistance during execution

@@ -26,11 +26,11 @@ interface MCPServerInterface
     /**
      * Sets the protocol version for the current communication session.
      * Can accept one of the following values:
-     * - '2024-11-05' for SSE transport
-     * - '2025-03-26' for StreamableHTTP transport
+     * - '2024-11-05'
+     * - '2025-03-26'
+     * - '2025-06-18'
      *
      * If the protocol version is not set, the server will use the default version for the transport type.
-     * If the protocol version is set to null, the server will unset the protocol version.
      *
      * @param  string  $protocolVersion  The protocol version to be set.
      */

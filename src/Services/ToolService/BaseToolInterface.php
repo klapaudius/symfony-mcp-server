@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Services\ToolService;
 
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 
 interface BaseToolInterface
 {
@@ -34,17 +35,36 @@ interface BaseToolInterface
      * arguments that will be passed to the execute() method. This schema is used
      * for validation and to provide type hints to LLM clients.
      *
-     * @return array The JSON Schema as an associative array. Common structure:
-     *               [
-     *               'type' => 'object',
-     *               'properties' => [
-     *               'param' => ['type' => 'string', 'description' => '...'],
-     *               ],
-     *               'required' => ['param'],
-     *               ]
-     *               For tools with no parameters, use ['type' => 'object', 'properties' => new \stdClass].
+     * @return StructuredSchema|array The JSON Schema as an associative array. Common structure:
+     *                                [
+     *                                'type' => 'object',
+     *                                'properties' => [
+     *                                'param' => ['type' => 'string', 'description' => '...'],
+     *                                ],
+     *                                'required' => ['param'],
+     *                                ]
+     *                                For tools with no parameters, use ['type' => 'object', 'properties' => new \stdClass].
+     *
+     * @todo Remove the array type hint on v2.0.0.
      */
-    public function getInputSchema(): array;
+    public function getInputSchema(): StructuredSchema|array;
+
+    /**
+     * Gets the JSON Schema definition for the tool's output.
+     *
+     * The output schema defines the structure and types of the data that will be
+     * returned by the tool's execute() method. This helps LLM clients understand
+     * and properly handle the tool's output.
+     *
+     * @return StructuredSchema|null The JSON Schema for the tool's output, or null if the tool
+     *                               doesn't provide a structured output schema. When provided,
+     *                               this schema helps with type safety and output validation.
+     *
+     * @see https://modelcontextprotocol.io/specification/2025-06-18/server/tools
+     *
+     * @todo Uncomment the new method on v2.0.0.
+     */
+    // public function getOutputSchema(): ?StructuredSchema;
 
     /**
      * Gets the behavioral annotations for the tool.
@@ -57,6 +77,8 @@ interface BaseToolInterface
      *                        - destructiveHint: true if the tool may perform destructive updates
      *                        - idempotentHint: true if repeated calls have no additional effect
      *                        - openWorldHint: true if the tool may interact with external entities
+     *
+     * @see https://modelcontextprotocol.io/specification/2025-06-18/server/tools
      */
     public function getAnnotations(): ToolAnnotation;
 }

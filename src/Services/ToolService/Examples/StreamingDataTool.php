@@ -6,6 +6,9 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 
 class StreamingDataTool implements StreamableToolInterface
@@ -24,32 +27,28 @@ class StreamingDataTool implements StreamableToolInterface
         return 'Demonstrates streaming data processing with progress notifications. Simulates processing a dataset with real-time progress updates.';
     }
 
-    public function getInputSchema(): array
+    public function getInputSchema(): StructuredSchema
     {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'message' => [
-                    'type' => 'string',
-                    'description' => 'The message to stream',
-                ],
-                'chunks' => [
-                    'type' => 'integer',
-                    'description' => 'Number of chunks to stream',
-                    'minimum' => 1,
-                    'maximum' => 10,
-                    'default' => 5,
-                ],
-                'delay' => [
-                    'type' => 'integer',
-                    'description' => 'Delay between chunks in milliseconds',
-                    'minimum' => 100,
-                    'maximum' => 2000,
-                    'default' => 500,
-                ],
-            ],
-            'required' => ['message'],
-        ];
+        return new StructuredSchema(
+            new SchemaProperty(
+                name: 'message',
+                type: PropertyType::STRING,
+                description: 'The message to stream',
+                required: true
+            ),
+            new SchemaProperty(
+                name: 'chunks',
+                type: PropertyType::INTEGER,
+                description: 'Number of chunks to stream',
+                default: 5
+            ),
+            new SchemaProperty(
+                name: 'delay',
+                type: PropertyType::INTEGER,
+                description: 'Delay between chunks in milliseconds',
+                default: 500
+            )
+        );
     }
 
     public function getAnnotations(): ToolAnnotation
