@@ -109,7 +109,7 @@ class ToolRepository
      * Generates an array of schemas for all registered tools, suitable for the MCP capabilities response.
      * Includes name, description, inputSchema, and optional annotations for each tool.
      *
-     * @return array<int, array{name: string, description: string, inputSchema: array<string, mixed>, outputSchema: array<string, mixed>, annotations?: array<string, mixed>}> An array of tool schemas.
+     * @return array<int, array{name: string, description: string, inputSchema: array<string, mixed>, annotations?: array<string, mixed>}> An array of tool schemas.
      */
     public function getToolSchemas(): array
     {
@@ -129,7 +129,6 @@ class ToolRepository
                 'name' => $tool->getName(),
                 'description' => $tool->getDescription(),
                 'inputSchema' => $tool->getInputSchema(),
-                'outputSchema' => $tool->getOutputSchema(),
                 'annotations' => $tool->getAnnotations()->toArray(),
                 ...$injectArray,
             ];

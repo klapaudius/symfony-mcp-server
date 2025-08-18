@@ -254,30 +254,4 @@ class ToolRepositoryTest extends TestCase
             'openWorldHint' => true,
         ], $schemas[0]['annotations']);
     }
-
-    /**
-     * Tests that getToolSchemas() includes outputSchema if it is present in a tool.
-     *
-     * Verifies that the method appends the outputSchema to the tool schema, ensuring
-     * that metadata is preserved and available for the MCP capabilities response.
-     */
-    public function test_get_tool_schemas_includes_output_schema_if_present(): void
-    {
-        $tool = $this->createMock(StreamableToolInterface::class);
-
-        $tool->method('getName')->willReturn('toolWithOutputSchema');
-        $tool->method('getDescription')->willReturn('Tool with outputSchema');
-        $tool->method('getInputSchema')->willReturn(['type' => 'object']);
-        $tool->method('getOutputSchema')->willReturn(['type' => 'object']);
-
-        $this->toolRepository->register($tool);
-
-        $schemas = $this->toolRepository->getToolSchemas();
-
-        $this->assertCount(1, $schemas);
-        $this->assertSame('toolWithOutputSchema', $schemas[0]['name']);
-        $this->assertSame('Tool with outputSchema', $schemas[0]['description']);
-        $this->assertSame(['type' => 'object'], $schemas[0]['inputSchema']);
-        $this->assertSame(['type' => 'object'], $schemas[0]['outputSchema']);
-    }
 }
