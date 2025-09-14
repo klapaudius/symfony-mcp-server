@@ -183,7 +183,7 @@ public function getInputSchema(): StructuredSchema
 }
 ```
 
-The `PropertyType` enum provides a list of supported data types: `STRING`, `INTEGER`
+The `PropertyType` enum provides a list of supported data types: `STRING`, `INTEGER`, `BOOLEAN`, `NUMBER`, `ARRAY`, `OBJECT`
 
 ### 4. getOutputSchema(): ?StructuredSchema
 

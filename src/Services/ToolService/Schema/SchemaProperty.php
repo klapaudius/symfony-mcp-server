@@ -19,6 +19,9 @@ readonly class SchemaProperty
      * @param  array  $enum  An array of allowed values for this property
      * @param  string  $default  The default value for this property
      * @param  bool  $required  Whether this property is required in the input schema
+     * @param  array|null  $items  For array types: defines the schema of array items
+     * @param  array|null  $properties  For object types: defines the nested object properties
+     * @param  array  $additionalProperties  Additional JSON Schema properties (e.g., minLength, maxLength, format)
      */
     public function __construct(
         private string $name,
@@ -26,7 +29,10 @@ readonly class SchemaProperty
         private string $description = '',
         private array $enum = [],
         private string $default = '',
-        private bool $required = false
+        private bool $required = false,
+        private array|null $items = null,
+        private array|null $properties = null,
+        private array $additionalProperties = []
     ) {}
 
     /**
@@ -77,5 +83,35 @@ readonly class SchemaProperty
     public function getDefault(): string
     {
         return $this->default;
+    }
+
+    /**
+     * Gets the items schema for array properties.
+     *
+     * @return array|null The items schema definition, or null if not applicable
+     */
+    public function getItems(): array|null
+    {
+        return $this->items;
+    }
+
+    /**
+     * Gets the properties schema for object properties.
+     *
+     * @return array|null The nested properties definition, or null if not applicable
+     */
+    public function getProperties(): array|null
+    {
+        return $this->properties;
+    }
+
+    /**
+     * Gets additional JSON Schema properties.
+     *
+     * @return array Additional properties like minLength, maxLength, format, etc.
+     */
+    public function getAdditionalProperties(): array
+    {
+        return $this->additionalProperties;
     }
 }

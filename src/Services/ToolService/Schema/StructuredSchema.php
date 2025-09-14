@@ -55,10 +55,37 @@ class StructuredSchema
         $required = [];
 
         foreach ($this->properties as $property) {
-            $properties[$property->getName()] = [
+            $propertySchema = [
                 'type' => $this->getPropertyType($property),
                 'description' => $property->getDescription(),
             ];
+
+            // Handle array items
+            if ($property->getType() === PropertyType::ARRAY && $property->getItems() !== null) {
+                $propertySchema['items'] = $property->getItems();
+            }
+
+            // Handle object properties
+            if ($property->getType() === PropertyType::OBJECT && $property->getProperties() !== null) {
+                $propertySchema['properties'] = $property->getProperties();
+            }
+
+            // Add enum if specified
+            if (!empty($property->getEnum())) {
+                $propertySchema['enum'] = $property->getEnum();
+            }
+
+            // Add default if specified
+            if (!empty($property->getDefault())) {
+                $propertySchema['default'] = $property->getDefault();
+            }
+
+            // Add any additional properties (minLength, maxLength, format, etc.)
+            foreach ($property->getAdditionalProperties() as $key => $value) {
+                $propertySchema[$key] = $value;
+            }
+
+            $properties[$property->getName()] = $propertySchema;
 
             if ($property->isRequired()) {
                 $required[] = $property->getName();

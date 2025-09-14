@@ -295,6 +295,7 @@ class SupportAgent implements SamplingAwareToolInterface
             - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool     # Agentic tool sample
             - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
+            - KLP\KlpMcpServer\Services\ToolService\Examples\SearchResultsTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
             - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
         prompts:

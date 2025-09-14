@@ -71,6 +71,7 @@ klp_mcp_server:
         - KLP\KlpMcpServer\Services\ToolService\Examples\CodeAnalyzerTool               # Agentic Tool Sample
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool
+        - KLP\KlpMcpServer\Services\ToolService\Examples\SearchResultsTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\StreamingDataTool
         - KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool
 
