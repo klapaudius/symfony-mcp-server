@@ -71,12 +71,12 @@ class StructuredSchema
             }
 
             // Add enum if specified
-            if (!empty($property->getEnum())) {
+            if (! empty($property->getEnum())) {
                 $propertySchema['enum'] = $property->getEnum();
             }
 
             // Add default if specified
-            if (!empty($property->getDefault())) {
+            if (! empty($property->getDefault())) {
                 $propertySchema['default'] = $property->getDefault();
             }
 

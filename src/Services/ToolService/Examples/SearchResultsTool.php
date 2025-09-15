@@ -58,7 +58,7 @@ class SearchResultsTool implements BaseToolInterface
                     'title' => ['type' => 'string'],
                     'url' => ['type' => 'string'],
                     'snippet' => ['type' => 'string'],
-                    'score' => ['type' => 'number']
+                    'score' => ['type' => 'number'],
                 ],
                 ['id', 'title'],  // id and title are required
                 'Array of search results'
@@ -70,7 +70,7 @@ class SearchResultsTool implements BaseToolInterface
                 [
                     'totalResults' => ['type' => 'integer'],
                     'searchTime' => ['type' => 'number'],
-                    'query' => ['type' => 'string']
+                    'query' => ['type' => 'string'],
                 ],
                 ['totalResults', 'query'],
                 'Search metadata'
@@ -98,7 +98,7 @@ class SearchResultsTool implements BaseToolInterface
                 'title' => "Search Result $i for: $query",
                 'url' => "https://example.com/result/$i",
                 'snippet' => "This is a snippet for result $i matching your search query.",
-                'score' => 1.0 - ($i * 0.1)
+                'score' => 1.0 - ($i * 0.1),
             ];
         }
 
@@ -107,13 +107,13 @@ class SearchResultsTool implements BaseToolInterface
             'metadata' => [
                 'totalResults' => count($results),
                 'searchTime' => 0.125,
-                'query' => $query
+                'query' => $query,
             ],
             'suggestions' => [
                 "$query tips",
                 "$query tutorial",
-                "$query examples"
-            ]
+                "$query examples",
+            ],
         ];
 
         return new TextToolResult(json_encode($response, JSON_PRETTY_PRINT));
@@ -121,6 +121,6 @@ class SearchResultsTool implements BaseToolInterface
 
     public function getAnnotations(): ToolAnnotation
     {
-        return new ToolAnnotation();
+        return new ToolAnnotation;
     }
 }

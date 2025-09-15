@@ -22,12 +22,11 @@ class SchemaBuilder
      * ], ['id', 'title'])
      * ```
      *
-     * @param string $name Property name
-     * @param array<string, mixed> $objectProperties Properties of objects in the array
-     * @param array<string> $requiredProperties Required properties in each object
-     * @param string $description Property description
-     * @param bool $required Whether the array property itself is required
-     * @return SchemaProperty
+     * @param  string  $name  Property name
+     * @param  array<string, mixed>  $objectProperties  Properties of objects in the array
+     * @param  array<string>  $requiredProperties  Required properties in each object
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the array property itself is required
      */
     public static function arrayOfObjects(
         string $name,
@@ -41,7 +40,7 @@ class SchemaBuilder
             'properties' => $objectProperties,
         ];
 
-        if (!empty($requiredProperties)) {
+        if (! empty($requiredProperties)) {
             $items['required'] = $requiredProperties;
         }
 
@@ -57,11 +56,10 @@ class SchemaBuilder
     /**
      * Creates an array property that contains primitive values.
      *
-     * @param string $name Property name
-     * @param string $itemType Type of items in the array ('string', 'integer', 'number', 'boolean')
-     * @param string $description Property description
-     * @param bool $required Whether the array property is required
-     * @return SchemaProperty
+     * @param  string  $name  Property name
+     * @param  string  $itemType  Type of items in the array ('string', 'integer', 'number', 'boolean')
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the array property is required
      */
     public static function arrayOfPrimitives(
         string $name,
@@ -81,12 +79,11 @@ class SchemaBuilder
     /**
      * Creates an object property with nested properties.
      *
-     * @param string $name Property name
-     * @param array<string, mixed> $properties Nested object properties
-     * @param array<string> $requiredProperties Required nested properties
-     * @param string $description Property description
-     * @param bool $required Whether the object property is required
-     * @return SchemaProperty
+     * @param  string  $name  Property name
+     * @param  array<string, mixed>  $properties  Nested object properties
+     * @param  array<string>  $requiredProperties  Required nested properties
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the object property is required
      */
     public static function nestedObject(
         string $name,
@@ -97,7 +94,7 @@ class SchemaBuilder
     ): SchemaProperty {
         $objectSchema = ['properties' => $properties];
 
-        if (!empty($requiredProperties)) {
+        if (! empty($requiredProperties)) {
             $objectSchema['required'] = $requiredProperties;
         }
 

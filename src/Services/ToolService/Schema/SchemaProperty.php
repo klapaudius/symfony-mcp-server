@@ -30,8 +30,8 @@ readonly class SchemaProperty
         private array $enum = [],
         private string $default = '',
         private bool $required = false,
-        private array|null $items = null,
-        private array|null $properties = null,
+        private ?array $items = null,
+        private ?array $properties = null,
         private array $additionalProperties = []
     ) {}
 
@@ -90,7 +90,7 @@ readonly class SchemaProperty
      *
      * @return array|null The items schema definition, or null if not applicable
      */
-    public function getItems(): array|null
+    public function getItems(): ?array
     {
         return $this->items;
     }
@@ -100,7 +100,7 @@ readonly class SchemaProperty
      *
      * @return array|null The nested properties definition, or null if not applicable
      */
-    public function getProperties(): array|null
+    public function getProperties(): ?array
     {
         return $this->properties;
     }

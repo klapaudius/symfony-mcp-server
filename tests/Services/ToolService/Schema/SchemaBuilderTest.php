@@ -16,7 +16,7 @@ class SchemaBuilderTest extends TestCase
             [
                 'id' => ['type' => 'string'],
                 'title' => ['type' => 'string'],
-                'url' => ['type' => 'string']
+                'url' => ['type' => 'string'],
             ],
             ['id', 'title'],
             'Array of search results',
@@ -35,7 +35,7 @@ class SchemaBuilderTest extends TestCase
         $this->assertEquals([
             'id' => ['type' => 'string'],
             'title' => ['type' => 'string'],
-            'url' => ['type' => 'string']
+            'url' => ['type' => 'string'],
         ], $items['properties']);
     }
 
@@ -47,7 +47,7 @@ class SchemaBuilderTest extends TestCase
                 [
                     'id' => ['type' => 'string'],
                     'title' => ['type' => 'string'],
-                    'url' => ['type' => 'string']
+                    'url' => ['type' => 'string'],
                 ],
                 ['id', 'title']
             )
@@ -64,13 +64,13 @@ class SchemaBuilderTest extends TestCase
                         'properties' => [
                             'id' => ['type' => 'string'],
                             'title' => ['type' => 'string'],
-                            'url' => ['type' => 'string']
+                            'url' => ['type' => 'string'],
                         ],
-                        'required' => ['id', 'title']
-                    ]
-                ]
+                        'required' => ['id', 'title'],
+                    ],
+                ],
             ],
-            'required' => []
+            'required' => [],
         ];
 
         $this->assertEquals($expected, $schema->asArray());
@@ -96,7 +96,7 @@ class SchemaBuilderTest extends TestCase
             'metadata',
             [
                 'author' => ['type' => 'string'],
-                'timestamp' => ['type' => 'integer']
+                'timestamp' => ['type' => 'integer'],
             ],
             ['author'],
             'Metadata object'
@@ -110,7 +110,7 @@ class SchemaBuilderTest extends TestCase
         $this->assertNotNull($properties);
         $this->assertEquals([
             'author' => ['type' => 'string'],
-            'timestamp' => ['type' => 'integer']
+            'timestamp' => ['type' => 'integer'],
         ], $properties['properties']);
         $this->assertEquals(['author'], $properties['required']);
     }
