@@ -56,7 +56,7 @@ class StructuredSchema
 
         foreach ($this->properties as $property) {
             $propertySchema = [
-                'type' => $this->getPropertyType($property),
+                'type' => $property->getType()->value,
                 'description' => $property->getDescription(),
             ];
 
@@ -97,17 +97,5 @@ class StructuredSchema
             'properties' => $properties ?: new stdClass,
             'required' => $required,
         ];
-    }
-
-    private function getPropertyType(SchemaProperty $property): string
-    {
-        return match ($property->getType()) {
-            PropertyType::STRING => 'string',
-            PropertyType::INTEGER => 'integer',
-            PropertyType::ARRAY => 'array',
-            PropertyType::BOOLEAN => 'boolean',
-            PropertyType::OBJECT => 'object',
-            PropertyType::NUMBER => 'number',
-        };
     }
 }

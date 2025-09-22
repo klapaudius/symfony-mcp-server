@@ -2,12 +2,12 @@
 
 namespace KLP\KlpMcpServer\Services\ToolService\Schema;
 
-enum PropertyType
+enum PropertyType: string
 {
-    case STRING;
-    case INTEGER;
-    case NUMBER;
-    case OBJECT;
-    case ARRAY;
-    case BOOLEAN;
+    case STRING = 'string';
+    case INTEGER  = 'integer';
+    case NUMBER  = 'number';
+    case OBJECT = 'object';
+    case ARRAY  = 'array';
+    case BOOLEAN = 'boolean';
 }
