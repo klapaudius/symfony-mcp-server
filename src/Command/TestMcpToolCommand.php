@@ -202,9 +202,15 @@ EOT
         ]);
         $this->io->newLine();
         // Get input schema
+        $schema = $tool->getInputSchema();
+        if ($schema instanceof StructuredSchema) {
+            $schema = $schema->asArray();
+        } else {
+            $this->io->warning('The getInputSchema() method should return an instance of StructuredSchema. Using array is deprecated and will be removed in a future version.');
+        }
         $this->io->text(array_merge(
             ['Input schema:'],
-            $this->getSchemaDisplayMessages($tool->getInputSchema())
+            $this->getSchemaDisplayMessages($schema)
         ));
     }
 
