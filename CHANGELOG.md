@@ -1,3 +1,29 @@
+### Version 1.6.0
+- **Core Features:**
+  - Add dynamic tool loading system with ToolProviderInterface
+- **Documentation:**
+  - Update building_tools.md with step-by-step ToolProvider implementation guide
+  - Include basic and advanced examples with database integration and conditional logic
+  - Add ExampleToolProvider demonstrating various use cases
+
+### Version 1.5.3
+- **Enhancement:**
+  - issue a warning on test command when tested tool getInputSchema method returns an array (gentle migration reminder 😃 )
+- **Bug Fixes:**
+  - make test command compliant with StructuredSchema Tool
+
+### Version 1.5.2 
+- **Enhancements:**
+  - Add SchemaBuilder class for creating complex JSON Schema structures
+  - New helper methods: arrayOfObjects(), arrayOfPrimitives(), nestedObject()
+  - Improve schema creation for arrays and nested objects
+  - Add comprehensive SchemaBuilder usage documentation in building_tools.md
+  - Enhanced SearchResultsTool example demonstrating SchemaBuilder usage
+- **Documentation:**
+  - Update building_tools.md with SchemaBuilder usage examples
+  - Add complete PropertyType enum documentation (STRING, INTEGER, BOOLEAN, NUMBER, ARRAY, OBJECT)
+  - Improved schema creation examples for complex tool input/output structures
+
 ### Version 1.5.1
 - **Enhancements:**
   - Extend PropertyType enum with NUMBER, OBJECT, ARRAY, and BOOLEAN types (#55) by @trandbert37

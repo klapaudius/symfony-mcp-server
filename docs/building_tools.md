@@ -4,6 +4,11 @@
 1. [Introduction to Model Context Protocol (MCP)](#introduction-to-model-context-protocol-mcp)
 2. [What are MCP Tools?](#what-are-mcp-tools)
 3. [Creating Your First MCP Tool](#creating-your-first-mcp-tool)
+   - [Step 1: Generate a Tool Using the Command Line](#step-1-generate-a-tool-using-the-command-line)
+   - [Step 2: Understanding the Generated Tool Structure](#step-2-understanding-the-generated-tool-structure)
+   - [Step 3: Registering Your Tool](#step-3-registering-your-tool)
+     - [Option 1: Static Registration (YAML Configuration)](#option-1-static-registration-yaml-configuration)
+     - [Option 2: Dynamic Registration (ToolProvider)](#option-2-dynamic-registration-toolprovider)
 4. [Understanding the Tool Interface](#understanding-the-tool-interface)
 5. [Tool Result Types](#tool-result-types)
 6. [Testing Your MCP Tools](#testing-your-mcp-tools)
@@ -125,6 +130,10 @@ class MyCustomTool implements StreamableToolInterface
 
 ### Step 3: Registering Your Tool
 
+There are two ways to register tools with the MCP server:
+
+#### Option 1: Static Registration (YAML Configuration)
+
 If you chose not to automatically register your tool during creation, you need to add it to the configuration file:
 
 ```yaml
@@ -135,6 +144,143 @@ klp_mcp_server:
         - App\MCP\Tools\MyCustomTool
         # Add other tools here
 ```
+
+This approach is simple and works well for tools that are always available in your application.
+
+#### Option 2: Dynamic Registration (ToolProvider)
+
+For more flexibility, you can use a **ToolProvider** to register tools programmatically based on runtime conditions, database configuration, feature flags, or any custom logic.
+
+**Step 1: Create a ToolProvider**
+
+Implement the `ToolProviderInterface` (recommended approach - inject tool instances):
+
+```php
+// src/MCP/Tools/Providers/MyToolProvider.php
+namespace App\MCP\Tools\Providers;
+
+use App\MCP\Tools\MyCustomTool;
+use App\MCP\Tools\AnotherTool;
+use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
+
+class MyToolProvider implements ToolProviderInterface
+{
+    public function __construct(
+        private readonly MyCustomTool $customTool,
+        private readonly AnotherTool $anotherTool,
+    ) {}
+
+    public function getTools(): iterable
+    {
+        // Return tool instances (recommended)
+        return [
+            $this->customTool,
+            $this->anotherTool,
+        ];
+    }
+}
+```
+
+**Step 2: Register the Provider**
+
+Register your provider as a Symfony service in `config/services.yaml`:
+
+```yaml
+services:
+    App\MCP\Tools\Providers\MyToolProvider:
+        autowire: true
+        tags:
+          - { name: 'klp_mcp_server.tool_provider' }
+```
+
+That's it! Your provider will be automatically discovered, and the tools it returns will be registered with the MCP server.
+
+**⚠️ Important: Service Visibility**
+
+The above example shows the **recommended approach** where you inject tool instances. If instead you return tool **class names** (strings), those tools must be registered as **public services**:
+
+```yaml
+# config/services.yaml - Only needed if returning class names (NOT recommended)
+services:
+    App\MCP\Tools\:
+        resource: '../src/MCP/Tools/*'
+        public: true
+```
+
+**Why inject instances instead of class names?**
+- ✅ No need to make services public (better encapsulation)
+- ✅ Better performance (tools instantiated once during container compilation)
+- ✅ Type safety with constructor injection
+- ✅ Follows Symfony best practices
+
+**Advanced Example with Conditional Logic:**
+
+```php
+namespace App\MCP\Tools\Providers;
+
+use Doctrine\ORM\EntityManagerInterface;
+use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
+
+class DatabaseToolProvider implements ToolProviderInterface
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private string $environment,
+        // Inject all potentially used tools
+        private readonly AdminTool $adminTool,
+        private readonly UserTool $userTool,
+        private readonly DebugTool $debugTool,
+        private readonly TestingTool $testingTool,
+    ) {}
+
+    public function getTools(): iterable
+    {
+        $tools = [];
+
+        // Load tool configuration from database
+        $enabledTools = $this->entityManager
+            ->getRepository(ToolConfiguration::class)
+            ->findBy(['enabled' => true]);
+
+        // Map database config to injected tool instances
+        foreach ($enabledTools as $config) {
+            match ($config->getName()) {
+                'admin' => $tools[] = $this->adminTool,
+                'user' => $tools[] = $this->userTool,
+                default => null,
+            };
+        }
+
+        // Add development-only tools
+        if ($this->environment === 'dev') {
+            $tools[] = $this->debugTool;
+            $tools[] = $this->testingTool;
+        }
+
+        return $tools;
+    }
+}
+```
+
+**Benefits of ToolProviders:**
+
+- **Dynamic Discovery**: Load tools based on database configuration, API responses, or runtime conditions
+- **Conditional Loading**: Enable/disable tools based on environment, feature flags, or user permissions
+- **Dependency Injection**: Full access to Symfony services in your provider
+- **Backward Compatible**: Works alongside static YAML configuration
+- **Recommended Pattern**: Inject tool instances for better performance and no public service requirements
+- **Flexible**: Can return tool instances (recommended) or class names (requires public services)
+
+**When to Use Each Approach:**
+
+- Use **YAML configuration** for tools that are always available and don't require conditional logic
+- Use **ToolProviders** when you need:
+  - Database-driven tool configuration
+  - Conditional tool loading based on environment or feature flags
+  - Dynamic tool discovery from external sources
+  - Complex initialization logic before registering tools
+
+Both approaches can be used together - tools from YAML configuration and ToolProviders are merged into a single registry.
 
 ## Understanding the Tool Interface
 

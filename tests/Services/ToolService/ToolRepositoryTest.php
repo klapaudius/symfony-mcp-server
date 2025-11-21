@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Services\ToolService;
 use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -253,5 +254,118 @@ class ToolRepositoryTest extends TestCase
             'idempotentHint' => false,
             'openWorldHint' => true,
         ], $schemas[0]['annotations']);
+    }
+
+    /**
+     * Tests that registerProvider() correctly registers tools from a ToolProviderInterface.
+     *
+     * Verifies that the method calls getTools() on the provider and registers each
+     * returned tool with the repository.
+     */
+    public function test_register_provider_registers_tools_from_provider(): void
+    {
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
+
+        $tool1->method('getName')->willReturn('provider_tool1');
+        $tool2->method('getName')->willReturn('provider_tool2');
+
+        $provider = $this->createMock(ToolProviderInterface::class);
+        $provider->expects($this->once())
+            ->method('getTools')
+            ->willReturn([$tool1, $tool2]);
+
+        $this->toolRepository->registerProvider($provider);
+
+        $tools = $this->toolRepository->getTools();
+
+        $this->assertCount(2, $tools);
+        $this->assertSame($tool1, $tools['provider_tool1']);
+        $this->assertSame($tool2, $tools['provider_tool2']);
+    }
+
+    /**
+     * Tests that registerProvider() works with tool class names from provider.
+     *
+     * Verifies that when a provider returns tool class names (strings),
+     * they are correctly resolved from the container and registered.
+     */
+    public function test_register_provider_with_tool_class_names(): void
+    {
+        $tool1 = $this->createMock(StreamableToolInterface::class);
+        $tool2 = $this->createMock(StreamableToolInterface::class);
+
+        $tool1->method('getName')->willReturn('tool_from_class1');
+        $tool2->method('getName')->willReturn('tool_from_class2');
+
+        $this->container
+            ->method('get')
+            ->willReturnMap([
+                ['ToolClass1', $tool1],
+                ['ToolClass2', $tool2],
+            ]);
+
+        $provider = $this->createMock(ToolProviderInterface::class);
+        $provider->expects($this->once())
+            ->method('getTools')
+            ->willReturn(['ToolClass1', 'ToolClass2']);
+
+        $this->toolRepository->registerProvider($provider);
+
+        $tools = $this->toolRepository->getTools();
+
+        $this->assertCount(2, $tools);
+        $this->assertSame($tool1, $tools['tool_from_class1']);
+        $this->assertSame($tool2, $tools['tool_from_class2']);
+    }
+
+    /**
+     * Tests that registerProvider() can be chained with other registration methods.
+     *
+     * Verifies that tools from YAML config, direct registration, and providers
+     * all coexist in the repository.
+     */
+    public function test_register_provider_works_alongside_other_registration_methods(): void
+    {
+        $yamlTool = $this->createMock(StreamableToolInterface::class);
+        $directTool = $this->createMock(StreamableToolInterface::class);
+        $providerTool = $this->createMock(StreamableToolInterface::class);
+
+        $yamlTool->method('getName')->willReturn('yaml_tool');
+        $directTool->method('getName')->willReturn('direct_tool');
+        $providerTool->method('getName')->willReturn('provider_tool');
+
+        // Register directly
+        $this->toolRepository->register($directTool);
+
+        // Register via provider
+        $provider = $this->createMock(ToolProviderInterface::class);
+        $provider->method('getTools')->willReturn([$providerTool]);
+        $this->toolRepository->registerProvider($provider);
+
+        $tools = $this->toolRepository->getTools();
+
+        $this->assertCount(2, $tools);
+        $this->assertSame($directTool, $tools['direct_tool']);
+        $this->assertSame($providerTool, $tools['provider_tool']);
+    }
+
+    /**
+     * Tests that registerProvider() handles empty tool list from provider.
+     *
+     * Verifies that when a provider returns an empty array, it doesn't cause errors.
+     */
+    public function test_register_provider_handles_empty_tool_list(): void
+    {
+        $provider = $this->createMock(ToolProviderInterface::class);
+        $provider->expects($this->once())
+            ->method('getTools')
+            ->willReturn([]);
+
+        $this->toolRepository->registerProvider($provider);
+
+        $tools = $this->toolRepository->getTools();
+
+        $this->assertCount(0, $tools);
     }
 }

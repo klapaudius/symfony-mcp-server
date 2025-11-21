@@ -4,6 +4,10 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <!-- Auto-configure services implementing ToolProviderInterface -->
+        <instanceof id="KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface">
+            <tag name="klp_mcp_server.tool_provider"/>
+        </instanceof>
         <service id="KLP\KlpMcpServer\Controllers\SseController" class="KLP\KlpMcpServer\Controllers\SseController">
             <argument type="service" id="klp_mcp_server.server" />
             <tag name="controller.service_arguments" />
@@ -80,6 +84,7 @@
 
         <service id="klp_mcp_server.tool_repository" class="KLP\KlpMcpServer\Services\ToolService\ToolRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
 
         <service id="klp_mcp_server.progress_notifier_repository" class="KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository">

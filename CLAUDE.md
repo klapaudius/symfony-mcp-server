@@ -69,6 +69,7 @@ This is a Symfony bundle that implements the Model Context Protocol (MCP) server
 - **StreamableToolInterface**: Modern interface supporting progress notifications
 - **ToolResultInterface**: Abstraction for different result types (Text, Image, Audio, Resource)
 - **ProgressNotifier**: System for sending real-time progress updates during tool execution
+- **ToolProviderInterface**: Interface for dynamically providing tools based on custom logic (see Dynamic Tool Loading below)
 
 #### Prompt System
 - **PromptInterface**: Core interface for creating prompts

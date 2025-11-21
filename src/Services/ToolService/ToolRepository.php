@@ -4,6 +4,7 @@ namespace KLP\KlpMcpServer\Services\ToolService;
 
 use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+use Psr\Log\LoggerInterface;
 use stdClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
@@ -30,14 +31,24 @@ class ToolRepository
     protected ContainerInterface $container;
 
     /**
+     * The logger instance.
+     */
+    protected LoggerInterface|null $logger;
+
+    /**
      * Constructor.
      *
      * @param  ContainerInterface  $container  The Symfony service container. If null, it resolves from the facade.
+     * @param  LoggerInterface|null  $logger  Optional logger instance for debugging tool registration.
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, LoggerInterface|null $logger = null)
     {
         $this->container = $container;
+        $this->logger = $logger;
+        $this->logger?->debug('ToolRepository initialized');
+
         if ($tools = $container->getParameter('klp_mcp_server.tools')) {
+            $this->logger?->debug('Registering tools from configuration', ['tools' => $tools]);
             $this->registerMany($tools);
         }
     }
@@ -55,6 +66,41 @@ class ToolRepository
         foreach ($tools as $tool) {
             $this->register($tool);
         }
+
+        return $this;
+    }
+
+    /**
+     * Registers tools from a ToolProviderInterface.
+     *
+     * This method is called by the ToolsDefinitionCompilerPass for each
+     * discovered tool provider. It retrieves tools from the provider and
+     * registers them with the repository.
+     *
+     * @param  ToolProviderInterface  $provider  The tool provider instance.
+     * @return $this The current ToolRepository instance for method chaining.
+     *
+     * @throws InvalidArgumentException If a tool does not implement StreamableToolInterface.
+     */
+    public function registerProvider(ToolProviderInterface $provider): self
+    {
+        $providerClass = get_class($provider);
+
+        $this->logger?->debug('Registering tools from ToolProvider', [
+            'provider' => $providerClass,
+        ]);
+
+        $tools = $provider->getTools();
+        $toolCount = is_countable($tools) ? count($tools) : 0;
+
+        foreach ($tools as $tool) {
+            $this->register($tool);
+        }
+
+        $this->logger?->debug('Successfully registered tools from ToolProvider', [
+            'provider' => $providerClass,
+            'tool_count' => $toolCount,
+        ]);
 
         return $this;
     }
