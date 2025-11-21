@@ -51,3 +51,4 @@ jobs:
           XDEBUG_MODE: coverage
         with:
           php_extensions: "xdebug"
+          php_version: ${{ matrix.php }}
