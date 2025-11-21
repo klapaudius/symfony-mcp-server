@@ -45,6 +45,7 @@ jobs:
           php_extensions: "xdebug"
           coverage_clover: "coverage.xml"
           args: --log-junit junit.xml
+          php_version: 8.2
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
