@@ -31,7 +31,6 @@ use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
  *
  * ALTERNATIVE APPROACH: Return tool class names.
  * WARNING: This requires tools to be registered as public services.
- *
  * @example Returning class names (NOT RECOMMENDED - requires public services):
  * ```php
  * public function getTools(): iterable
@@ -54,7 +53,6 @@ use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
  * - ✅ Better performance (tools instantiated once during compilation)
  * - ✅ Type safety with constructor injection
  * - ✅ Follows Symfony best practices
- *
  * @example Registration in services.yaml:
  * ```yaml
  * services:
