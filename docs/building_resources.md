@@ -5,6 +5,10 @@
 2. [What are MCP Resources?](#what-are-mcp-resources)
 3. [Types of Resources](#types-of-resources)
 4. [Creating Your First MCP Resource](#creating-your-first-mcp-resource)
+   - [Step 1: Create a Resource Class](#step-1-create-a-resource-class)
+   - [Step 2: Register Your Resource](#step-2-register-your-resource)
+     - [Option 1: Static Registration (YAML Configuration)](#option-1-static-registration-yaml-configuration)
+     - [Option 2: Dynamic Registration (ResourceProvider)](#option-2-dynamic-registration-resourceprovider)
 5. [Understanding the Resource Interfaces](#understanding-the-resource-interfaces)
 6. [SamplingAwareResourceInterface](#samplingawareresourceinterface)
 7. [Using the Resource Class](#using-the-resource-class)
@@ -99,16 +103,155 @@ class MyCustomResource implements ResourceInterface
 
 ### Step 2: Register Your Resource
 
+There are two ways to register resources with the MCP server:
+
+#### Option 1: Static Registration (YAML Configuration)
+
 Add your resource to the configuration file:
 
 ```yaml
 # config/packages/klp_mcp_server.yaml
 klp_mcp_server:
-    # ... other configuration
     resources:
         - App\MCP\Resources\MyCustomResource
         # Add other resources here
 ```
+
+This approach is simple and works well for resources that are always available in your application.
+
+#### Option 2: Dynamic Registration (ResourceProvider)
+
+For more flexibility, you can use a **ResourceProvider** to register resources programmatically based on runtime conditions, database configuration, feature flags, or any custom logic.
+
+**Step 1: Create a ResourceProvider**
+
+Implement the `ResourceProviderInterface` (recommended approach - inject resource instances):
+
+```php
+// src/MCP/Resources/Providers/MyResourceProvider.php
+namespace App\MCP\Resources\Providers;
+
+use App\MCP\Resources\MyCustomResource;
+use App\MCP\Resources\DocumentationResource;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface;
+
+class MyResourceProvider implements ResourceProviderInterface
+{
+    public function __construct(
+        private readonly MyCustomResource $customResource,
+        private readonly DocumentationResource $docResource,
+    ) {}
+
+    public function getResources(): iterable
+    {
+        // Return resource instances (recommended)
+        return [
+            $this->customResource,
+            $this->docResource,
+        ];
+    }
+}
+```
+
+**Step 2: Register the Provider**
+
+Register your provider as a Symfony service in `config/services.yaml`:
+
+```yaml
+services:
+    App\MCP\Resources\Providers\MyResourceProvider:
+        autowire: true
+        autoconfigure: true  # Automatically tags with 'klp_mcp_server.resource_provider'
+```
+
+That's it! Your provider will be automatically discovered, and the resources it returns will be registered with the MCP server.
+
+**⚠️ Important: Service Visibility**
+
+The above example shows the **recommended approach** where you inject resource instances. If instead you return resource **class names** (strings), those resources must be registered as **public services**:
+
+```yaml
+# config/services.yaml - Only needed if returning class names (NOT recommended)
+services:
+    App\MCP\Resources\:
+        resource: '../src/MCP/Resources/*'
+        public: true
+```
+
+**Why inject instances instead of class names?**
+- ✅ No need to make services public (better encapsulation)
+- ✅ Better performance (resources instantiated once during container compilation)
+- ✅ Type safety with constructor injection
+- ✅ Follows Symfony best practices
+
+**Advanced Example with Conditional Logic:**
+
+```php
+namespace App\MCP\Resources\Providers;
+
+use Doctrine\ORM\EntityManagerInterface;
+use KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface;
+
+class DatabaseResourceProvider implements ResourceProviderInterface
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private string $environment,
+        // Inject all potentially used resources
+        private readonly MyCustomResource $customResource,
+        private readonly DocumentationResource $docResource,
+        private readonly DebugResource $debugResource,
+        private readonly TestDataResource $testDataResource,
+    ) {}
+
+    public function getResources(): iterable
+    {
+        $resources = [];
+
+        // Load resource configuration from database
+        $enabledResources = $this->entityManager
+            ->getRepository(ResourceConfiguration::class)
+            ->findBy(['enabled' => true]);
+
+        // Map database config to injected resource instances
+        foreach ($enabledResources as $config) {
+            match ($config->getUri()) {
+                'file://my-custom-resource.txt' => $resources[] = $this->customResource,
+                'file://documentation.md' => $resources[] = $this->docResource,
+                default => null,
+            };
+        }
+
+        // Add development-only resources
+        if ($this->environment === 'dev') {
+            $resources[] = $this->debugResource;
+            $resources[] = $this->testDataResource;
+        }
+
+        return $resources;
+    }
+}
+```
+
+**Benefits of ResourceProviders:**
+
+- **Dynamic Discovery**: Load resources based on database configuration, API responses, or runtime conditions
+- **Conditional Loading**: Enable/disable resources based on environment, feature flags, or user permissions
+- **Dependency Injection**: Full access to Symfony services in your provider
+- **Backward Compatible**: Works alongside static YAML configuration
+- **Recommended Pattern**: Inject resource instances for better performance and no public service requirements
+- **Flexible**: Can return resource instances (recommended) or class names (requires public services)
+
+**When to Use Each Approach:**
+
+- Use **YAML configuration** for resources that are always available and don't require conditional logic
+- Use **ResourceProviders** when you need:
+  - Database-driven resource configuration
+  - Conditional resource loading based on environment or feature flags
+  - Dynamic resource discovery from external sources
+  - Complex initialization logic before registering resources
+
+Both approaches can be used together - resources from YAML configuration and ResourceProviders are merged into a single registry.
 
 ## Understanding the Resource Interfaces
 

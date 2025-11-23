@@ -112,9 +112,15 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
             }))
             ->willReturn([]);
 
+        // Provider discovery - expect findTaggedServiceIds to be called
+        $container->expects($this->once())
+            ->method('findTaggedServiceIds')
+            ->with('klp_mcp_server.resource_provider')
+            ->willReturn([]);
+
         $invocations = [
-            'klp_mcp_server.server',
             'klp_mcp_server.resource_repository',
+            'klp_mcp_server.server',
         ];
         $container->expects($matcher = $this->exactly(2))
             ->method('getDefinition')
@@ -124,8 +130,8 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
                 return true;
             }))
             ->willReturnOnConsecutiveCalls(
-                $serverDefinition,
                 $resourceRepositoryDefinition,
+                $serverDefinition,
             );
 
         $serverDefinition->expects($this->once())

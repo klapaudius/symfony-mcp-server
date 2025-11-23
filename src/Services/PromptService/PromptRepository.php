@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Services\PromptService;
 
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
@@ -28,14 +29,24 @@ class PromptRepository
     protected ContainerInterface $container;
 
     /**
+     * The logger instance.
+     */
+    protected LoggerInterface|null $logger;
+
+    /**
      * Constructor.
      *
      * @param  ContainerInterface  $container  The Symfony service container.
+     * @param  LoggerInterface|null  $logger  Optional logger instance for debugging prompt registration.
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, LoggerInterface|null $logger = null)
     {
         $this->container = $container;
+        $this->logger = $logger;
+        $this->logger?->debug('PromptRepository initialized');
+
         if ($prompts = $container->getParameter('klp_mcp_server.prompts')) {
+            $this->logger?->debug('Registering prompts from configuration', ['prompts' => $prompts]);
             $this->registerMany($prompts);
         }
     }
@@ -53,6 +64,41 @@ class PromptRepository
         foreach ($prompts as $prompt) {
             $this->register($prompt);
         }
+
+        return $this;
+    }
+
+    /**
+     * Registers prompts from a PromptProviderInterface.
+     *
+     * This method is called by the PromptsDefinitionCompilerPass for each
+     * discovered prompt provider. It retrieves prompts from the provider and
+     * registers them with the repository.
+     *
+     * @param  PromptProviderInterface  $provider  The prompt provider instance.
+     * @return $this The current PromptRepository instance for method chaining.
+     *
+     * @throws InvalidArgumentException If a prompt does not implement PromptInterface.
+     */
+    public function registerProvider(PromptProviderInterface $provider): self
+    {
+        $providerClass = get_class($provider);
+
+        $this->logger?->debug('Registering prompts from PromptProvider', [
+            'provider' => $providerClass,
+        ]);
+
+        $prompts = $provider->getPrompts();
+        $promptCount = is_countable($prompts) ? count($prompts) : 0;
+
+        foreach ($prompts as $prompt) {
+            $this->register($prompt);
+        }
+
+        $this->logger?->debug('Successfully registered prompts from PromptProvider', [
+            'provider' => $providerClass,
+            'prompt_count' => $promptCount,
+        ]);
 
         return $this;
     }

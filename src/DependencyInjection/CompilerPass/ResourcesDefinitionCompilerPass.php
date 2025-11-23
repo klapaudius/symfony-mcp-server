@@ -5,11 +5,16 @@ namespace KLP\KlpMcpServer\DependencyInjection\CompilerPass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Server-Sent Events Service Provider
+ * Resources Definition Compiler Pass
  *
- * Registers the MCPServer as a singleton when server_provider config is set to "sse"
+ * Registers resources from two sources:
+ * 1. Static resources defined in YAML configuration (klp_mcp_server.resources)
+ * 2. Dynamic resources provided by ResourceProviderInterface implementations
+ *
+ * This compiler pass also wires the ResourceRepository to the MCPServer.
  */
 final class ResourcesDefinitionCompilerPass implements CompilerPassInterface
 {
@@ -39,8 +44,17 @@ final class ResourcesDefinitionCompilerPass implements CompilerPassInterface
             }
         }
 
-        $server = $container->getDefinition('klp_mcp_server.server');
+        // Discover and register resource providers
         $resourceRepository = $container->getDefinition('klp_mcp_server.resource_repository');
+        $taggedProviders = $container->findTaggedServiceIds('klp_mcp_server.resource_provider');
+
+        foreach ($taggedProviders as $providerId => $tags) {
+            // Add a method call to register each provider with the ResourceRepository
+            $resourceRepository->addMethodCall('registerProvider', [new Reference($providerId)]);
+        }
+
+        // Wire ResourceRepository to MCPServer
+        $server = $container->getDefinition('klp_mcp_server.server');
         $server->addMethodCall('registerResourceRepository', [$resourceRepository]);
     }
 }

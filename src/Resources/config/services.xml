@@ -8,6 +8,16 @@
         <instanceof id="KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface">
             <tag name="klp_mcp_server.tool_provider"/>
         </instanceof>
+
+        <!-- Auto-configure services implementing ResourceProviderInterface -->
+        <instanceof id="KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface">
+            <tag name="klp_mcp_server.resource_provider"/>
+        </instanceof>
+
+        <!-- Auto-configure services implementing PromptProviderInterface -->
+        <instanceof id="KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface">
+            <tag name="klp_mcp_server.prompt_provider"/>
+        </instanceof>
         <service id="KLP\KlpMcpServer\Controllers\SseController" class="KLP\KlpMcpServer\Controllers\SseController">
             <argument type="service" id="klp_mcp_server.server" />
             <tag name="controller.service_arguments" />
@@ -98,11 +108,13 @@
         <!-- Resource services -->
         <service id="klp_mcp_server.resource_repository" class="KLP\KlpMcpServer\Services\ResourceService\ResourceRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
 
         <!-- Prompt services -->
         <service id="klp_mcp_server.prompt_repository" class="KLP\KlpMcpServer\Services\PromptService\PromptRepository">
             <argument type="service" id="service_container" on-invalid="null" />
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
 
         <!-- Sampling services -->

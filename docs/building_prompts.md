@@ -6,6 +6,10 @@ This guide provides a comprehensive walkthrough for creating MCP prompts in the 
 1. [Understanding MCP Prompts](#understanding-mcp-prompts)
 2. [Quick Start with make:mcp-prompt](#quick-start-with-makemcp-prompt)
 3. [Basic Prompt Implementation](#basic-prompt-implementation)
+   - [Step 1: Create the Prompt Class](#step-1-create-the-prompt-class)
+   - [Step 2: Register the Prompt](#step-2-register-the-prompt)
+     - [Option 1: Static Registration (YAML Configuration)](#option-1-static-registration-yaml-configuration)
+     - [Option 2: Dynamic Registration (PromptProvider)](#option-2-dynamic-registration-promptprovider)
 4. [SamplingAwarePromptInterface](#samplingawarepromptinterface)
 5. [Advanced Prompt Features](#advanced-prompt-features)
 6. [Multi-Modal Prompts](#multi-modal-prompts)
@@ -138,14 +142,155 @@ class BlogPostPrompt implements PromptInterface
 
 ### Step 2: Register the Prompt
 
-Add to your `config/packages/klp_mcp_server.yaml`:
+There are two ways to register prompts with the MCP server:
+
+#### Option 1: Static Registration (YAML Configuration)
+
+If you chose not to automatically register your prompt during creation, you need to add it to the configuration file:
 
 ```yaml
+# config/packages/klp_mcp_server.yaml
 klp_mcp_server:
     prompts:
-        blog_post:
-            class: App\Mcp\Prompts\BlogPostPrompt
+        - App\MCP\Prompts\BlogPostPrompt
+        # Add other prompts here
 ```
+
+This approach is simple and works well for prompts that are always available in your application.
+
+#### Option 2: Dynamic Registration (PromptProvider)
+
+For more flexibility, you can use a **PromptProvider** to register prompts programmatically based on runtime conditions, database configuration, feature flags, or any custom logic.
+
+**Step 1: Create a PromptProvider**
+
+Implement the `PromptProviderInterface` (recommended approach - inject prompt instances):
+
+```php
+// src/MCP/Prompts/Providers/MyPromptProvider.php
+namespace App\MCP\Prompts\Providers;
+
+use App\MCP\Prompts\BlogPostPrompt;
+use App\MCP\Prompts\ContentStrategyPrompt;
+use KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface;
+
+class MyPromptProvider implements PromptProviderInterface
+{
+    public function __construct(
+        private readonly BlogPostPrompt $blogPostPrompt,
+        private readonly ContentStrategyPrompt $strategyPrompt,
+    ) {}
+
+    public function getPrompts(): iterable
+    {
+        // Return prompt instances (recommended)
+        return [
+            $this->blogPostPrompt,
+            $this->strategyPrompt,
+        ];
+    }
+}
+```
+
+**Step 2: Register the Provider**
+
+Register your provider as a Symfony service in `config/services.yaml`:
+
+```yaml
+services:
+    App\MCP\Prompts\Providers\MyPromptProvider:
+        autowire: true
+        autoconfigure: true  # Automatically tags with 'klp_mcp_server.prompt_provider'
+```
+
+That's it! Your provider will be automatically discovered, and the prompts it returns will be registered with the MCP server.
+
+**⚠️ Important: Service Visibility**
+
+The above example shows the **recommended approach** where you inject prompt instances. If instead you return prompt **class names** (strings), those prompts must be registered as **public services**:
+
+```yaml
+# config/services.yaml - Only needed if returning class names (NOT recommended)
+services:
+    App\MCP\Prompts\:
+        resource: '../src/MCP/Prompts/*'
+        public: true
+```
+
+**Why inject instances instead of class names?**
+- ✅ No need to make services public (better encapsulation)
+- ✅ Better performance (prompts instantiated once during container compilation)
+- ✅ Type safety with constructor injection
+- ✅ Follows Symfony best practices
+
+**Advanced Example with Conditional Logic:**
+
+```php
+namespace App\MCP\Prompts\Providers;
+
+use Doctrine\ORM\EntityManagerInterface;
+use KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface;
+
+class DatabasePromptProvider implements PromptProviderInterface
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private string $environment,
+        // Inject all potentially used prompts
+        private readonly BlogPostPrompt $blogPostPrompt,
+        private readonly ContentStrategyPrompt $strategyPrompt,
+        private readonly DebugPrompt $debugPrompt,
+        private readonly TestPrompt $testPrompt,
+    ) {}
+
+    public function getPrompts(): iterable
+    {
+        $prompts = [];
+
+        // Load prompt configuration from database
+        $enabledPrompts = $this->entityManager
+            ->getRepository(PromptConfiguration::class)
+            ->findBy(['enabled' => true]);
+
+        // Map database config to injected prompt instances
+        foreach ($enabledPrompts as $config) {
+            match ($config->getName()) {
+                'blog-post' => $prompts[] = $this->blogPostPrompt,
+                'content-strategy' => $prompts[] = $this->strategyPrompt,
+                default => null,
+            };
+        }
+
+        // Add development-only prompts
+        if ($this->environment === 'dev') {
+            $prompts[] = $this->debugPrompt;
+            $prompts[] = $this->testPrompt;
+        }
+
+        return $prompts;
+    }
+}
+```
+
+**Benefits of PromptProviders:**
+
+- **Dynamic Discovery**: Load prompts based on database configuration, API responses, or runtime conditions
+- **Conditional Loading**: Enable/disable prompts based on environment, feature flags, or user permissions
+- **Dependency Injection**: Full access to Symfony services in your provider
+- **Backward Compatible**: Works alongside static YAML configuration
+- **Recommended Pattern**: Inject prompt instances for better performance and no public service requirements
+- **Flexible**: Can return prompt instances (recommended) or class names (requires public services)
+
+**When to Use Each Approach:**
+
+- Use **YAML configuration** for prompts that are always available and don't require conditional logic
+- Use **PromptProviders** when you need:
+  - Database-driven prompt configuration
+  - Conditional prompt loading based on environment or feature flags
+  - Dynamic prompt discovery from external sources
+  - Complex initialization logic before registering prompts
+
+Both approaches can be used together - prompts from YAML configuration and PromptProviders are merged into a single registry.
 
 
 

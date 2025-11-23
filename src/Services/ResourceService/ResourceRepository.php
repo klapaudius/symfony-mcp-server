@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Services\ResourceService;
 
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
@@ -34,17 +35,28 @@ class ResourceRepository
     protected ContainerInterface $container;
 
     /**
+     * The logger instance.
+     */
+    protected LoggerInterface|null $logger;
+
+    /**
      * Constructor.
      *
      * @param  ContainerInterface  $container  The Symfony service container. If null, it resolves from the facade.
+     * @param  LoggerInterface|null  $logger  Optional logger instance for debugging resource registration.
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, LoggerInterface|null $logger = null)
     {
         $this->container = $container;
+        $this->logger = $logger;
+        $this->logger?->debug('ResourceRepository initialized');
+
         if ($resources = $container->getParameter('klp_mcp_server.resources')) {
+            $this->logger?->debug('Registering resources from configuration', ['resources' => $resources]);
             $this->registerMany($resources);
         }
         if ($resourceTemplateConfigs = $container->getParameter('klp_mcp_server.resources_templates')) {
+            $this->logger?->debug('Registering resource templates from configuration', ['resource_templates' => $resourceTemplateConfigs]);
             $this->registerManyResourceTemplates($resourceTemplateConfigs);
         }
     }
@@ -62,6 +74,41 @@ class ResourceRepository
         foreach ($resources as $resource) {
             $this->register($resource);
         }
+
+        return $this;
+    }
+
+    /**
+     * Registers resources from a ResourceProviderInterface.
+     *
+     * This method is called by the ResourcesDefinitionCompilerPass for each
+     * discovered resource provider. It retrieves resources from the provider and
+     * registers them with the repository.
+     *
+     * @param  ResourceProviderInterface  $provider  The resource provider instance.
+     * @return $this The current ResourceRepository instance for method chaining.
+     *
+     * @throws InvalidArgumentException If a resource does not implement ResourceInterface.
+     */
+    public function registerProvider(ResourceProviderInterface $provider): self
+    {
+        $providerClass = get_class($provider);
+
+        $this->logger?->debug('Registering resources from ResourceProvider', [
+            'provider' => $providerClass,
+        ]);
+
+        $resources = $provider->getResources();
+        $resourceCount = is_countable($resources) ? count($resources) : 0;
+
+        foreach ($resources as $resource) {
+            $this->register($resource);
+        }
+
+        $this->logger?->debug('Successfully registered resources from ResourceProvider', [
+            'provider' => $providerClass,
+            'resource_count' => $resourceCount,
+        ]);
 
         return $this;
     }

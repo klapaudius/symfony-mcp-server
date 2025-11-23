@@ -5,11 +5,16 @@ namespace KLP\KlpMcpServer\DependencyInjection\CompilerPass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Prompts Definition Compiler Pass
  *
- * Registers prompts in the container and configures the MCPServer with the prompt repository
+ * Registers prompts from two sources:
+ * 1. Static prompts defined in YAML configuration (klp_mcp_server.prompts)
+ * 2. Dynamic prompts provided by PromptProviderInterface implementations
+ *
+ * This compiler pass also wires the PromptRepository to the MCPServer.
  */
 final class PromptsDefinitionCompilerPass implements CompilerPassInterface
 {
@@ -27,8 +32,17 @@ final class PromptsDefinitionCompilerPass implements CompilerPassInterface
             }
         }
 
-        $server = $container->getDefinition('klp_mcp_server.server');
+        // Discover and register prompt providers
         $promptRepository = $container->getDefinition('klp_mcp_server.prompt_repository');
+        $taggedProviders = $container->findTaggedServiceIds('klp_mcp_server.prompt_provider');
+
+        foreach ($taggedProviders as $providerId => $tags) {
+            // Add a method call to register each provider with the PromptRepository
+            $promptRepository->addMethodCall('registerProvider', [new Reference($providerId)]);
+        }
+
+        // Wire PromptRepository to MCPServer
+        $server = $container->getDefinition('klp_mcp_server.server');
         $server->addMethodCall('registerPromptRepository', [$promptRepository]);
     }
 }
