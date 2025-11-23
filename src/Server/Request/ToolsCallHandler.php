@@ -102,9 +102,11 @@ class ToolsCallHandler implements RequestHandler
             $tool->setSamplingClient($this->samplingClient);
         }
 
-        $result = $tool->execute($arguments);
-
-        $this->progressNotifierRepository->unregisterToken($progressToken);
+        try {
+            $result = $tool->execute($arguments);
+        } finally {
+            $this->progressNotifierRepository->unregisterToken($progressToken);
+        }
 
         if ($method === 'tools/call') {
             if (! $result instanceof ToolResultInterface) {

@@ -17,7 +17,7 @@ class DataUtil
             } else {
                 $data = NotificationData::fromArray(data: array_merge(['clientId' => $clientId], $message));
             }
-        } elseif (isset($message['result'])) {
+        } elseif (isset($message['result']) || isset($message['error'])) {
             if (isset($message['id'])) {
                 $data = ResponseData::fromArray(data: $message);
             } else {

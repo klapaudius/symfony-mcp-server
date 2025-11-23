@@ -2,6 +2,7 @@
 
 namespace KLP\KlpMcpServer\Tests\Server\Request;
 
+use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
@@ -17,6 +18,7 @@ use KLP\KlpMcpServer\Services\ToolService\Result\AudioToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ImageToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ResourceToolResult;
+use KLP\KlpMcpServer\Services\ToolService\Result\StructuredToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\SamplingAwareToolInterface;
@@ -992,4 +994,474 @@ class ToolsCallHandlerTest extends TestCase
     // Note: Legacy deprecation tests for tools returning string/array instead of ToolResultInterface
     // are not included due to PHP type system constraints in test environment.
     // The deprecation logic is covered by the actual implementation in ToolsCallHandler.
+
+    public function test_execute_unregisters_progress_token_even_when_tool_throws_exception(): void
+    {
+        $streamingTool = $this->createMock(StreamableToolInterface::class);
+        $progressNotifier = $this->createMock(ProgressNotifier::class);
+
+        $streamingTool->method('getName')->willReturn('failing-tool');
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $streamingTool->method('isStreaming')->willReturn(true);
+        $streamingTool->method('execute')->willThrowException(new \RuntimeException('Tool execution failed'));
+
+        $streamingTool->expects($this->once())
+            ->method('setProgressNotifier')
+            ->with($progressNotifier);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('failing-tool')
+            ->willReturn($streamingTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('registerToken')
+            ->with('progress-token-123', 'client1')
+            ->willReturn($progressNotifier);
+
+        // The key assertion: unregisterToken should still be called even though execute() throws
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with('progress-token-123');
+
+        $params = [
+            'name' => 'failing-tool',
+            'arguments' => [],
+            '_meta' => ['progressToken' => 'progress-token-123'],
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Tool execution failed');
+
+        $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+    }
+
+    public function test_execute_with_deprecated_array_based_input_schema(): void
+    {
+        $tool = new class implements StreamableToolInterface
+        {
+            public function getName(): string
+            {
+                return 'deprecated-array-schema-tool';
+            }
+
+            public function getDescription(): string
+            {
+                return 'Tool with deprecated array-based schema';
+            }
+
+            public function getInputSchema(): array|StructuredSchema
+            {
+                // Return array instead of StructuredSchema (deprecated in 1.5.0)
+                return [
+                    'type' => 'object',
+                    'properties' => [
+                        'message' => [
+                            'type' => 'string',
+                            'description' => 'A message',
+                        ],
+                    ],
+                    'required' => ['message'],
+                ];
+            }
+
+            public function getAnnotations(): ToolAnnotation
+            {
+                return new ToolAnnotation;
+            }
+
+            public function execute(array $arguments): ToolResultInterface
+            {
+                return new TextToolResult('Result: '.$arguments['message']);
+            }
+
+            public function isStreaming(): bool
+            {
+                return false;
+            }
+
+            public function setProgressNotifier(ProgressNotifierInterface $progressNotifier): void {}
+        };
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('deprecated-array-schema-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        // Should trigger deprecation warning but still work
+        set_error_handler(function ($errno, $errstr) {
+            $this->assertStringContainsString('should return instance of', $errstr);
+            $this->assertStringContainsString('StructuredSchema', $errstr);
+            $this->assertStringContainsString('instead of an array', $errstr);
+        });
+
+        $params = [
+            'name' => 'deprecated-array-schema-tool',
+            'arguments' => ['message' => 'test message'],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        restore_error_handler();
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result: test message'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_tool_execution_throwing_generic_exception(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+
+        $tool->method('getName')->willReturn('exception-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willThrowException(new \Exception('Generic error occurred'));
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('exception-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Generic error occurred');
+
+        $this->toolsCallHandler->execute('tools/call', 'client1', 1, ['name' => 'exception-tool', 'arguments' => []]);
+    }
+
+    public function test_execute_with_tool_execution_throwing_custom_exception(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+
+        $tool->method('getName')->willReturn('custom-exception-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willThrowException(new JsonRpcErrorException(
+            message: 'Custom error',
+            code: JsonRpcErrorCode::INTERNAL_ERROR,
+            data: ['details' => 'error info']
+        ));
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('custom-exception-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $this->expectException(JsonRpcErrorException::class);
+        $this->expectExceptionMessage('Custom error');
+
+        $this->toolsCallHandler->execute('tools/call', 'client1', 1, ['name' => 'custom-exception-tool', 'arguments' => []]);
+    }
+
+    public function test_execute_with_empty_string_progress_token(): void
+    {
+        $streamingTool = $this->createMock(StreamableToolInterface::class);
+
+        $streamingTool->method('getName')->willReturn('streaming-tool');
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $streamingTool->method('isStreaming')->willReturn(true);
+        $streamingTool->method('execute')->willReturn(new TextToolResult('Result with empty string token'));
+
+        // Empty string is falsy, so progress notifier should not be set
+        $streamingTool->expects($this->never())
+            ->method('setProgressNotifier');
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('streaming-tool')
+            ->willReturn($streamingTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->never())
+            ->method('registerToken');
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(''); // Empty string passed to unregisterToken
+
+        $params = [
+            'name' => 'streaming-tool',
+            'arguments' => [],
+            '_meta' => ['progressToken' => ''],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result with empty string token'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_zero_progress_token(): void
+    {
+        $streamingTool = $this->createMock(StreamableToolInterface::class);
+
+        $streamingTool->method('getName')->willReturn('streaming-tool');
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $streamingTool->method('isStreaming')->willReturn(true);
+        $streamingTool->method('execute')->willReturn(new TextToolResult('Result with zero token'));
+
+        // Integer 0 is falsy, so progress notifier should not be set
+        $streamingTool->expects($this->never())
+            ->method('setProgressNotifier');
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('streaming-tool')
+            ->willReturn($streamingTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->never())
+            ->method('registerToken');
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(0);
+
+        $params = [
+            'name' => 'streaming-tool',
+            'arguments' => [],
+            '_meta' => ['progressToken' => 0],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result with zero token'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_progress_token_containing_special_characters(): void
+    {
+        $streamingTool = $this->createMock(StreamableToolInterface::class);
+        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $specialToken = 'progress-!@#$%^&*()_+-={}[]|:;<>?,./~`';
+
+        $streamingTool->method('getName')->willReturn('streaming-tool');
+        $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $streamingTool->method('isStreaming')->willReturn(true);
+        $streamingTool->method('execute')->willReturn(new TextToolResult('Result with special token'));
+
+        $streamingTool->expects($this->once())
+            ->method('setProgressNotifier')
+            ->with($progressNotifier);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('streaming-tool')
+            ->willReturn($streamingTool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('registerToken')
+            ->with($specialToken, 'client1')
+            ->willReturn($progressNotifier);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with($specialToken);
+
+        $params = [
+            'name' => 'streaming-tool',
+            'arguments' => [],
+            '_meta' => ['progressToken' => $specialToken],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertEquals([
+            'content' => [
+                ['type' => 'text', 'text' => 'Result with special token'],
+            ],
+        ], $result);
+    }
+
+    public function test_execute_with_empty_collection_tool_result(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+        $emptyCollection = new CollectionToolResult;
+
+        $tool->method('getName')->willReturn('empty-collection-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willReturn($emptyCollection);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('empty-collection-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'empty-collection-tool',
+            'arguments' => [],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertArrayHasKey('content', $result);
+        $this->assertCount(0, $result['content']);
+        $this->assertEquals(['content' => []], $result);
+    }
+
+    public function test_execute_with_collection_containing_mixed_result_types(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+
+        $textResult = new TextToolResult('Text content');
+        $imageResult = new ImageToolResult('base64imagedata', 'image/png');
+        $audioResult = new AudioToolResult('base64audiodata', 'audio/wav');
+        $resourceResult = new ResourceToolResult('https://example.com/data.json', 'application/json', '{"key":"value"}');
+
+        $collection = new CollectionToolResult;
+        $collection->addItem($textResult);
+        $collection->addItem($imageResult);
+        $collection->addItem($audioResult);
+        $collection->addItem($resourceResult);
+
+        $tool->method('getName')->willReturn('mixed-collection-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willReturn($collection);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('mixed-collection-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'mixed-collection-tool',
+            'arguments' => [],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        $this->assertArrayHasKey('content', $result);
+        $this->assertCount(4, $result['content']);
+        $this->assertEquals('text', $result['content'][0]['type']);
+        $this->assertEquals('image', $result['content'][1]['type']);
+        $this->assertEquals('audio', $result['content'][2]['type']);
+        $this->assertEquals('resource', $result['content'][3]['type']);
+    }
+
+    public function test_execute_with_structured_tool_result_includes_structured_content_field(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+        $structuredData = [
+            'status' => 'success',
+            'data' => [
+                'id' => 123,
+                'name' => 'Test Item',
+                'tags' => ['tag1', 'tag2'],
+            ],
+            'metadata' => [
+                'timestamp' => '2024-01-01T00:00:00Z',
+            ],
+        ];
+        $structuredResult = new StructuredToolResult($structuredData);
+
+        $tool->method('getName')->willReturn('structured-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willReturn($structuredResult);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('structured-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'structured-tool',
+            'arguments' => [],
+        ];
+
+        $result = $this->toolsCallHandler->execute('tools/call', 'client1', 1, $params);
+
+        // Should include both 'content' and 'structuredContent' keys
+        $this->assertArrayHasKey('content', $result);
+        $this->assertArrayHasKey('structuredContent', $result);
+
+        // Content should have the JSON-encoded version
+        $this->assertCount(1, $result['content']);
+        $this->assertEquals('text', $result['content'][0]['type']);
+        $this->assertEquals(json_encode($structuredData), $result['content'][0]['text']);
+
+        // structuredContent should have the raw array
+        $this->assertEquals($structuredData, $result['structuredContent']);
+    }
+
+    public function test_execute_with_structured_tool_result_on_non_tools_call_method(): void
+    {
+        $tool = $this->createMock(StreamableToolInterface::class);
+        $structuredData = ['key' => 'value'];
+        $structuredResult = new StructuredToolResult($structuredData);
+
+        $tool->method('getName')->willReturn('structured-tool');
+        $tool->method('getInputSchema')->willReturn(new StructuredSchema);
+        $tool->method('isStreaming')->willReturn(false);
+        $tool->method('execute')->willReturn($structuredResult);
+
+        $this->toolRepository
+            ->method('getTool')
+            ->with('structured-tool')
+            ->willReturn($tool);
+
+        $this->progressNotifierRepository
+            ->expects($this->once())
+            ->method('unregisterToken')
+            ->with(null);
+
+        $params = [
+            'name' => 'structured-tool',
+            'arguments' => [],
+        ];
+
+        // Using a different method name (not 'tools/call')
+        $result = $this->toolsCallHandler->execute('tools/execute', 'client1', 1, $params);
+
+        // For non-'tools/call' methods, result is wrapped differently
+        $this->assertArrayHasKey('result', $result);
+        $this->assertInstanceOf(StructuredToolResult::class, $result['result']);
+        $this->assertEquals($structuredData, $result['result']->getStructuredValue());
+    }
 }

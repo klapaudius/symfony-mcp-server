@@ -523,4 +523,265 @@ class MCPProtocolTest extends TestCase
 
         $this->assertEquals($decodedMessages, $result);
     }
+
+    /**
+     * Test that handleResponseProcess executes matching handler successfully
+     */
+    public function test_handle_response_process_with_matching_handler(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_123';
+        $result = ['data' => 'response'];
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => $result,
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $mockHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, $result, null);
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess silently ignores when no handler matches
+     */
+    public function test_handle_response_process_with_no_matching_handler(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_456';
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => ['data' => 'test'],
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(false);
+
+        $mockHandler->expects($this->never())
+            ->method('execute');
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess pushes error when handler throws JsonRpcErrorException
+     */
+    public function test_handle_response_process_handler_throws_json_rpc_error(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_789';
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => ['data' => 'test'],
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $expectedException = new \KLP\KlpMcpServer\Exceptions\JsonRpcErrorException(
+            'Handler error',
+            \KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode::INTERNAL_ERROR
+        );
+
+        $mockHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, ['data' => 'test'], null)
+            ->willThrowException($expectedException);
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId, $messageId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals($messageId, $data['id']);
+                $this->assertEquals(-32603, $data['error']['code']);
+                $this->assertEquals('Handler error', $data['error']['message']);
+
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess wraps generic Exception as INTERNAL_ERROR
+     */
+    public function test_handle_response_process_handler_throws_generic_exception(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_101';
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => ['data' => 'test'],
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $mockHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, ['data' => 'test'], null)
+            ->willThrowException(new \RuntimeException('Unexpected error'));
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->once())
+            ->method('pushMessage')
+            ->with($this->callback(function (...$args) use ($clientId, $messageId) {
+                $data = $args[1];
+                $this->assertEquals($clientId, $args[0]);
+                $this->assertEquals('2.0', $data['jsonrpc']);
+                $this->assertEquals($messageId, $data['id']);
+                $this->assertEquals(-32603, $data['error']['code']);
+                $this->assertEquals('Unexpected error', $data['error']['message']);
+
+                return true;
+            }));
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess returns early on first matching handler
+     */
+    public function test_handle_response_process_early_return_first_match(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_202';
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => ['data' => 'test'],
+        ];
+
+        $firstHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $firstHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $firstHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, ['data' => 'test'], null);
+
+        $secondHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $secondHandler->expects($this->never())
+            ->method('isHandle');
+
+        $secondHandler->expects($this->never())
+            ->method('execute');
+
+        $this->mcpProtocol->registerResponseHandler($firstHandler);
+        $this->mcpProtocol->registerResponseHandler($secondHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess passes result data correctly to handler
+     */
+    public function test_handle_response_process_with_result_data(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_303';
+        $result = ['key1' => 'value1', 'key2' => ['nested' => 'data']];
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'result' => $result,
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $mockHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, $result, null);
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
+
+    /**
+     * Test that handleResponseProcess passes error data correctly to handler
+     */
+    public function test_handle_response_process_with_error_data(): void
+    {
+        $clientId = 'response_client';
+        $messageId = 'resp_404';
+        $error = ['code' => -32600, 'message' => 'Invalid Request'];
+        $responseMessage = [
+            'jsonrpc' => '2.0',
+            'id' => $messageId,
+            'error' => $error,
+        ];
+
+        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler->expects($this->once())
+            ->method('isHandle')
+            ->with($messageId)
+            ->willReturn(true);
+
+        $mockHandler->expects($this->once())
+            ->method('execute')
+            ->with($clientId, $messageId, null, $error);
+
+        $this->mcpProtocol->registerResponseHandler($mockHandler);
+
+        $this->mockTransport
+            ->expects($this->never())
+            ->method('pushMessage');
+
+        $this->mcpProtocol->handleMessage($clientId, $responseMessage);
+    }
 }

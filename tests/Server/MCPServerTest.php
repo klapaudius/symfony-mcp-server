@@ -9,6 +9,8 @@ use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
 use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServer;
+use KLP\KlpMcpServer\Server\Request\PromptsGetHandler;
+use KLP\KlpMcpServer\Server\Request\PromptsListHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
 use KLP\KlpMcpServer\Server\Request\ResourcesReadHandler;
 use KLP\KlpMcpServer\Server\Request\ToolsCallHandler;
@@ -16,10 +18,14 @@ use KLP\KlpMcpServer\Server\Request\ToolsListHandler;
 use KLP\KlpMcpServer\Server\ServerCapabilities;
 use KLP\KlpMcpServer\Server\ServerCapabilitiesInterface;
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository;
+use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingResponseHandler;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use ReflectionClass;
 
 #[Small]
@@ -569,5 +575,142 @@ class MCPServerTest extends TestCase
         $this->assertInstanceOf(InitializeResource::class, $initializeResource);
         $this->assertEquals(MCPProtocolInterface::PROTOCOL_THIRD_VERSION, $initializeResource->protocolVersion);
         $this->assertEquals($serverInfo, $initializeResource->serverInfo);
+    }
+
+    /**
+     * Tests that prompt repository registration correctly registers the required handlers
+     */
+    public function test_register_prompt_repository_registers_handlers(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+        $mockPromptRepository = $this->createMock(PromptRepository::class);
+
+        $invocations = [
+            new PromptsListHandler($mockPromptRepository),
+            new PromptsGetHandler($mockPromptRepository, null),
+        ];
+        $mockProtocol->expects($matcher = $this->exactly(count($invocations)))
+            ->method('registerRequestHandler')
+            ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
+
+                return true;
+            }));
+
+        $mockPromptRepository->expects($this->once())
+            ->method('getPromptSchemas')
+            ->willReturn([]);
+
+        $server = new ReflectionClass(MCPServer::class);
+        $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
+        $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
+
+        // Act
+        $instance->registerPromptRepository($mockPromptRepository);
+
+        // Assert: Expectations set on the mock protocol are automatically verified.
+    }
+
+    /**
+     * Tests that registerPromptRepository method returns the server instance for method chaining
+     */
+    public function test_register_prompt_repository_returns_instance(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+        $mockPromptRepository = $this->createMock(PromptRepository::class);
+        $mockPromptRepository->expects($this->once())
+            ->method('getPromptSchemas')
+            ->willReturn([]);
+
+        $server = new ReflectionClass(MCPServer::class);
+        $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('capabilities')->setValue($instance, new ServerCapabilities);
+        $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
+
+        // Act
+        $result = $instance->registerPromptRepository($mockPromptRepository);
+
+        // Assert
+        $this->assertSame($instance, $result);
+    }
+
+    /**
+     * Tests that registerSamplingResponseHandler correctly registers the handler when sampling client exists
+     */
+    public function test_register_sampling_response_handler_with_client(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+        $mockSamplingClient = $this->createMock(SamplingClient::class);
+        $mockLogger = $this->createMock(LoggerInterface::class);
+
+        $mockSamplingClient->expects($this->once())
+            ->method('getLogger')
+            ->willReturn($mockLogger);
+
+        $mockProtocol->expects($this->once())
+            ->method('registerResponseHandler')
+            ->with($this->callback(function ($arg) use ($mockSamplingClient, $mockLogger) {
+                $this->assertInstanceOf(SamplingResponseHandler::class, $arg);
+
+                return true;
+            }));
+
+        $server = new ReflectionClass(MCPServer::class);
+        $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, $mockSamplingClient);
+
+        // Act
+        $instance->registerSamplingResponseHandler();
+
+        // Assert: Expectations set on the mock protocol are automatically verified.
+    }
+
+    /**
+     * Tests that registerSamplingResponseHandler does not register handler when sampling client is null
+     */
+    public function test_register_sampling_response_handler_without_client(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+
+        $mockProtocol->expects($this->never())
+            ->method('registerResponseHandler');
+
+        $server = new ReflectionClass(MCPServer::class);
+        $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
+
+        // Act
+        $instance->registerSamplingResponseHandler();
+
+        // Assert: Expectations set on the mock protocol are automatically verified.
+    }
+
+    /**
+     * Tests that registerSamplingResponseHandler method returns the server instance for method chaining
+     */
+    public function test_register_sampling_response_handler_returns_instance(): void
+    {
+        // Arrange
+        $mockProtocol = $this->createMock(MCPProtocolInterface::class);
+
+        $server = new ReflectionClass(MCPServer::class);
+        $instance = $server->newInstanceWithoutConstructor();
+        $server->getProperty('protocol')->setValue($instance, $mockProtocol);
+        $server->getProperty('samplingClient')->setValue($instance, null);
+
+        // Act
+        $result = $instance->registerSamplingResponseHandler();
+
+        // Assert
+        $this->assertSame($instance, $result);
     }
 }
