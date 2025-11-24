@@ -37,7 +37,7 @@ class ResourceRepository
     /**
      * The logger instance.
      */
-    protected LoggerInterface|null $logger;
+    protected ?LoggerInterface $logger;
 
     /**
      * Constructor.
@@ -45,7 +45,7 @@ class ResourceRepository
      * @param  ContainerInterface  $container  The Symfony service container. If null, it resolves from the facade.
      * @param  LoggerInterface|null  $logger  Optional logger instance for debugging resource registration.
      */
-    public function __construct(ContainerInterface $container, LoggerInterface|null $logger = null)
+    public function __construct(ContainerInterface $container, ?LoggerInterface $logger = null)
     {
         $this->container = $container;
         $this->logger = $logger;

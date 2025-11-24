@@ -31,7 +31,6 @@ use KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface;
  *
  * ALTERNATIVE APPROACH: Return prompt class names.
  * WARNING: This requires prompts to be registered as public services.
- *
  * @example Returning class names (NOT RECOMMENDED - requires public services):
  * ```php
  * public function getPrompts(): iterable
@@ -54,7 +53,6 @@ use KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface;
  * - ✅ Better performance (prompts instantiated once during compilation)
  * - ✅ Type safety with constructor injection
  * - ✅ Follows Symfony best practices
- *
  * @example Registration in services.yaml:
  * ```yaml
  * services:

@@ -31,7 +31,6 @@ use KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface;
  *
  * ALTERNATIVE APPROACH: Return resource class names.
  * WARNING: This requires resources to be registered as public services.
- *
  * @example Returning class names (NOT RECOMMENDED - requires public services):
  * ```php
  * public function getResources(): iterable
@@ -54,7 +53,6 @@ use KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface;
  * - ✅ Better performance (resources instantiated once during compilation)
  * - ✅ Type safety with constructor injection
  * - ✅ Follows Symfony best practices
- *
  * @example Registration in services.yaml:
  * ```yaml
  * services:
