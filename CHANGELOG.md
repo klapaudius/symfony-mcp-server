@@ -1,3 +1,15 @@
+### Version 1.7.0
+- **Core Features:**
+  - Add dynamic resource loading system with ResourceProviderInterface for runtime resource registration
+  - Add dynamic prompt loading system with PromptProviderInterface for runtime prompt registration
+- **Enhancements:**
+  - Improve progress token cleanup with try-finally block to prevent resource leaks when tools throw exceptions
+  - Update DataUtil to correctly identify both result and error responses in message parsing
+- **Documentation:**
+  - Extensive updates to building_prompts.md with PromptProvider implementation guide and examples
+  - Extensive updates to building_resources.md with ResourceProvider implementation guide and examples
+  - Include basic and advanced examples
+
 ### Version 1.6.0
 - **Core Features:**
   - Add dynamic tool loading system with ToolProviderInterface
