@@ -655,7 +655,7 @@ class MCPServerTest extends TestCase
 
         $mockProtocol->expects($this->once())
             ->method('registerResponseHandler')
-            ->with($this->callback(function ($arg) use ($mockSamplingClient, $mockLogger) {
+            ->with($this->callback(function ($arg) {
                 $this->assertInstanceOf(SamplingResponseHandler::class, $arg);
 
                 return true;

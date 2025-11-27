@@ -31,7 +31,7 @@ class PromptRepository
     /**
      * The logger instance.
      */
-    protected LoggerInterface|null $logger;
+    protected ?LoggerInterface $logger;
 
     /**
      * Constructor.
@@ -39,7 +39,7 @@ class PromptRepository
      * @param  ContainerInterface  $container  The Symfony service container.
      * @param  LoggerInterface|null  $logger  Optional logger instance for debugging prompt registration.
      */
-    public function __construct(ContainerInterface $container, LoggerInterface|null $logger = null)
+    public function __construct(ContainerInterface $container, ?LoggerInterface $logger = null)
     {
         $this->container = $container;
         $this->logger = $logger;
