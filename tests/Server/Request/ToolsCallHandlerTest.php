@@ -762,7 +762,7 @@ class ToolsCallHandlerTest extends TestCase
         $progressNotifier = $this->createMock(ProgressNotifier::class);
 
         // Create a tool that implements both interfaces
-        $combinedTool = new class implements SamplingAwareToolInterface, StreamableToolInterface
+        $combinedTool = new class implements SamplingAwareToolInterface
         {
             private ?ProgressNotifierInterface $progressNotifier = null;
 
