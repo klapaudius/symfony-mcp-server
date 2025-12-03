@@ -1,3 +1,8 @@
+### Version 1.8.0 (Unreleased)
+- **Compatibility:**
+  - Full support for Symfony 8.0
+  - Maintains backward compatibility with Symfony 6.4 and 7.4
+
 ### Version 1.7.0
 - **Core Features:**
   - Add dynamic resource loading system with ResourceProviderInterface for runtime resource registration

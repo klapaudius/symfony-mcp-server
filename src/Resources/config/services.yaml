@@ -1,0 +1,163 @@
+services:
+    # Auto-configuration via instanceof
+    _instanceof:
+        KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface:
+            tags: ['klp_mcp_server.tool_provider']
+
+        KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface:
+            tags: ['klp_mcp_server.resource_provider']
+
+        KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface:
+            tags: ['klp_mcp_server.prompt_provider']
+
+    # Controllers
+    KLP\KlpMcpServer\Controllers\SseController:
+        class: KLP\KlpMcpServer\Controllers\SseController
+        arguments:
+            - '@klp_mcp_server.server'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    KLP\KlpMcpServer\Controllers\StreamableHttpController:
+        class: KLP\KlpMcpServer\Controllers\StreamableHttpController
+        arguments:
+            - '@klp_mcp_server.server'
+            - '@?logger'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    KLP\KlpMcpServer\Controllers\MessageController:
+        class: KLP\KlpMcpServer\Controllers\MessageController
+        arguments:
+            - '@klp_mcp_server.server'
+            - '@?logger'
+        tags:
+            - { name: 'controller.service_arguments' }
+
+    # Server Capabilities
+    KLP\KlpMcpServer\Server\ServerCapabilitiesInterface:
+        class: KLP\KlpMcpServer\Server\ServerCapabilities
+
+    # Console Commands
+    klp_mcp_server.command.make_prompt:
+        class: KLP\KlpMcpServer\Command\MakeMcpPromptCommand
+        arguments:
+            - '@kernel'
+        tags:
+            - { name: 'console.command' }
+
+    klp_mcp_server.command.make_tool:
+        class: KLP\KlpMcpServer\Command\MakeMcpToolCommand
+        arguments:
+            - '@kernel'
+        tags:
+            - { name: 'console.command' }
+
+    klp_mcp_server.command.migrate_tool:
+        class: KLP\KlpMcpServer\Command\MigrateToolSchemaCommand
+        tags:
+            - { name: 'console.command' }
+
+    klp_mcp_server.command.test_prompt:
+        class: KLP\KlpMcpServer\Command\TestMcpPromptCommand
+        arguments:
+            - '@klp_mcp_server.prompt_repository'
+        tags:
+            - { name: 'console.command' }
+
+    klp_mcp_server.command.test_tool:
+        class: KLP\KlpMcpServer\Command\TestMcpToolCommand
+        arguments:
+            - '@service_container'
+        tags:
+            - { name: 'console.command' }
+
+    # Route Loader
+    klp_mcp_server.route_loader:
+        class: KLP\KlpMcpServer\Routing\Loader\McpRouteLoader
+        tags:
+            - { name: 'routing.loader' }
+
+    # Adapter Factory
+    klp_mcp_server.adapter.factory:
+        class: KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory
+        arguments:
+            - '@service_container'
+            - '@?logger'
+
+    # Transport Factory
+    klp_mcp_server.transport.factory:
+        class: KLP\KlpMcpServer\Transports\Factory\TransportFactory
+        arguments:
+            - '@router'
+            - '@?klp_mcp_server.adapter'
+            - '@?logger'
+            - '%klp_mcp_server.ping.enabled%'
+            - '%klp_mcp_server.ping.interval%'
+
+    # Adapter (created via factory)
+    klp_mcp_server.adapter:
+        class: KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface
+        factory: ['@klp_mcp_server.adapter.factory', 'create']
+
+    # Protocol
+    klp_mcp_server.protocol:
+        class: KLP\KlpMcpServer\Protocol\MCPProtocol
+        arguments:
+            - '@?klp_mcp_server.transport.factory'
+
+    # MCP Server
+    klp_mcp_server.server:
+        class: KLP\KlpMcpServer\Server\MCPServer
+        arguments:
+            - '@?klp_mcp_server.protocol'
+            - '@?klp_mcp_server.progress_notifier_repository'
+            -
+                name: '%klp_mcp_server.server.name%'
+                version: '%klp_mcp_server.server.version%'
+            - '@?klp_mcp_server.sampling_client'
+
+    # Tool Repository
+    klp_mcp_server.tool_repository:
+        class: KLP\KlpMcpServer\Services\ToolService\ToolRepository
+        arguments:
+            - '@?service_container'
+            - '@?logger'
+
+    # Progress Notifier Repository
+    klp_mcp_server.progress_notifier_repository:
+        class: KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierRepository
+        arguments:
+            - '@?klp_mcp_server.transport.factory'
+
+    # Capabilities
+    klp_mcp_server.capabilities:
+        class: KLP\KlpMcpServer\Services\ToolService\ToolRepository
+        arguments:
+            - '@?service_container'
+
+    # Resource Repository
+    klp_mcp_server.resource_repository:
+        class: KLP\KlpMcpServer\Services\ResourceService\ResourceRepository
+        arguments:
+            - '@?service_container'
+            - '@?logger'
+
+    # Prompt Repository
+    klp_mcp_server.prompt_repository:
+        class: KLP\KlpMcpServer\Services\PromptService\PromptRepository
+        arguments:
+            - '@?service_container'
+            - '@?logger'
+
+    # Sampling Client
+    klp_mcp_server.sampling_client:
+        class: KLP\KlpMcpServer\Services\SamplingService\SamplingClient
+        arguments:
+            - '@klp_mcp_server.transport.factory'
+            - '@?logger'
+
+    # Public aliases for controllers
+    klp_mcp_server.controller.sse: '@KLP\KlpMcpServer\Controllers\SseController'
+    klp_mcp_server.controller.streamable_http: '@KLP\KlpMcpServer\Controllers\StreamableHttpController'
+    klp_mcp_server.controller.message: '@KLP\KlpMcpServer\Controllers\MessageController'

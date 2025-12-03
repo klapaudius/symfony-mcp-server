@@ -23,7 +23,7 @@ class MigrateToolSchemaCommandTest extends TestCase
     {
         $this->command = new MigrateToolSchemaCommand;
         $application = new Application;
-        $application->add($this->command);
+        $application->addCommand($this->command);
         $this->commandTester = new CommandTester($this->command);
 
         // Create temporary directory for test files
