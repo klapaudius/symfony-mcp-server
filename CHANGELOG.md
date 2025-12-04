@@ -2,6 +2,8 @@
 - **Compatibility:**
   - Full support for Symfony 8.0
   - Maintains backward compatibility with Symfony 6.4 and 7.4
+- **Bug Fixes:**
+  - #62 TestMcpToolCommand do not show tools from dynamic providers
 
 ### Version 1.7.0
 - **Core Features:**
