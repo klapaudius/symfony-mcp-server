@@ -1,4 +1,4 @@
-### Version 1.8.0 (Unreleased)
+### Version 1.8.0
 - **Compatibility:**
   - Full support for Symfony 8.0
   - Maintains backward compatibility with Symfony 6.4 and 7.4
