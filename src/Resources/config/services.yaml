@@ -159,6 +159,14 @@ services:
             - '@?logger'
 
     # Public aliases for controllers
-    klp_mcp_server.controller.sse: '@KLP\KlpMcpServer\Controllers\SseController'
-    klp_mcp_server.controller.streamable_http: '@KLP\KlpMcpServer\Controllers\StreamableHttpController'
-    klp_mcp_server.controller.message: '@KLP\KlpMcpServer\Controllers\MessageController'
+    klp_mcp_server.controller.sse:
+        alias: KLP\KlpMcpServer\Controllers\SseController
+        public: true
+
+    klp_mcp_server.controller.streamable_http:
+        alias: KLP\KlpMcpServer\Controllers\StreamableHttpController
+        public: true
+
+    klp_mcp_server.controller.message:
+        alias: KLP\KlpMcpServer\Controllers\MessageController
+        public: true
