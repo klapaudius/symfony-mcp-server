@@ -279,7 +279,7 @@ EOT
         $prompts = $this->promptRepository->getPrompts();
 
         if (empty($prompts)) {
-            $this->io->warning('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml');
+            $this->io->warning('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
             return Command::SUCCESS;
         }
@@ -315,7 +315,7 @@ EOT
         $prompts = $this->promptRepository->getPrompts();
 
         if (empty($prompts)) {
-            $this->io->warning('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml');
+            $this->io->warning('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
             return null;
         }

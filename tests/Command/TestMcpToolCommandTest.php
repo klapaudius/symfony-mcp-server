@@ -9,6 +9,7 @@ use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +27,8 @@ class TestMcpToolCommandTest extends TestCase
 
     private ContainerInterface|MockObject $containerMock;
 
+    private ToolRepository|MockObject $toolRepositoryMock;
+
     private InputInterface|MockObject $inputMock;
 
     private OutputInterface|MockObject $outputMock;
@@ -35,11 +38,12 @@ class TestMcpToolCommandTest extends TestCase
     protected function setUp(): void
     {
         $this->containerMock = $this->createMock(ContainerInterface::class);
+        $this->toolRepositoryMock = $this->createMock(ToolRepository::class);
         $this->inputMock = $this->createMock(InputInterface::class);
         $this->outputMock = $this->createMock(OutputInterface::class);
         $this->ioMock = $this->createMock(SymfonyStyle::class);
 
-        $this->command = new TestMcpToolCommand($this->containerMock);
+        $this->command = new TestMcpToolCommand($this->toolRepositoryMock, $this->containerMock);
         $this->command->setApplication($this->createMock(Application::class));
         $this->injectPrivateProperty($this->command, 'input', $this->inputMock);
         $this->injectPrivateProperty($this->command, 'io', $this->ioMock);
@@ -66,14 +70,12 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_get_tool_instance_no_tool_provided_ask_choice_from_configured_tools(): void
     {
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn([HelloWorldTool::class]);
-        $this->containerMock
-            ->method('get')
-            ->with(HelloWorldTool::class)
-            ->willReturn(new HelloWorldTool);
+        $helloWorldTool = new HelloWorldTool;
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([
+                'hello-world' => $helloWorldTool
+            ]);
         $this->inputMock
             ->method('getArgument')
             ->with('tool')
@@ -118,7 +120,6 @@ class TestMcpToolCommandTest extends TestCase
     public function test_get_tool_instance_matching_configured_tool_returns_tool_instance(): void
     {
         $identifier = 'custom';
-        $configuredTools = ['App\\Tools\\CustomTool'];
         $toolMock = $this->createMock(StreamableToolInterface::class);
 
         $toolMock->method('getName')->willReturn('custom');
@@ -128,15 +129,11 @@ class TestMcpToolCommandTest extends TestCase
             ->with('tool')
             ->willReturn($identifier);
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn($configuredTools);
-
-        $this->containerMock
-            ->method('get')
-            ->with('App\\Tools\\CustomTool')
-            ->willReturn($toolMock);
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([
+                'custom' => $toolMock
+            ]);
 
         $this->assertSame($toolMock, $this->invokeGetToolInstanceMethod());
     }
@@ -174,30 +171,19 @@ class TestMcpToolCommandTest extends TestCase
     public function test_get_tool_instance_tool_not_found_throws_exception(): void
     {
         $identifier = 'nonexistent_tool';
-        $configuredTools = ['App\\Tools\\ValidTool'];
+        $validToolMock = $this->createMock(StreamableToolInterface::class);
+        $validToolMock->method('getName')->willReturn('Valid Tool');
 
         $this->inputMock
             ->method('getArgument')
             ->with('tool')
             ->willReturn($identifier);
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn($configuredTools);
-
-        $this->containerMock
-            ->method('get')
-            ->willReturnCallback(function ($class) use ($configuredTools) {
-                if (in_array($class, $configuredTools)) {
-                    $toolMock = $this->createMock(StreamableToolInterface::class);
-                    $toolMock->method('getName')->willReturn('Valid Tool');
-
-                    return $toolMock;
-                }
-
-                return null;
-            });
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([
+                'Valid Tool' => $validToolMock
+            ]);
 
         $this->expectException(TestMcpToolCommandException::class);
         $this->expectExceptionMessage("Tool 'nonexistent_tool' not found.");
@@ -446,15 +432,14 @@ class TestMcpToolCommandTest extends TestCase
             ->with('list')
             ->willReturn('list');
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
+        $this->toolRepositoryMock
+            ->method('getTools')
             ->willReturn([]);
 
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
         $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
@@ -472,9 +457,9 @@ class TestMcpToolCommandTest extends TestCase
             ->method('get')
             ->willReturn($toolMock);
 
-        $this->containerMock
-            ->method('getParameter')
-            ->willReturn([HelloWorldTool::class]);
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn(['hello-world' => $toolMock]);
 
         $this->inputMock
             ->method('getArgument')
@@ -502,9 +487,9 @@ class TestMcpToolCommandTest extends TestCase
             ->method('get')
             ->willReturn($toolMock);
 
-        $this->containerMock
-            ->method('getParameter')
-            ->willReturn([HelloWorldTool::class]);
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn(['hello-world' => $toolMock]);
 
         $this->inputMock
             ->method('getArgument')
@@ -529,23 +514,21 @@ class TestMcpToolCommandTest extends TestCase
             ->method('getOption')
             ->with('list')
             ->willReturn('list');
-        $tools = [HelloWorldTool::class, VersionCheckTool::class];
-        $toolMocks = [
-            ['name' => 'Tool1', 'class' => HelloWorldTool::class, 'description' => 'This is tool 1'],
-            ['name' => 'Tool2', 'class' => VersionCheckTool::class, 'description' => 'This is tool 2'],
-        ];
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn($tools);
+        $tool1 = $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool1', 'getDescription' => 'This is tool 1']);
+        $tool2 = $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool2', 'getDescription' => 'This is tool 2']);
 
-        $this->containerMock
-            ->method('get')
-            ->willReturnMap([
-                [HelloWorldTool::class, $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool1', 'getDescription' => 'This is tool 1'])],
-                [VersionCheckTool::class, $this->createConfiguredMock(StreamableToolInterface::class, ['getName' => 'Tool2', 'getDescription' => 'This is tool 2'])],
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([
+                'Tool1' => $tool1,
+                'Tool2' => $tool2
             ]);
+
+        $toolMocks = [
+            ['name' => 'Tool1', 'class' => get_class($tool1), 'description' => 'This is tool 1'],
+            ['name' => 'Tool2', 'class' => get_class($tool2), 'description' => 'This is tool 2'],
+        ];
 
         $this->ioMock
             ->expects($this->once())
@@ -567,19 +550,19 @@ class TestMcpToolCommandTest extends TestCase
             ->willReturn('list');
         $tools = [HelloWorldTool::class];
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn($tools);
+        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool->method('getName')->will($this->throwException(new \RuntimeException('Tool not loadable.')));
 
-        $this->containerMock
-            ->method('get')
-            ->will($this->throwException(new \RuntimeException('Tool not loadable.')));
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([
+                'hello-world' => $tool
+            ]);
 
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with("Couldn't load tool class: ".HelloWorldTool::class);
+            ->with($this->stringContains("Couldn't load tool:"));
 
         $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }
@@ -1025,15 +1008,14 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_ask_for_tool_no_tools_configured_returns_null(): void
     {
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
+        $this->toolRepositoryMock
+            ->method('getTools')
             ->willReturn([]);
 
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
         $result = $this->invokePrivateMethod('askForTool');
 
@@ -1045,14 +1027,12 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_ask_for_tool_no_valid_tools_returns_null(): void
     {
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn([HelloWorldTool::class]);
+        $toolMock = $this->createMock(StreamableToolInterface::class);
+        $toolMock->method('getName')->willThrowException(new \RuntimeException('Tool not loadable'));
 
-        $this->containerMock
-            ->method('get')
-            ->willThrowException(new \RuntimeException('Tool not loadable'));
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn(['hello-world' => $toolMock]);
 
         $this->ioMock
             ->expects($this->once())
@@ -1072,25 +1052,19 @@ class TestMcpToolCommandTest extends TestCase
         $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('getName')->willReturn('TestTool');
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn([HelloWorldTool::class]);
-
-        $this->containerMock
-            ->method('get')
-            ->with(HelloWorldTool::class)
-            ->willReturn($toolMock);
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn(['TestTool' => $toolMock]);
 
         $this->ioMock
             ->expects($this->once())
             ->method('choice')
-            ->with('Select a tool to test', ['TestTool ('.HelloWorldTool::class.')'])
-            ->willReturn('TestTool ('.HelloWorldTool::class.')');
+            ->with('Select a tool to test', ['TestTool ('.get_class($toolMock).')'])
+            ->willReturn('TestTool ('.get_class($toolMock).')');
 
         $result = $this->invokePrivateMethod('askForTool');
 
-        $this->assertEquals(HelloWorldTool::class, $result);
+        $this->assertEquals('TestTool', $result);
     }
 
     /**
@@ -1331,19 +1305,14 @@ class TestMcpToolCommandTest extends TestCase
             ->with('list')
             ->willReturn('list');
 
-        $this->containerMock
-            ->method('getParameter')
-            ->with('klp_mcp_server.tools')
-            ->willReturn(['NonExistentClass']);
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([]);
 
         $this->ioMock
             ->expects($this->once())
-            ->method('info')
-            ->with('Available MCP Tools:');
-        $this->ioMock
-            ->expects($this->once())
-            ->method('table')
-            ->with(['Name', 'Class', 'Description'], []);
+            ->method('warning')
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
         $this->assertEquals(Command::SUCCESS, $this->command->execute($this->inputMock, $this->outputMock));
     }

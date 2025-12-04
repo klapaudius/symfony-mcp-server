@@ -61,7 +61,7 @@ class TestMcpPromptCommandTest extends TestCase
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml');
+            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
         $this->expectException(TestMcpPromptCommandException::class);
         $this->expectExceptionMessage('No prompt specified.');
@@ -348,7 +348,7 @@ class TestMcpPromptCommandTest extends TestCase
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml');
+            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
         $result = $this->command->execute($this->inputMock, $this->outputMock);
 
@@ -431,7 +431,7 @@ class TestMcpPromptCommandTest extends TestCase
         $this->ioMock
             ->expects($this->once())
             ->method('warning')
-            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml');
+            ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
         $result = $this->invokePrivateMethod('askForPrompt');
 

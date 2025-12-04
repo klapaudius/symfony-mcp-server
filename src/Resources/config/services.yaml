@@ -68,6 +68,7 @@ services:
     klp_mcp_server.command.test_tool:
         class: KLP\KlpMcpServer\Command\TestMcpToolCommand
         arguments:
+            - '@klp_mcp_server.tool_repository'
             - '@service_container'
         tags:
             - { name: 'console.command' }

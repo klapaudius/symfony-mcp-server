@@ -7,6 +7,7 @@ use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifier;
 use KLP\KlpMcpServer\Services\ToolService\BaseToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
+use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,8 +20,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 #[AsCommand(name: 'mcp:test-tool', description: 'Test an MCP tool with simulated inputs')]
 class TestMcpToolCommand extends Command
 {
-    public function __construct(private readonly ContainerInterface $container)
-    {
+    public function __construct(
+        private readonly ToolRepository $toolRepository,
+        private readonly ContainerInterface $container
+    ) {
         parent::__construct();
     }
 
@@ -140,7 +143,7 @@ EOT
     /**
      * Resolves and retrieves an instance of a tool based on the provided identifier
      * from the input or user prompt. The method checks for a matching class name,
-     * an exact tool match, or a case-insensitive tool name match from the configured tools.
+     * an exact tool match, or a case-insensitive tool name match from the registered tools.
      *
      * @return StreamableToolInterface Returns the tool instance if found.
      *
@@ -155,32 +158,51 @@ EOT
         }
 
         $toolInstance = null;
-        // First check if the identifier is a direct class name
+
+        // Strategy 1: Check if identifier is a fully-qualified class name
+        // This allows: php bin/console mcp:test-tool "App\MCP\Tools\MyTool"
         if (class_exists($identifier)) {
-            $toolInstance = $this->container->get($identifier);
+            // First check if we have this tool class in ToolRepository
+            foreach ($this->toolRepository->getTools() as $tool) {
+                if (get_class($tool) === $identifier) {
+                    $toolInstance = $tool;
+                    break;
+                }
+            }
+
+            // Fallback: Try to instantiate directly from container for backward compatibility
+            // This handles edge cases where a tool class exists but isn't registered
+            if (! $toolInstance) {
+                $toolInstance = $this->container->get($identifier);
+            }
         }
 
+        // Strategy 2: Look up by tool name or partial class name
         if (! $toolInstance) {
-            // Load all registered tools from config
-            $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
+            $registeredTools = $this->toolRepository->getTools();
 
-            // Check for the class match
-            foreach ($configuredTools as $toolClass) {
-                $instance = $this->container->get($toolClass);
-                if ( // Check for the exact class match
-                    str_ends_with($toolClass, "\\{$identifier}")
-                    || $toolClass === $identifier
-                    // Check for tool name match (case-insensitive)
-                    || strtolower($instance->getName()) === strtolower($identifier)
-                ) {
+            // First try exact tool name match (case-insensitive)
+            foreach ($registeredTools as $toolName => $instance) {
+                if (strtolower($toolName) === strtolower($identifier)) {
                     $toolInstance = $instance;
                     break;
                 }
             }
+
+            // If not found, try partial class name match
+            if (! $toolInstance) {
+                foreach ($registeredTools as $toolName => $instance) {
+                    $toolClass = get_class($instance);
+                    if (str_ends_with($toolClass, "\\{$identifier}") || $toolClass === $identifier) {
+                        $toolInstance = $instance;
+                        break;
+                    }
+                }
+            }
         }
 
-        if ($toolInstance
-            && ! ($toolInstance instanceof StreamableToolInterface)) {
+        // Validate the tool implements StreamableToolInterface
+        if ($toolInstance && ! ($toolInstance instanceof StreamableToolInterface)) {
             $toolClass = get_class($toolInstance);
             throw new TestMcpToolCommandException("The class '{$toolClass}' does not implement StreamableToolInterface.");
         }
@@ -332,30 +354,29 @@ EOT
      */
     private function listAllTools(): int
     {
-        $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
+        // Get all registered tools from ToolRepository
+        $registeredTools = $this->toolRepository->getTools();
 
-        if (empty($configuredTools)) {
-            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+        if (empty($registeredTools)) {
+            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
             return Command::SUCCESS;
         }
 
         $tools = [];
 
-        foreach ($configuredTools as $toolClass) {
+        foreach ($registeredTools as $toolName => $instance) {
             try {
-                if (class_exists($toolClass)) {
-                    $instance = $this->container->get($toolClass);
-                    if ($instance instanceof BaseToolInterface) {
-                        $tools[] = [
-                            'name' => $instance->getName(),
-                            'class' => $toolClass,
-                            'description' => substr($instance->getDescription(), 0, 50),
-                        ];
-                    }
+                if ($instance instanceof BaseToolInterface) {
+                    $tools[] = [
+                        'name' => $instance->getName(),
+                        'class' => get_class($instance),
+                        'description' => substr($instance->getDescription(), 0, 50),
+                    ];
                 }
             } catch (\Throwable $e) {
-                $this->io->warning("Couldn't load tool class: {$toolClass}");
+                $toolClass = get_class($instance);
+                $this->io->warning("Couldn't load tool: {$toolClass}");
             }
         }
 
@@ -376,29 +397,27 @@ EOT
      */
     protected function askForTool(): ?string
     {
-        $configuredTools = $this->container->getParameter('klp_mcp_server.tools');
+        $registeredTools = $this->toolRepository->getTools();
 
-        if (empty($configuredTools)) {
-            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml');
+        if (empty($registeredTools)) {
+            $this->io->warning('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
             return null;
         }
 
         $choices = [];
-        $validTools = [];
+        $validToolNames = [];
 
-        foreach ($configuredTools as $toolClass) {
+        foreach ($registeredTools as $toolName => $instance) {
             try {
-                if (class_exists($toolClass)) {
-                    $instance = $this->container->get($toolClass);
-                    if ($instance instanceof BaseToolInterface) {
-                        $name = $instance->getName();
-                        $choices[] = "{$name} ({$toolClass})";
-                        $validTools[] = $toolClass;
-                    }
+                if ($instance instanceof BaseToolInterface) {
+                    $name = $instance->getName();
+                    $class = get_class($instance);
+                    $choices[] = "{$name} ({$class})";
+                    $validToolNames[] = $name;  // Store tool name instead of class
                 }
             } catch (\Throwable) {
-                // Skip tools that can't be loaded
+                // Skip tools that can't be processed
             }
         }
 
@@ -413,7 +432,7 @@ EOT
             $choices
         );
 
-        return $validTools[$selectedIndex] ?? null;
+        return $validToolNames[$selectedIndex] ?? null;
     }
 
     /**
