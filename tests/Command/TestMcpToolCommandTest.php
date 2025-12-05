@@ -5,7 +5,6 @@ namespace KLP\KlpMcpServer\Tests\Command;
 use KLP\KlpMcpServer\Command\TestMcpToolCommand;
 use KLP\KlpMcpServer\Exceptions\TestMcpToolCommandException;
 use KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool;
-use KLP\KlpMcpServer\Services\ToolService\Examples\VersionCheckTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
@@ -74,7 +73,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->toolRepositoryMock
             ->method('getTools')
             ->willReturn([
-                'hello-world' => $helloWorldTool
+                'hello-world' => $helloWorldTool,
             ]);
         $this->inputMock
             ->method('getArgument')
@@ -132,7 +131,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->toolRepositoryMock
             ->method('getTools')
             ->willReturn([
-                'custom' => $toolMock
+                'custom' => $toolMock,
             ]);
 
         $this->assertSame($toolMock, $this->invokeGetToolInstanceMethod());
@@ -182,7 +181,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->toolRepositoryMock
             ->method('getTools')
             ->willReturn([
-                'Valid Tool' => $validToolMock
+                'Valid Tool' => $validToolMock,
             ]);
 
         $this->expectException(TestMcpToolCommandException::class);
@@ -522,7 +521,7 @@ class TestMcpToolCommandTest extends TestCase
             ->method('getTools')
             ->willReturn([
                 'Tool1' => $tool1,
-                'Tool2' => $tool2
+                'Tool2' => $tool2,
             ]);
 
         $toolMocks = [
@@ -556,7 +555,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->toolRepositoryMock
             ->method('getTools')
             ->willReturn([
-                'hello-world' => $tool
+                'hello-world' => $tool,
             ]);
 
         $this->ioMock
