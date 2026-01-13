@@ -104,7 +104,7 @@ class ToolParamsValidator
             'integer' => is_int($actualValue),
             'boolean' => is_bool($actualValue),
             'array' => is_array($actualValue),
-            'object' => is_object($actualValue),
+            'object' => is_object($actualValue) || is_array($actualValue), // Since MCP protocol uses JSON and most implementations use associative mode for better PHP compatibility, the validator should accept both representations of JSON objects.
             'number' => is_numeric($actualValue),
             default => false
         };
