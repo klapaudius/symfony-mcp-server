@@ -1,3 +1,7 @@
+### Version 1.8.2
+- **Bug Fixes:**
+  - #65 Fix RequestData to accept string|int ID per JSON-RPC 2.0 specification
+
 ### Version 1.8.0
 - **Compatibility:**
   - Full support for Symfony 8.0
