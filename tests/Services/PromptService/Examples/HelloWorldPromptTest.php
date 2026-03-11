@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\Services\PromptService\Examples;
 
 use KLP\KlpMcpServer\Services\PromptService\Examples\HelloWorldPrompt;
+use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
@@ -143,7 +144,7 @@ class HelloWorldPromptTest extends TestCase
     public function test_prompt_implements_interface_correctly(): void
     {
         $this->assertInstanceOf(
-            \KLP\KlpMcpServer\Services\PromptService\PromptInterface::class,
+            PromptInterface::class,
             $this->prompt
         );
     }

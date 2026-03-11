@@ -123,7 +123,7 @@ EOT
                 $result = $tool->execute($inputData);
                 $this->displayResult($result, $sentNotifications, $tool);
 
-                return command::SUCCESS;
+                return Command::SUCCESS;
             } catch (\Throwable $e) {
                 $this->io->error("Error executing tool: {$e->getMessage()}");
                 $this->io->text([

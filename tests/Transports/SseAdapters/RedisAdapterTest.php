@@ -22,7 +22,7 @@ final class RedisAdapterTest extends TestCase
 
     protected function setUp(): void
     {
-        if (! class_exists(\Redis::class)) {
+        if (! class_exists(Redis::class)) {
             eval(<<<'PHPUNIT_EVAL'
                 class Redis {
                     const OPT_PREFIX = 2;

@@ -2,9 +2,14 @@
 
 namespace KLP\KlpMcpServer\Tests\Protocol;
 
+use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
+use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Exceptions\ToolParamsValidatorException;
 use KLP\KlpMcpServer\Protocol\Handlers\NotificationHandler;
+use KLP\KlpMcpServer\Protocol\Handlers\RequestHandler;
+use KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler;
 use KLP\KlpMcpServer\Protocol\MCPProtocol;
+use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
 use KLP\KlpMcpServer\Transports\StreamableHttpTransportInterface;
@@ -48,7 +53,7 @@ class MCPProtocolTest extends TestCase
         $mockTransportFactory
             ->expects($this->once())
             ->method('get')
-            ->willThrowException(new \KLP\KlpMcpServer\Transports\Factory\TransportFactoryException('Factory not initialized'));
+            ->willThrowException(new TransportFactoryException('Factory not initialized'));
 
         $mockTransportFactory
             ->expects($this->once())
@@ -81,7 +86,7 @@ class MCPProtocolTest extends TestCase
         $mockTransportFactory
             ->expects($this->once())
             ->method('get')
-            ->willThrowException(new \KLP\KlpMcpServer\Transports\Factory\TransportFactoryException('Factory not initialized'));
+            ->willThrowException(new TransportFactoryException('Factory not initialized'));
 
         $mockTransportFactory
             ->method('create')
@@ -252,7 +257,7 @@ class MCPProtocolTest extends TestCase
         $clientId = 'client_1';
         $validRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'value1']];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler = $this->createMock(RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
         $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'value1'])->willReturn(['response' => 'ok']);
         $this->mcpProtocol->registerRequestHandler($mockHandler);
@@ -383,7 +388,7 @@ class MCPProtocolTest extends TestCase
         $clientId = 'client_1';
         $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler = $this->createMock(RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
         $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new ToolParamsValidatorException('An error occurred.', ['Invalid params param1']));
@@ -412,7 +417,7 @@ class MCPProtocolTest extends TestCase
         // Arrange
         $clientId = 'client_1';
         $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
+        $mockHandler = $this->createMock(RequestHandler::class);
         $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
         $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new \Exception('An error occurred.'));
@@ -538,7 +543,7 @@ class MCPProtocolTest extends TestCase
             'result' => $result,
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
@@ -570,7 +575,7 @@ class MCPProtocolTest extends TestCase
             'result' => ['data' => 'test'],
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
@@ -601,15 +606,15 @@ class MCPProtocolTest extends TestCase
             'result' => ['data' => 'test'],
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
             ->willReturn(true);
 
-        $expectedException = new \KLP\KlpMcpServer\Exceptions\JsonRpcErrorException(
+        $expectedException = new JsonRpcErrorException(
             'Handler error',
-            \KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode::INTERNAL_ERROR
+            JsonRpcErrorCode::INTERNAL_ERROR
         );
 
         $mockHandler->expects($this->once())
@@ -649,7 +654,7 @@ class MCPProtocolTest extends TestCase
             'result' => ['data' => 'test'],
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
@@ -692,7 +697,7 @@ class MCPProtocolTest extends TestCase
             'result' => ['data' => 'test'],
         ];
 
-        $firstHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $firstHandler = $this->createMock(ResponseHandler::class);
         $firstHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
@@ -702,7 +707,7 @@ class MCPProtocolTest extends TestCase
             ->method('execute')
             ->with($clientId, $messageId, ['data' => 'test'], null);
 
-        $secondHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $secondHandler = $this->createMock(ResponseHandler::class);
         $secondHandler->expects($this->never())
             ->method('isHandle');
 
@@ -733,7 +738,7 @@ class MCPProtocolTest extends TestCase
             'result' => $result,
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)
@@ -766,7 +771,7 @@ class MCPProtocolTest extends TestCase
             'error' => $error,
         ];
 
-        $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\ResponseHandler::class);
+        $mockHandler = $this->createMock(ResponseHandler::class);
         $mockHandler->expects($this->once())
             ->method('isHandle')
             ->with($messageId)

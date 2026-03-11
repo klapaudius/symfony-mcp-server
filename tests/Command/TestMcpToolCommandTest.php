@@ -927,7 +927,7 @@ class TestMcpToolCommandTest extends TestCase
         $toolMock = $this->createMock(StreamableToolInterface::class);
         $toolMock->method('isStreaming')->willReturn(true);
 
-        $resultMock = $this->createMock(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock = $this->createMock(ToolResultInterface::class);
         $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
 
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
@@ -947,7 +947,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_display_result_without_tool(): void
     {
-        $resultMock = $this->createMock(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock = $this->createMock(ToolResultInterface::class);
         $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
 
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
