@@ -70,7 +70,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_throws_exception_for_invalid_arguments(): void
     {
-        $toolMock = $this->createMock(VersionCheckTool::class);
+        $toolMock = $this->createStub(VersionCheckTool::class);
 
         // Create a real VersionCheckTool to get its actual schema for the validation test
         $realTool = new VersionCheckTool;
@@ -142,7 +142,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_streaming_tool_and_progress_token(): void
     {
         $streamingTool = $this->createMock(StreamableToolInterface::class);
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
         $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -267,7 +267,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_non_tools_call_method(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('any-tool');
         $tool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -380,7 +380,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_image_tool_result(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $base64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
         $imageResult = new ImageToolResult($base64Data, 'image/png');
 
@@ -419,7 +419,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_audio_tool_result(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $base64Data = 'UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ4AAAC';
         $audioResult = new AudioToolResult($base64Data, 'audio/wav');
 
@@ -458,7 +458,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_resource_tool_result(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $resourceResult = new ResourceToolResult(
             'https://example.com/data.json',
             'application/json',
@@ -559,7 +559,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_complex_arguments(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('complex-tool');
         $tool->method('getInputSchema')->willReturn(new StructuredSchema(
@@ -599,7 +599,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_integer_progress_token(): void
     {
         $streamingTool = $this->createMock(StreamableToolInterface::class);
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
         $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -759,7 +759,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_tool_that_is_both_streamable_and_sampling_aware(): void
     {
         $samplingClient = $this->createMock(SamplingClient::class);
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
 
         // Create a tool that implements both interfaces
         $combinedTool = new class implements SamplingAwareToolInterface
@@ -862,7 +862,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_non_sampling_aware_tool_and_sampling_client(): void
     {
         $samplingClient = $this->createMock(SamplingClient::class);
-        $regularTool = $this->createMock(StreamableToolInterface::class);
+        $regularTool = $this->createStub(StreamableToolInterface::class);
 
         $regularTool->method('getName')->willReturn('regular-tool');
         $regularTool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -955,7 +955,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_collection_tool_result(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $textResult1 = new TextToolResult('First result');
         $textResult2 = new TextToolResult('Second result');
@@ -998,7 +998,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_unregisters_progress_token_even_when_tool_throws_exception(): void
     {
         $streamingTool = $this->createMock(StreamableToolInterface::class);
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
 
         $streamingTool->method('getName')->willReturn('failing-tool');
         $streamingTool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -1120,7 +1120,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_tool_execution_throwing_generic_exception(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('exception-tool');
         $tool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -1145,7 +1145,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_tool_execution_throwing_custom_exception(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('custom-exception-tool');
         $tool->method('getInputSchema')->willReturn(new StructuredSchema);
@@ -1259,7 +1259,7 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_with_progress_token_containing_special_characters(): void
     {
         $streamingTool = $this->createMock(StreamableToolInterface::class);
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
         $specialToken = 'progress-!@#$%^&*()_+-={}[]|:;<>?,./~`';
 
         $streamingTool->method('getName')->willReturn('streaming-tool');
@@ -1304,7 +1304,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_empty_collection_tool_result(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $emptyCollection = new CollectionToolResult;
 
         $tool->method('getName')->willReturn('empty-collection-tool');
@@ -1336,7 +1336,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_collection_containing_mixed_result_types(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $textResult = new TextToolResult('Text content');
         $imageResult = new ImageToolResult('base64imagedata', 'image/png');
@@ -1381,7 +1381,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_structured_tool_result_includes_structured_content_field(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $structuredData = [
             'status' => 'success',
             'data' => [
@@ -1432,7 +1432,7 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_with_structured_tool_result_on_non_tools_call_method(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
         $structuredData = ['key' => 'value'];
         $structuredResult = new StructuredToolResult($structuredData);
 
