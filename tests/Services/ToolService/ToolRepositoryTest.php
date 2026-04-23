@@ -8,7 +8,6 @@ use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolProviderInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -18,13 +17,13 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 #[Small]
 class ToolRepositoryTest extends TestCase
 {
-    private ContainerInterface|MockObject $container;
+    private ContainerInterface $container;
 
     private ToolRepository $toolRepository;
 
     protected function setUp(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = $this->createStub(ContainerInterface::class);
         $this->toolRepository = new ToolRepository($this->container);
     }
 
@@ -36,8 +35,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_tool_instances(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
@@ -59,13 +58,14 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_is_called_on_constructor(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
         $invocations = ['tool1', 'tool2'];
-        $this->container
+        $container = $this->createMock(ContainerInterface::class);
+        $container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('get')
             ->with($this->callback(function ($toolClass) use ($invocations, $matcher) {
@@ -77,13 +77,13 @@ class ToolRepositoryTest extends TestCase
                 $tool1,
                 $tool2
             );
-        $this->container
+        $container
             ->expects($this->once())
             ->method('getParameter')
             ->with('klp_mcp_server.tools')
             ->willReturn(['tool1', 'tool2']);
 
-        $toolRepository = new ToolRepository($this->container);
+        $toolRepository = new ToolRepository($container);
 
         $tools = $toolRepository->getTools();
 
@@ -103,8 +103,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_tool_class_names(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool2->method('getName')->willReturn('tool2');
@@ -175,8 +175,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_returns_valid_schemas(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool1');
         $tool1->method('getDescription')->willReturn('Description for tool1');
@@ -209,7 +209,7 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_handles_tools_with_empty_input_schema(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('tool1');
         $tool->method('getDescription')->willReturn('Description for tool1');
@@ -232,7 +232,7 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_get_tool_schemas_includes_annotations_if_present(): void
     {
-        $tool = $this->createMock(StreamableToolInterface::class);
+        $tool = $this->createStub(StreamableToolInterface::class);
 
         $tool->method('getName')->willReturn('toolWithAnnotations');
         $tool->method('getDescription')->willReturn('Tool with annotations');
@@ -264,8 +264,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_provider_registers_tools_from_provider(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('provider_tool1');
         $tool2->method('getName')->willReturn('provider_tool2');
@@ -292,8 +292,8 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_provider_with_tool_class_names(): void
     {
-        $tool1 = $this->createMock(StreamableToolInterface::class);
-        $tool2 = $this->createMock(StreamableToolInterface::class);
+        $tool1 = $this->createStub(StreamableToolInterface::class);
+        $tool2 = $this->createStub(StreamableToolInterface::class);
 
         $tool1->method('getName')->willReturn('tool_from_class1');
         $tool2->method('getName')->willReturn('tool_from_class2');
@@ -327,9 +327,9 @@ class ToolRepositoryTest extends TestCase
      */
     public function test_register_provider_works_alongside_other_registration_methods(): void
     {
-        $yamlTool = $this->createMock(StreamableToolInterface::class);
-        $directTool = $this->createMock(StreamableToolInterface::class);
-        $providerTool = $this->createMock(StreamableToolInterface::class);
+        $yamlTool = $this->createStub(StreamableToolInterface::class);
+        $directTool = $this->createStub(StreamableToolInterface::class);
+        $providerTool = $this->createStub(StreamableToolInterface::class);
 
         $yamlTool->method('getName')->willReturn('yaml_tool');
         $directTool->method('getName')->willReturn('direct_tool');
@@ -339,7 +339,7 @@ class ToolRepositoryTest extends TestCase
         $this->toolRepository->register($directTool);
 
         // Register via provider
-        $provider = $this->createMock(ToolProviderInterface::class);
+        $provider = $this->createStub(ToolProviderInterface::class);
         $provider->method('getTools')->willReturn([$providerTool]);
         $this->toolRepository->registerProvider($provider);
 
