@@ -32,7 +32,6 @@ class McpDocumentationResourceTest extends TestCase
         // Use reflection to set the baseDir property
         $reflectionClass = new \ReflectionClass(McpDocumentationResource::class);
         $property = $reflectionClass->getProperty('baseDir');
-        $property->setAccessible(true);
         $property->setValue($this->resource, $this->baseDir);
 
         // Create test directory and files
@@ -140,7 +139,6 @@ class McpDocumentationResourceTest extends TestCase
         // Use reflection to access private method
         $reflectionClass = new \ReflectionClass(McpDocumentationResource::class);
         $method = $reflectionClass->getMethod('getFilenameFromUri');
-        $method->setAccessible(true);
 
         $this->assertSame('test1', $method->invoke($this->resource, 'file://klp/docs/test1.md'));
         $this->assertSame('test2', $method->invoke($this->resource, 'file://klp/docs/test2.md'));
@@ -155,7 +153,6 @@ class McpDocumentationResourceTest extends TestCase
         // Use reflection to access protected method
         $reflectionClass = new \ReflectionClass(McpDocumentationResource::class);
         $method = $reflectionClass->getMethod('guessMimeType');
-        $method->setAccessible(true);
 
         $mimeType = $method->invoke($this->resource, $this->baseDir.'/test1.md');
         $this->assertStringContainsString('text/', $mimeType);

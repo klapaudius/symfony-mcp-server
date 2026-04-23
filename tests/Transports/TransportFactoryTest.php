@@ -130,15 +130,12 @@ class TransportFactoryTest extends TestCase
         $reflection = new \ReflectionClass($transport);
 
         $routerProperty = $reflection->getProperty('router');
-        $routerProperty->setAccessible(true);
         $this->assertSame($this->router, $routerProperty->getValue($transport));
 
         $adapterProperty = $reflection->getProperty('adapter');
-        $adapterProperty->setAccessible(true);
         $this->assertSame($this->adapter, $adapterProperty->getValue($transport));
 
         $loggerProperty = $reflection->getProperty('logger');
-        $loggerProperty->setAccessible(true);
         $this->assertSame($this->logger, $loggerProperty->getValue($transport));
     }
 }

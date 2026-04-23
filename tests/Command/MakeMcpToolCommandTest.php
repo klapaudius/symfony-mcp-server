@@ -204,7 +204,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -226,7 +225,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -245,7 +243,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 
@@ -264,7 +261,6 @@ YAML;
 
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('detectYamlIndentation');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $content);
 

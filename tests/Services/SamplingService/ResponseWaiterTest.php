@@ -71,14 +71,12 @@ class ResponseWaiterTest extends TestCase
         // Test the checkForResponse private method directly with pre-populated data
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => ['data' => 'success'], 'timestamp' => time()],
         ]);
 
         // Test checkForResponse method directly
         $checkMethod = $reflection->getMethod('checkForResponse');
-        $checkMethod->setAccessible(true);
         $result = $checkMethod->invoke($responseWaiter, 'test-123');
 
         $this->assertEquals(['data' => 'success'], $result);
@@ -135,7 +133,6 @@ class ResponseWaiterTest extends TestCase
         // First, register a pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -157,7 +154,6 @@ class ResponseWaiterTest extends TestCase
         // First, register a pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -183,7 +179,6 @@ class ResponseWaiterTest extends TestCase
         // First, register a pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -239,7 +234,6 @@ class ResponseWaiterTest extends TestCase
         // Register pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -264,7 +258,6 @@ class ResponseWaiterTest extends TestCase
         // Register pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -302,7 +295,6 @@ class ResponseWaiterTest extends TestCase
         // Register pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -328,7 +320,6 @@ class ResponseWaiterTest extends TestCase
         // Register pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -345,10 +336,8 @@ class ResponseWaiterTest extends TestCase
 
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
 
         $callbacksProperty = $reflection->getProperty('responseCallbacks');
-        $callbacksProperty->setAccessible(true);
 
         // Add old and new responses
         $now = time();
@@ -388,7 +377,6 @@ class ResponseWaiterTest extends TestCase
 
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -453,7 +441,6 @@ class ResponseWaiterTest extends TestCase
         // Use reflection to test private method
         $reflection = new \ReflectionClass($responseWaiter);
         $method = $reflection->getMethod('checkForResponse');
-        $method->setAccessible(true);
 
         $result = $method->invoke($responseWaiter, 'test-123');
 
@@ -546,7 +533,6 @@ class ResponseWaiterTest extends TestCase
         // Register pending request
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
-        $pendingProperty->setAccessible(true);
         $pendingProperty->setValue($responseWaiter, [
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
@@ -571,7 +557,6 @@ class ResponseWaiterTest extends TestCase
         // Use reflection to verify callback was registered
         $reflection = new \ReflectionClass($responseWaiter);
         $callbacksProperty = $reflection->getProperty('responseCallbacks');
-        $callbacksProperty->setAccessible(true);
         $callbacks = $callbacksProperty->getValue($responseWaiter);
 
         $this->assertArrayHasKey('test-123', $callbacks);
@@ -593,7 +578,6 @@ class ResponseWaiterTest extends TestCase
         // Use reflection to test private method
         $reflection = new \ReflectionClass($responseWaiter);
         $method = $reflection->getMethod('checkForResponse');
-        $method->setAccessible(true);
 
         $result = $method->invoke($responseWaiter, 'test-123');
         $this->assertNull($result);
