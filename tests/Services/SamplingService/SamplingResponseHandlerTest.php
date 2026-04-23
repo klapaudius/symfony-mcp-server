@@ -17,15 +17,15 @@ class SamplingResponseHandlerTest extends TestCase
 
     private SamplingClient|MockObject $mockSamplingClient;
 
-    private LoggerInterface|MockObject $mockLogger;
+    private LoggerInterface $mockLogger;
 
-    private ResponseWaiter|MockObject $mockResponseWaiter;
+    private ResponseWaiter $mockResponseWaiter;
 
     protected function setUp(): void
     {
         $this->mockSamplingClient = $this->createMock(SamplingClient::class);
-        $this->mockLogger = $this->createMock(LoggerInterface::class);
-        $this->mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+        $this->mockLogger = $this->createStub(LoggerInterface::class);
+        $this->mockResponseWaiter = $this->createStub(ResponseWaiter::class);
 
         $this->handler = new SamplingResponseHandler(
             $this->mockSamplingClient,
@@ -48,7 +48,11 @@ class SamplingResponseHandlerTest extends TestCase
             'result' => $result,
         ];
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -61,14 +65,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
 
-        $this->handler->execute($clientId, $messageId, $result);
+        $handler->execute($clientId, $messageId, $result);
     }
 
     /**
@@ -86,7 +90,11 @@ class SamplingResponseHandlerTest extends TestCase
             'error' => $error,
         ];
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -99,14 +107,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
 
-        $this->handler->execute($clientId, $messageId, null, $error);
+        $handler->execute($clientId, $messageId, null, $error);
     }
 
     /**
@@ -125,7 +133,11 @@ class SamplingResponseHandlerTest extends TestCase
             'error' => $error, // Error should take precedence
         ];
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -138,14 +150,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
 
-        $this->handler->execute($clientId, $messageId, $result, $error);
+        $handler->execute($clientId, $messageId, $result, $error);
     }
 
     /**
@@ -162,7 +174,11 @@ class SamplingResponseHandlerTest extends TestCase
             'result' => null,
         ];
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -175,14 +191,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
 
-        $this->handler->execute($clientId, $messageId);
+        $handler->execute($clientId, $messageId);
     }
 
     /**
@@ -195,7 +211,10 @@ class SamplingResponseHandlerTest extends TestCase
         $result = ['data' => 'test'];
         $exception = new \RuntimeException('Failed to get response waiter');
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -210,7 +229,7 @@ class SamplingResponseHandlerTest extends TestCase
             ->method('getResponseWaiter')
             ->willThrowException($exception);
 
-        $this->mockLogger
+        $logger
             ->expects($this->once())
             ->method('error')
             ->with('Failed to handle sampling response', [
@@ -219,7 +238,7 @@ class SamplingResponseHandlerTest extends TestCase
             ]);
 
         // Should not throw exception
-        $this->handler->execute($clientId, $messageId, $result);
+        $handler->execute($clientId, $messageId, $result);
     }
 
     /**
@@ -232,7 +251,11 @@ class SamplingResponseHandlerTest extends TestCase
         $result = ['data' => 'test'];
         $exception = new \InvalidArgumentException('Invalid response format');
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -245,14 +268,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->willThrowException($exception);
 
-        $this->mockLogger
+        $logger
             ->expects($this->once())
             ->method('error')
             ->with('Failed to handle sampling response', [
@@ -261,7 +284,7 @@ class SamplingResponseHandlerTest extends TestCase
             ]);
 
         // Should not throw exception
-        $this->handler->execute($clientId, $messageId, $result);
+        $handler->execute($clientId, $messageId, $result);
     }
 
     /**
@@ -271,12 +294,14 @@ class SamplingResponseHandlerTest extends TestCase
     {
         $messageId = 'msg123';
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
@@ -294,12 +319,14 @@ class SamplingResponseHandlerTest extends TestCase
     {
         $messageId = 'msg456';
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
@@ -336,12 +363,14 @@ class SamplingResponseHandlerTest extends TestCase
         $messageId = 'msg999';
         $exception = new \InvalidArgumentException('Invalid message ID format');
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
@@ -367,7 +396,11 @@ class SamplingResponseHandlerTest extends TestCase
             'result' => $result,
         ];
 
-        $this->mockLogger
+        $logger = $this->createMock(LoggerInterface::class);
+        $handler = new SamplingResponseHandler($this->mockSamplingClient, $logger);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
+        $logger
             ->expects($this->once())
             ->method('debug')
             ->with('SamplingResponseHandler::execute', [
@@ -380,14 +413,14 @@ class SamplingResponseHandlerTest extends TestCase
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
 
-        $this->handler->execute($clientId, $messageId, $result);
+        $handler->execute($clientId, $messageId, $result);
     }
 
     /**
@@ -397,12 +430,14 @@ class SamplingResponseHandlerTest extends TestCase
     {
         $messageId = 54321;
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
@@ -430,12 +465,14 @@ class SamplingResponseHandlerTest extends TestCase
             'error' => $emptyError,
         ];
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
@@ -471,12 +508,14 @@ class SamplingResponseHandlerTest extends TestCase
             'result' => $complexResult,
         ];
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('handleResponse')
             ->with($expectedMessage);
@@ -527,12 +566,14 @@ class SamplingResponseHandlerTest extends TestCase
     {
         $messageId = '0';
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
@@ -550,12 +591,14 @@ class SamplingResponseHandlerTest extends TestCase
     {
         $messageId = 0;
 
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
+
         $this->mockSamplingClient
             ->expects($this->once())
             ->method('getResponseWaiter')
-            ->willReturn($this->mockResponseWaiter);
+            ->willReturn($mockResponseWaiter);
 
-        $this->mockResponseWaiter
+        $mockResponseWaiter
             ->expects($this->once())
             ->method('isWaitingFor')
             ->with($messageId)
