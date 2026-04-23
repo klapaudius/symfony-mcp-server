@@ -27,6 +27,11 @@ _ide_helper_models.php
 # MacOS
 .DS_Store
 
+# BMAD
+/.claude/skills/bmad-*
+/_bmad
+/_bmad-output
+
 # Misc
 phpunit.xml
 phpstan.neon
