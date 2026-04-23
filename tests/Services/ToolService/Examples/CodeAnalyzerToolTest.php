@@ -22,7 +22,7 @@ class CodeAnalyzerToolTest extends TestCase
     protected function setUp(): void
     {
         $this->tool = new CodeAnalyzerTool;
-        $this->samplingClient = $this->createMock(SamplingClient::class);
+        $this->samplingClient = $this->createStub(SamplingClient::class);
     }
 
     public function test_get_name(): void
@@ -69,13 +69,14 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_execute_with_successful_sampling(): void
     {
-        $this->samplingClient->method('canSample')->willReturn(true);
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingClient->method('canSample')->willReturn(true);
 
         $analysisText = 'This code prints "Hello" to the output. It is a simple echo statement.';
         $content = new SamplingContent('text', $analysisText);
         $response = new SamplingResponse('assistant', $content);
 
-        $this->samplingClient->expects($this->once())
+        $samplingClient->expects($this->once())
             ->method('createTextRequest')
             ->with(
                 $this->stringContains('echo "Hello"'),
@@ -85,7 +86,7 @@ class CodeAnalyzerToolTest extends TestCase
             )
             ->willReturn($response);
 
-        $this->tool->setSamplingClient($this->samplingClient);
+        $this->tool->setSamplingClient($samplingClient);
 
         $result = $this->tool->execute(['code' => 'echo "Hello";']);
 
@@ -96,12 +97,13 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_execute_with_different_analysis_types(): void
     {
-        $this->samplingClient->method('canSample')->willReturn(true);
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingClient->method('canSample')->willReturn(true);
 
         $content = new SamplingContent('text', 'Security analysis result');
         $response = new SamplingResponse('assistant', $content);
 
-        $this->samplingClient->expects($this->once())
+        $samplingClient->expects($this->once())
             ->method('createTextRequest')
             ->with(
                 $this->stringContains('security vulnerabilities'),
@@ -111,7 +113,7 @@ class CodeAnalyzerToolTest extends TestCase
             )
             ->willReturn($response);
 
-        $this->tool->setSamplingClient($this->samplingClient);
+        $this->tool->setSamplingClient($samplingClient);
 
         $result = $this->tool->execute([
             'code' => 'eval($_GET["cmd"]);',
@@ -145,7 +147,7 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_set_progress_notifier(): void
     {
-        $progressNotifier = $this->createMock(ProgressNotifierInterface::class);
+        $progressNotifier = $this->createStub(ProgressNotifierInterface::class);
 
         // This should not throw any exceptions
         $this->tool->setProgressNotifier($progressNotifier);
@@ -208,12 +210,13 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_execute_with_model_preferences(): void
     {
-        $this->samplingClient->method('canSample')->willReturn(true);
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingClient->method('canSample')->willReturn(true);
 
         $content = new SamplingContent('text', 'Analysis with model preferences');
         $response = new SamplingResponse('assistant', $content);
 
-        $this->samplingClient->expects($this->once())
+        $samplingClient->expects($this->once())
             ->method('createTextRequest')
             ->with(
                 $this->anything(),
@@ -227,7 +230,7 @@ class CodeAnalyzerToolTest extends TestCase
             )
             ->willReturn($response);
 
-        $this->tool->setSamplingClient($this->samplingClient);
+        $this->tool->setSamplingClient($samplingClient);
 
         $result = $this->tool->execute(['code' => 'test code']);
         $sanitized = $result->getSanitizedResult();
@@ -236,17 +239,18 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_execute_with_null_response_text(): void
     {
-        $this->samplingClient->method('canSample')->willReturn(true);
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingClient->method('canSample')->willReturn(true);
 
         // Create response with null text
         $content = new SamplingContent('text', null);
         $response = new SamplingResponse('assistant', $content);
 
-        $this->samplingClient->expects($this->once())
+        $samplingClient->expects($this->once())
             ->method('createTextRequest')
             ->willReturn($response);
 
-        $this->tool->setSamplingClient($this->samplingClient);
+        $this->tool->setSamplingClient($samplingClient);
 
         $result = $this->tool->execute(['code' => 'echo "test";']);
 
@@ -279,13 +283,14 @@ class CodeAnalyzerToolTest extends TestCase
 
     public function test_execute_with_invalid_analysis_type(): void
     {
-        $this->samplingClient->method('canSample')->willReturn(true);
+        $samplingClient = $this->createMock(SamplingClient::class);
+        $samplingClient->method('canSample')->willReturn(true);
 
         $content = new SamplingContent('text', 'General analysis fallback');
         $response = new SamplingResponse('assistant', $content);
 
         // When invalid analysis type is provided, it should fall back to general
-        $this->samplingClient->expects($this->once())
+        $samplingClient->expects($this->once())
             ->method('createTextRequest')
             ->with(
                 $this->stringContains('comprehensive analysis'),
@@ -295,7 +300,7 @@ class CodeAnalyzerToolTest extends TestCase
             )
             ->willReturn($response);
 
-        $this->tool->setSamplingClient($this->samplingClient);
+        $this->tool->setSamplingClient($samplingClient);
 
         $result = $this->tool->execute([
             'code' => 'test code',
