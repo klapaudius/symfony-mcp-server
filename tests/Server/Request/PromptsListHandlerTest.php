@@ -16,7 +16,7 @@ class PromptsListHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->promptRepository = $this->createStub(PromptRepository::class);
         $this->handler = new PromptsListHandler($this->promptRepository);
     }
 
@@ -34,6 +34,9 @@ class PromptsListHandlerTest extends TestCase
 
     public function test_execute_returns_prompt_schemas(): void
     {
+        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->handler = new PromptsListHandler($this->promptRepository);
+
         $schemas = [
             [
                 'name' => 'prompt1',
@@ -60,6 +63,9 @@ class PromptsListHandlerTest extends TestCase
 
     public function test_execute_returns_empty_array_when_no_prompts(): void
     {
+        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->handler = new PromptsListHandler($this->promptRepository);
+
         $this->promptRepository->expects($this->once())
             ->method('getPromptSchemas')
             ->willReturn([]);
