@@ -20,8 +20,8 @@ class ResponseWaiterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->logger = $this->createStub(LoggerInterface::class);
+        $this->adapter = $this->createStub(SseAdapterInterface::class);
     }
 
     public function test_constructor_with_defaults(): void
@@ -42,16 +42,17 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_timeout(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, null, 1); // 1 second timeout
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, null, 1); // 1 second timeout
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Waiting for response', [
                 'messageId' => 'test-123',
                 'timeout' => 1,
             ]);
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with('Response timeout', [
                 'messageId' => 'test-123',
@@ -84,21 +85,22 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_with_adapter_storage(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('storePendingResponse')
             ->with('test-123', $this->logicalAnd(
                 $this->arrayHasKey('response'),
                 $this->arrayHasKey('timestamp')
             ));
 
-        $this->adapter->expects($this->atLeastOnce())
+        $adapter->expects($this->atLeastOnce())
             ->method('getPendingResponse')
             ->with('test-123')
             ->willReturn(null);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('removePendingResponse')
             ->with('test-123');
 
@@ -108,13 +110,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_with_adapter_storage_failure(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('storePendingResponse')
             ->willThrowException(new \RuntimeException('Storage failed'));
 
-        $this->logger->expects($this->atLeastOnce())
+        $logger->expects($this->atLeastOnce())
             ->method('warning')
             ->with($this->stringContains('Failed to store pending response'), $this->anything());
 
@@ -124,9 +128,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_with_result(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger);
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger);
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Handling response', ['messageId' => 'test-123']);
 
@@ -196,9 +201,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_ignores_invalid_message(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger);
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger);
 
-        $this->logger->expects($this->never())
+        $logger->expects($this->never())
             ->method('debug');
 
         // Message without ID
@@ -210,9 +216,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_ignores_unexpected_message(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger);
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger);
 
-        $this->logger->expects($this->never())
+        $logger->expects($this->never())
             ->method('debug');
 
         // Message for ID we're not waiting for
@@ -249,7 +256,8 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_with_callback_exception(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger);
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger);
 
         $responseWaiter->registerCallback('test-123', function ($response) {
             throw new \RuntimeException('Callback failed');
@@ -262,7 +270,7 @@ class ResponseWaiterTest extends TestCase
             'test-123' => ['response' => null, 'timestamp' => time()],
         ]);
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with('Response callback error', [
                 'messageId' => 'test-123',
@@ -277,16 +285,17 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_with_adapter(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
         $storedData = ['response' => null, 'timestamp' => time()];
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('getPendingResponse')
             ->with('test-123')
             ->willReturn($storedData);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('storePendingResponse')
             ->with('test-123', $this->callback(function ($data) {
                 return isset($data['response']) && $data['response'] === ['data' => 'success'];
@@ -307,13 +316,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_handle_response_with_adapter_failure(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('getPendingResponse')
             ->willThrowException(new \RuntimeException('Adapter failed'));
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('warning')
             ->with($this->stringContains('Failed to update response in adapter'), $this->anything());
 
@@ -332,7 +343,8 @@ class ResponseWaiterTest extends TestCase
 
     public function test_cleanup_removes_old_responses(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, null, 30);
+        $logger = $this->createMock(LoggerInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, null, 30);
 
         $reflection = new \ReflectionClass($responseWaiter);
         $pendingProperty = $reflection->getProperty('pendingResponses');
@@ -353,7 +365,7 @@ class ResponseWaiterTest extends TestCase
             'new-1' => function () {},
         ]);
 
-        $this->logger->expects($this->exactly(2))
+        $logger->expects($this->exactly(2))
             ->method('warning')
             ->with($this->stringContains('Cleaned up stale response'), $this->anything());
 
@@ -387,9 +399,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_is_waiting_for_with_adapter(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('hasPendingResponse')
             ->with('test-123')
             ->willReturn(true);
@@ -399,13 +412,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_is_waiting_for_with_adapter_failure(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('hasPendingResponse')
             ->willThrowException(new \RuntimeException('Adapter failed'));
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('warning')
             ->with($this->stringContains('Failed to check adapter for pending response'), $this->anything());
 
@@ -414,9 +429,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_is_waiting_for_with_int_message_id(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('hasPendingResponse')
             ->with('123')
             ->willReturn(true);
@@ -426,14 +442,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_check_for_response_from_adapter(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
         $storedData = [
             'response' => ['data' => 'from-adapter'],
             'timestamp' => time(),
         ];
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('getPendingResponse')
             ->with('test-123')
             ->willReturn($storedData);
@@ -449,10 +466,11 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_with_adapter_finds_response(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter);
 
         // First call returns null (not ready), second call returns response
-        $this->adapter->expects($this->exactly(2))
+        $adapter->expects($this->exactly(2))
             ->method('getPendingResponse')
             ->with('test-123')
             ->willReturnOnConsecutiveCalls(
@@ -460,10 +478,10 @@ class ResponseWaiterTest extends TestCase
                 ['response' => ['data' => 'from-adapter'], 'timestamp' => time()]
             );
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('storePendingResponse');
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('removePendingResponse')
             ->with('test-123');
 
@@ -473,17 +491,18 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_removes_from_adapter_on_success(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter, 1); // 1 second timeout
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter, 1); // 1 second timeout
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('storePendingResponse');
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('removePendingResponse')
             ->with('test-123');
 
         // Use adapter to simulate immediate response availability on first check
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('getPendingResponse')
             ->with('test-123')
             ->willReturn(['response' => ['data' => 'success'], 'timestamp' => time()]);
@@ -494,9 +513,10 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_removes_from_adapter_on_timeout(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter, 1);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($this->logger, $adapter, 1);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('removePendingResponse')
             ->with('test-123');
 
@@ -509,13 +529,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_wait_for_response_logs_adapter_remove_failure(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter, 1);
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, $adapter, 1);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('removePendingResponse')
             ->willThrowException(new \RuntimeException('Remove failed'));
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('warning')
             ->with($this->stringContains('Failed to remove timed out response from adapter'), $this->anything());
 
@@ -565,13 +587,15 @@ class ResponseWaiterTest extends TestCase
 
     public function test_check_for_response_with_adapter_exception(): void
     {
-        $responseWaiter = new ResponseWaiter($this->logger, $this->adapter);
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = $this->createMock(SseAdapterInterface::class);
+        $responseWaiter = new ResponseWaiter($logger, $adapter);
 
-        $this->adapter->expects($this->once())
+        $adapter->expects($this->once())
             ->method('getPendingResponse')
             ->willThrowException(new \RuntimeException('Adapter error'));
 
-        $this->logger->expects($this->once())
+        $logger->expects($this->once())
             ->method('warning')
             ->with($this->stringContains('Failed to check adapter for response'), $this->anything());
 
