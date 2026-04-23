@@ -16,7 +16,7 @@ class PingHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->transportMock = $this->createMock(SseTransportInterface::class);
+        $this->transportMock = $this->createStub(SseTransportInterface::class);
         $this->pingHandler = new PingHandler($this->transportMock);
     }
 
@@ -29,6 +29,9 @@ class PingHandlerTest extends TestCase
      */
     public function test_execute_sends_correct_response(): void
     {
+        $transportMock = $this->createMock(SseTransportInterface::class);
+        $pingHandler = new PingHandler($transportMock);
+
         $messageId = '12345';
         $method = 'ping';
         $clientId = 'test-client';
@@ -36,11 +39,11 @@ class PingHandlerTest extends TestCase
 
         // Expect the transport to send the correct response
         $expectedResponse = ['id' => $messageId, 'jsonrpc' => '2.0', 'result' => []];
-        $this->transportMock->expects($this->once())
+        $transportMock->expects($this->once())
             ->method('send')
             ->with($expectedResponse);
 
-        $result = $this->pingHandler->execute($method, $clientId, $messageId, $params);
+        $result = $pingHandler->execute($method, $clientId, $messageId, $params);
 
         // Assert that the method returns an empty array
         $this->assertSame([], $result);
