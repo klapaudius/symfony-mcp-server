@@ -17,7 +17,7 @@ class ToolsListHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->toolRepository = $this->createMock(ToolRepository::class);
+        $this->toolRepository = $this->createStub(ToolRepository::class);
         $this->toolsListHandler = new ToolsListHandler($this->toolRepository);
     }
 
@@ -26,6 +26,9 @@ class ToolsListHandlerTest extends TestCase
      */
     public function test_execute_returns_tool_schemas(): void
     {
+        $toolRepository = $this->createMock(ToolRepository::class);
+        $handler = new ToolsListHandler($toolRepository);
+
         $tool = new VersionCheckTool;
         $expectedSchemas = [
             [
@@ -36,12 +39,12 @@ class ToolsListHandlerTest extends TestCase
             ],
         ];
 
-        $this->toolRepository
+        $toolRepository
             ->expects($this->once())
             ->method('getToolSchemas')
             ->willReturn($expectedSchemas);
 
-        $result = $this->toolsListHandler->execute('tools/list', 'test-client', 1);
+        $result = $handler->execute('tools/list', 'test-client', 1);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('tools', $result);
