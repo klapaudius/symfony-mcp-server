@@ -5,7 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Server\Request;
 use KLP\KlpMcpServer\Server\Request\ResourcesListHandler;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,13 +16,13 @@ use PHPUnit\Framework\TestCase;
 #[Small]
 class ResourcesListHandlerTest extends TestCase
 {
-    private ResourceRepository|MockObject $resourceRepositoryMock;
+    private ResourceRepository|Stub $resourceRepositoryMock;
 
     private ResourcesListHandler $resourcesListHandler;
 
     protected function setUp(): void
     {
-        $this->resourceRepositoryMock = $this->createMock(ResourceRepository::class);
+        $this->resourceRepositoryMock = $this->createStub(ResourceRepository::class);
         $this->resourcesListHandler = new ResourcesListHandler($this->resourceRepositoryMock);
     }
 
@@ -31,17 +31,20 @@ class ResourcesListHandlerTest extends TestCase
      */
     public function test_execute_returns_resource_schemas(): void
     {
+        $resourceRepository = $this->createMock(ResourceRepository::class);
+        $handler = new ResourcesListHandler($resourceRepository);
+
         $expectedSchemas = [
             ['id' => 1, 'name' => 'Resource A'],
             ['id' => 2, 'name' => 'Resource B'],
         ];
 
-        $this->resourceRepositoryMock
+        $resourceRepository
             ->expects($this->once())
             ->method('getResourceSchemas')
             ->willReturn($expectedSchemas);
 
-        $result = $this->resourcesListHandler->execute('resources/list', 'test-client', 123);
+        $result = $handler->execute('resources/list', 'test-client', 123);
 
         $this->assertArrayHasKey('resources', $result);
         $this->assertEquals($expectedSchemas, $result['resources']);
