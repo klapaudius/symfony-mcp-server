@@ -241,7 +241,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
         // Should register provider with ToolRepository
         $toolRepositoryDefinition->expects($this->once())
             ->method('addMethodCall')
-            ->with('registerProvider', $this->isType('array'));
+            ->with('registerProvider', $this->isArray());
 
         $compilerPass = new ToolsDefinitionCompilerPass;
         $compilerPass->process($container);

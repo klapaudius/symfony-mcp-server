@@ -504,7 +504,7 @@ final class RedisAdapterTest extends TestCase
 
         $this->redisMock->expects($this->once())
             ->method('set')
-            ->with($key, $this->isType('int'))
+            ->with($key, $this->isInt())
             ->willThrowException(new Exception('Redis set error'));
 
         $this->loggerMock->expects($this->once())
