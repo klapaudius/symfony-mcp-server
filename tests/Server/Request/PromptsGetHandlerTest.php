@@ -20,7 +20,7 @@ class PromptsGetHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->promptRepository = $this->createStub(PromptRepository::class);
         $this->handler = new PromptsGetHandler($this->promptRepository, null);
     }
 
@@ -54,6 +54,9 @@ class PromptsGetHandlerTest extends TestCase
 
     public function test_execute_throws_exception_when_prompt_not_found(): void
     {
+        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->handler = new PromptsGetHandler($this->promptRepository, null);
+
         $this->promptRepository->expects($this->once())
             ->method('getPrompt')
             ->with('unknown-prompt')
@@ -67,6 +70,9 @@ class PromptsGetHandlerTest extends TestCase
 
     public function test_execute_returns_prompt_messages_without_arguments(): void
     {
+        $this->promptRepository = $this->createMock(PromptRepository::class);
+        $this->handler = new PromptsGetHandler($this->promptRepository, null);
+
         $collection = new CollectionPromptMessage;
         $collection->addMessage(new TextPromptMessage('user', 'Hello'));
 
