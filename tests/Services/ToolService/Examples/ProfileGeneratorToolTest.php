@@ -19,7 +19,7 @@ class ProfileGeneratorToolTest extends TestCase
 
     protected function setUp(): void
     {
-        $kernel = $this->createMock(KernelInterface::class);
+        $kernel = $this->createStub(KernelInterface::class);
         $kernel->method('getProjectDir')
             ->willReturn('/tmp/test-project');
 
@@ -92,15 +92,12 @@ class ProfileGeneratorToolTest extends TestCase
 
     public function test_set_progress_notifier(): void
     {
-        $progressNotifier = $this->createMock(ProgressNotifierInterface::class);
-
-        $progressNotifier->expects($this->any())
-            ->method('sendProgress');
+        $progressNotifier = $this->createStub(ProgressNotifierInterface::class);
 
         $this->tool->setProgressNotifier($progressNotifier);
 
         // Set up sampling client to avoid uninitialized property error
-        $samplingClient = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\SamplingClient::class);
+        $samplingClient = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\SamplingClient::class);
         $samplingClient->method('createTextRequest')->willReturn(
             new \KLP\KlpMcpServer\Services\SamplingService\SamplingResponse(
                 'assistant',
