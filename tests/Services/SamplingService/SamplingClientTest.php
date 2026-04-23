@@ -13,27 +13,38 @@ use KLP\KlpMcpServer\Transports\AbstractTransport;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class SamplingClientTest extends TestCase
 {
-    private SamplingClient $samplingClient;
+    private SamplingClient|MockObject|Stub $samplingClient;
 
-    private AbstractTransport $transport;
+    private AbstractTransport|MockObject|Stub $transport;
 
-    private SseAdapterInterface $adapter;
+    private SseAdapterInterface|MockObject|Stub $adapter;
 
-    private LoggerInterface $logger;
+    private LoggerInterface|MockObject|Stub $logger;
 
-    private TransportFactoryInterface $transportFactory;
+    private TransportFactoryInterface|MockObject|Stub $transportFactory;
+
+    private function setUpSamplingClient(): void
+    {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->method('create')->willReturn($this->transport);
+        $this->transportFactory->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
+    }
 
     protected function setUp(): void
     {
-        $this->transport = $this->createMock(AbstractTransport::class);
-        $this->adapter = $this->createMock(SseAdapterInterface::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transport = $this->createStub(AbstractTransport::class);
+        $this->adapter = $this->createStub(SseAdapterInterface::class);
+        $this->logger = $this->createStub(LoggerInterface::class);
+        $this->transportFactory = $this->createStub(TransportFactoryInterface::class);
 
         $this->transport->method('getAdapter')->willReturn($this->adapter);
         $this->transportFactory->method('create')->willReturn($this->transport);
@@ -69,6 +80,12 @@ class SamplingClientTest extends TestCase
 
     public function test_can_sample_returns_true_when_client_has_capability(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->once())->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-123';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -82,6 +99,12 @@ class SamplingClientTest extends TestCase
 
     public function test_can_sample_returns_false_when_client_lacks_capability(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->once())->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-456';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -103,10 +126,18 @@ class SamplingClientTest extends TestCase
 
     public function test_create_text_request_sends_proper_message(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->exactly(3))->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-789';
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $this->adapter->method('hasSamplingCapability')
+        $this->adapter
+            ->expects($this->once())
+            ->method('hasSamplingCapability')
             ->with($clientId)
             ->willReturn(true);
 
@@ -140,7 +171,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
         $samplingClientMock->setEnabled(true);
 
@@ -170,10 +204,18 @@ class SamplingClientTest extends TestCase
 
     public function test_create_text_request_with_all_parameters(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->exactly(3))->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-full';
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $this->adapter->method('hasSamplingCapability')
+        $this->adapter
+            ->expects($this->once())
+            ->method('hasSamplingCapability')
             ->with($clientId)
             ->willReturn(true);
 
@@ -214,7 +256,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
         $samplingClientMock->setEnabled(true);
 
@@ -257,10 +302,19 @@ class SamplingClientTest extends TestCase
 
     public function test_create_request_with_multiple_messages(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->exactly(3))->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-multi';
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $this->adapter->method('hasSamplingCapability')
+        $this->adapter
+            ->expects($this->once())
+            ->method('hasSamplingCapability')
             ->with($clientId)
             ->willReturn(true);
 
@@ -310,7 +364,7 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->expects($this->once())->method('getResponseWaiter')->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
         $samplingClientMock->setEnabled(true);
 
@@ -342,7 +396,7 @@ class SamplingClientTest extends TestCase
         $clientId = 'test-client-no-adapter';
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $transportWithoutAdapter = $this->createMock(AbstractTransport::class);
+        $transportWithoutAdapter = $this->createStub(AbstractTransport::class);
         $transportWithoutAdapter->method('getAdapter')->willReturn(null);
 
         $this->transportFactory->method('get')->willReturn($transportWithoutAdapter);
@@ -374,11 +428,18 @@ class SamplingClientTest extends TestCase
 
     public function test_set_current_client_id(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->once())->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'new-client-id';
         $this->samplingClient->setCurrentClientId($clientId);
 
         // Test that the client ID is used in canSample
-        $this->adapter->expects($this->once())
+        $this->adapter
+            ->expects($this->once())
             ->method('hasSamplingCapability')
             ->with($clientId)
             ->willReturn(true);
@@ -388,6 +449,11 @@ class SamplingClientTest extends TestCase
 
     public function test_message_id_is_unique(): void
     {
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->exactly(2))->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->exactly(6))->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-unique-id';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -397,7 +463,8 @@ class SamplingClientTest extends TestCase
         $messageCallback = null;
 
         // Capture the onMessage callback - will be called twice for each request
-        $this->transport->expects($this->exactly(2))
+        $this->transport
+            ->expects($this->exactly(2))
             ->method('onMessage')
             ->willReturnCallback(function ($callback) use (&$messageCallback) {
                 $messageCallback = $callback;
@@ -405,7 +472,8 @@ class SamplingClientTest extends TestCase
 
         // Create a mock response waiter
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
-        $mockResponseWaiter->expects($this->exactly(2))
+        $mockResponseWaiter
+            ->expects($this->exactly(2))
             ->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -423,7 +491,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->exactly(2))
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
         $samplingClientMock->setEnabled(true);
 
@@ -464,6 +535,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_set_current_client_id_logs_debug_information(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $newClientId = 'new-client-123';
         $previousClientId = 'old-client-456';
 
@@ -486,6 +559,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_set_current_client_id_logs_debug_information_from_null(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $newClientId = 'first-client-789';
 
         $this->logger->expects($this->once())
@@ -503,6 +578,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_can_sample_logs_debug_when_disabled(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $this->samplingClient->setEnabled(false);
 
         $this->logger->expects($this->once())
@@ -520,6 +597,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_can_sample_logs_debug_when_no_client_id(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $this->logger->expects($this->once())
             ->method('debug')
             ->with('SamplingClient::canSample - Early return', [
@@ -535,12 +614,13 @@ class SamplingClientTest extends TestCase
      */
     public function test_can_sample_logs_debug_when_no_adapter(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
         $clientId = 'client-no-adapter';
 
-        $transportWithoutAdapter = $this->createMock(AbstractTransport::class);
+        $transportWithoutAdapter = $this->createStub(AbstractTransport::class);
         $transportWithoutAdapter->method('getAdapter')->willReturn(null);
 
-        $transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $transportFactory = $this->createStub(TransportFactoryInterface::class);
         $transportFactory->method('get')->willReturn($transportWithoutAdapter);
 
         $samplingClient = new SamplingClient($transportFactory, $this->logger);
@@ -558,6 +638,13 @@ class SamplingClientTest extends TestCase
      */
     public function test_can_sample_logs_debug_when_checking_capability(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->once())->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->once())->method('get')->willReturn($this->transport);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'client-capability-check';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -581,11 +668,13 @@ class SamplingClientTest extends TestCase
      */
     public function test_can_sample_logs_debug_on_transport_exception(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'client-transport-exception';
         $this->samplingClient->setCurrentClientId($clientId);
 
         $exceptionMessage = 'Transport factory not initialized';
-        $transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $transportFactory = $this->createStub(TransportFactoryInterface::class);
         $transportFactory->method('get')
             ->willThrowException(new TransportFactoryException($exceptionMessage));
 
@@ -606,6 +695,7 @@ class SamplingClientTest extends TestCase
      */
     public function test_handle_incoming_message_ignores_different_client(): void
     {
+        $this->setUpSamplingClient();
         $currentClientId = 'current-client';
         $differentClientId = 'different-client';
         $message = ['id' => 'msg123', 'result' => ['data' => 'test']];
@@ -628,6 +718,7 @@ class SamplingClientTest extends TestCase
      */
     public function test_handle_incoming_message_ignores_message_without_id(): void
     {
+        $this->setUpSamplingClient();
         $clientId = 'test-client';
         $message = ['result' => ['data' => 'test']]; // No 'id' field
 
@@ -649,6 +740,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_handle_incoming_message_processes_valid_response(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client';
         $message = ['id' => 'msg123', 'result' => ['data' => 'test response']];
 
@@ -665,7 +758,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->logger->expects($this->once())
@@ -696,7 +792,8 @@ class SamplingClientTest extends TestCase
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
         $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
-        $mockResponseWaiter->expects($this->once())
+        $mockResponseWaiter
+            ->expects($this->once())
             ->method('waitForResponse')
             ->willReturn(null); // Null response data
 
@@ -705,7 +802,7 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->expects($this->once())->method('getResponseWaiter')->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -738,7 +835,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -773,7 +873,7 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock->expects($this->once())->method('getResponseWaiter')->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -808,7 +908,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -827,18 +930,18 @@ class SamplingClientTest extends TestCase
     {
         $clientId = 'test-client-handler';
 
-        $adapter = $this->createMock(SseAdapterInterface::class);
+        $adapter = $this->createStub(SseAdapterInterface::class);
         $adapter->method('hasSamplingCapability')->willReturn(true);
 
         $transport = $this->createMock(AbstractTransport::class);
         $transport->method('getAdapter')->willReturn($adapter);
 
-        $transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $transportFactory = $this->createStub(TransportFactoryInterface::class);
         $transportFactory->method('get')->willReturn($transport);
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -852,7 +955,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $transport->expects($this->once())
@@ -897,7 +1003,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -924,6 +1033,8 @@ class SamplingClientTest extends TestCase
      */
     public function test_create_request_with_empty_messages(): void
     {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-client-empty';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -936,7 +1047,7 @@ class SamplingClientTest extends TestCase
                 'messageCount' => 0,
             ]);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -950,7 +1061,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->once())
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
@@ -966,6 +1080,11 @@ class SamplingClientTest extends TestCase
      */
     public function test_message_id_format_and_uniqueness(): void
     {
+        $this->transport = $this->createMock(AbstractTransport::class);
+        $this->transport->expects($this->exactly(3))->method('getAdapter')->willReturn($this->adapter);
+        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->transportFactory->expects($this->exactly(9))->method('get')->willReturn($this->transport);
+        $this->samplingClient = new SamplingClient($this->transportFactory, $this->logger);
         $clientId = 'test-unique-format';
         $this->samplingClient->setCurrentClientId($clientId);
 
@@ -973,7 +1092,7 @@ class SamplingClientTest extends TestCase
 
         $capturedIds = [];
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -987,7 +1106,10 @@ class SamplingClientTest extends TestCase
             ->onlyMethods(['getResponseWaiter'])
             ->getMock();
 
-        $samplingClientMock->method('getResponseWaiter')->willReturn($mockResponseWaiter);
+        $samplingClientMock
+            ->expects($this->exactly(3))
+            ->method('getResponseWaiter')
+            ->willReturn($mockResponseWaiter);
         $samplingClientMock->setCurrentClientId($clientId);
 
         $this->transport->method('onMessage');
