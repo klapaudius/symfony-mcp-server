@@ -6,20 +6,19 @@ use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceProviderInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 #[Small]
 class ResourceProviderTest extends TestCase
 {
-    private ContainerInterface|MockObject $container;
+    private ContainerInterface $container;
 
     private ResourceRepository $resourceRepository;
 
     protected function setUp(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = $this->createStub(ContainerInterface::class);
         $this->resourceRepository = new ResourceRepository($this->container);
     }
 
@@ -31,8 +30,8 @@ class ResourceProviderTest extends TestCase
      */
     public function test_register_provider_registers_resources_from_provider(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
-        $resource2 = $this->createMock(ResourceInterface::class);
+        $resource1 = $this->createStub(ResourceInterface::class);
+        $resource2 = $this->createStub(ResourceInterface::class);
 
         $resource1->method('getUri')->willReturn('file:/provider-resource1.txt');
         $resource2->method('getUri')->willReturn('file:/provider-resource2.txt');
@@ -59,8 +58,8 @@ class ResourceProviderTest extends TestCase
      */
     public function test_register_provider_with_resource_class_names(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
-        $resource2 = $this->createMock(ResourceInterface::class);
+        $resource1 = $this->createStub(ResourceInterface::class);
+        $resource2 = $this->createStub(ResourceInterface::class);
 
         $resource1->method('getUri')->willReturn('file:/resource-from-class1.txt');
         $resource2->method('getUri')->willReturn('file:/resource-from-class2.txt');
@@ -94,8 +93,8 @@ class ResourceProviderTest extends TestCase
      */
     public function test_register_provider_works_alongside_other_registration_methods(): void
     {
-        $directResource = $this->createMock(ResourceInterface::class);
-        $providerResource = $this->createMock(ResourceInterface::class);
+        $directResource = $this->createStub(ResourceInterface::class);
+        $providerResource = $this->createStub(ResourceInterface::class);
 
         $directResource->method('getUri')->willReturn('file:/direct-resource.txt');
         $providerResource->method('getUri')->willReturn('file:/provider-resource.txt');
@@ -104,7 +103,7 @@ class ResourceProviderTest extends TestCase
         $this->resourceRepository->register($directResource);
 
         // Register via provider
-        $provider = $this->createMock(ResourceProviderInterface::class);
+        $provider = $this->createStub(ResourceProviderInterface::class);
         $provider->method('getResources')->willReturn([$providerResource]);
         $this->resourceRepository->registerProvider($provider);
 
