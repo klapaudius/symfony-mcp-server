@@ -6,7 +6,7 @@ use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\StreamableHttpTransport;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -14,20 +14,20 @@ use Symfony\Component\Routing\RouterInterface;
 #[Small]
 class StreamableHttpTransportTest extends TestCase
 {
-    private LoggerInterface|MockObject $loggerMock;
+    private LoggerInterface&Stub $loggerMock;
 
-    private SseAdapterInterface|MockObject $adapterMock;
+    private SseAdapterInterface&Stub $adapterMock;
 
-    private RouterInterface|MockObject $routerMock;
+    private RouterInterface&Stub $routerMock;
 
     private StreamableHttpTransport $instance;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loggerMock = $this->createMock(LoggerInterface::class);
-        $this->adapterMock = $this->createMock(SseAdapterInterface::class);
-        $this->routerMock = $this->createMock(RouterInterface::class);
+        $this->loggerMock = $this->createStub(LoggerInterface::class);
+        $this->adapterMock = $this->createStub(SseAdapterInterface::class);
+        $this->routerMock = $this->createStub(RouterInterface::class);
         $this->instance = new StreamableHttpTransport($this->routerMock, $this->adapterMock, $this->loggerMock);
     }
 
@@ -37,17 +37,19 @@ class StreamableHttpTransportTest extends TestCase
     public function test_is_connected_returns_true_when_connected(): void
     {
         // Arrange
-        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
-        $this->setProtectedProperty($this->instance, 'connected', true);
-        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $instance = new StreamableHttpTransport($this->routerMock, $adapterMock, $this->loggerMock);
+        $this->setProtectedProperty($instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($instance, 'connected', true);
+        $this->setProtectedProperty($instance, 'lastPingTimestamp', time());
 
-        $this->adapterMock->expects($this->once())
+        $adapterMock->expects($this->once())
             ->method('hasMessages')
             ->with('test-client-id')
             ->willReturn(true);
 
         // Act
-        $result = $this->instance->isConnected();
+        $result = $instance->isConnected();
 
         // Assert
         $this->assertTrue($result, 'Expected isConnected to return true when conditions are met.');
@@ -59,17 +61,19 @@ class StreamableHttpTransportTest extends TestCase
     public function test_is_connected_returns_false_when_no_messages(): void
     {
         // Arrange
-        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
-        $this->setProtectedProperty($this->instance, 'connected', true);
-        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $instance = new StreamableHttpTransport($this->routerMock, $adapterMock, $this->loggerMock);
+        $this->setProtectedProperty($instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($instance, 'connected', true);
+        $this->setProtectedProperty($instance, 'lastPingTimestamp', time());
 
-        $this->adapterMock->expects($this->once())
+        $adapterMock->expects($this->once())
             ->method('hasMessages')
             ->with('test-client-id')
             ->willReturn(false);
 
         // Act
-        $result = $this->instance->isConnected();
+        $result = $instance->isConnected();
 
         // Assert
         $this->assertFalse($result, 'Expected isConnected to return false when adapter has no messages.');
@@ -81,20 +85,23 @@ class StreamableHttpTransportTest extends TestCase
     public function test_is_connected_logs_debug_information(): void
     {
         // Arrange
-        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
-        $this->setProtectedProperty($this->instance, 'connected', true);
-        $this->setProtectedProperty($this->instance, 'lastPingTimestamp', time());
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new StreamableHttpTransport($this->routerMock, $adapterMock, $loggerMock);
+        $this->setProtectedProperty($instance, 'clientId', 'test-client-id');
+        $this->setProtectedProperty($instance, 'connected', true);
+        $this->setProtectedProperty($instance, 'lastPingTimestamp', time());
 
-        $this->adapterMock->expects($this->once())
+        $adapterMock->expects($this->once())
             ->method('hasMessages')
             ->willReturn(true);
 
-        $this->loggerMock->expects($this->once())
+        $loggerMock->expects($this->once())
             ->method('debug')
             ->with('Streamable HTTP Transport::isConnected: hasMessages: true');
 
         // Act
-        $this->instance->isConnected();
+        $instance->isConnected();
     }
 
     /**
@@ -142,16 +149,19 @@ class StreamableHttpTransportTest extends TestCase
     public function test_process_message_logs_exceptions_in_handlers(): void
     {
         // Arrange
-        $this->loggerMock->expects($this->once())
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new StreamableHttpTransport($this->routerMock, $this->adapterMock, $loggerMock);
+
+        $loggerMock->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Error processing Streamable HTTP message via handler:'));
 
-        $this->invokeProtectedMethod($this->instance, 'onMessage', [function () {
+        $this->invokeProtectedMethod($instance, 'onMessage', [function () {
             throw new \Exception('Test Exception');
         }]);
 
         $handlerCalled = false;
-        $this->invokeProtectedMethod($this->instance, 'onMessage', [function () use (&$handlerCalled) {
+        $this->invokeProtectedMethod($instance, 'onMessage', [function () use (&$handlerCalled) {
             $handlerCalled = true;
         }]);
 
@@ -159,7 +169,7 @@ class StreamableHttpTransportTest extends TestCase
         $message = ['key' => 'value'];
 
         // Act
-        $this->instance->processMessage($clientId, $message);
+        $instance->processMessage($clientId, $message);
 
         // Assert
         $this->assertTrue($handlerCalled, 'The second handler was not called after the exception.');
@@ -171,17 +181,19 @@ class StreamableHttpTransportTest extends TestCase
     public function test_push_message_calls_adapter_correctly(): void
     {
         // Arrange
+        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $instance = new StreamableHttpTransport($this->routerMock, $adapterMock, $this->loggerMock);
         $clientId = 'test-client-id';
         $message = ['key' => 'value'];
         $expectedMessage = json_encode($message);
 
-        $this->adapterMock->expects($this->once())
+        $adapterMock->expects($this->once())
             ->method('pushMessage')
             ->with($clientId, $expectedMessage);
 
         // Act
         ob_start();
-        $this->instance->pushMessage($clientId, $message);
+        $instance->pushMessage($clientId, $message);
         $output = ob_get_clean();
 
         // Verify SSE output is generated
