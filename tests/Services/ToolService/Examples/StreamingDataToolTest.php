@@ -131,7 +131,7 @@ class StreamingDataToolTest extends TestCase
 
     public function test_execute_handles_progress_notification_failure(): void
     {
-        $progressNotifier = $this->createMock(ProgressNotifier::class);
+        $progressNotifier = $this->createStub(ProgressNotifier::class);
         $progressNotifier->method('sendProgress')
             ->willThrowException(new \Exception('Progress notification failed'));
 
