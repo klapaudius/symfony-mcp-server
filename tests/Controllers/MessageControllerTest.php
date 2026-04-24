@@ -16,7 +16,7 @@ class MessageControllerTest extends TestCase
 {
     private MCPServerInterface|MockObject $mockServer;
 
-    private LoggerInterface|MockObject|null $mockLogger;
+    private LoggerInterface|MockObject $mockLogger;
 
     private MessageController $controller;
 
