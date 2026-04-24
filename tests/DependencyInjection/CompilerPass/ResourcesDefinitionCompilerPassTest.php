@@ -97,7 +97,7 @@ class ResourcesDefinitionCompilerPassTest extends TestCase
     {
         $container = $this->createMock(ContainerBuilder::class);
         $serverDefinition = $this->createMock(Definition::class);
-        $resourceRepositoryDefinition = $this->createMock(Definition::class);
+        $resourceRepositoryDefinition = $this->createStub(Definition::class);
 
         $invocations = [
             'klp_mcp_server.resources',
