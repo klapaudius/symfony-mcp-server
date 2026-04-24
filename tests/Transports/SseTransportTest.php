@@ -7,7 +7,7 @@ use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterInterface;
 use KLP\KlpMcpServer\Transports\SseTransport;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -15,20 +15,20 @@ use Symfony\Component\Routing\RouterInterface;
 #[Small]
 class SseTransportTest extends TestCase
 {
-    private LoggerInterface|MockObject $loggerMock;
+    private LoggerInterface&Stub $loggerMock;
 
-    private SseAdapterInterface|MockObject $adapterMock;
+    private SseAdapterInterface&Stub $adapterMock;
 
-    private RouterInterface|MockObject $routerMock;
+    private RouterInterface&Stub $routerMock;
 
     private SseTransport $instance;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loggerMock = $this->createMock(LoggerInterface::class);
-        $this->adapterMock = $this->createMock(SseAdapterInterface::class);
-        $this->routerMock = $this->createMock(RouterInterface::class);
+        $this->loggerMock = $this->createStub(LoggerInterface::class);
+        $this->adapterMock = $this->createStub(SseAdapterInterface::class);
+        $this->routerMock = $this->createStub(RouterInterface::class);
         $this->instance = new SseTransport($this->routerMock, $this->adapterMock, $this->loggerMock);
     }
 
@@ -63,7 +63,8 @@ class SseTransportTest extends TestCase
     public function test_initialize_generates_client_id_and_sends_endpoint(): void
     {
         // Arrange
-        $this->routerMock
+        $routerMock = $this->createMock(RouterInterface::class);
+        $routerMock
             ->expects($this->once())
             ->method('generate')
             ->willReturnCallback(function (string $name, array $parameters = []): string {
@@ -72,17 +73,19 @@ class SseTransportTest extends TestCase
 
                 return '/default-path/messages?sessionId='.$parameters['sessionId'];
             });
+        $instance = new SseTransport($routerMock, $this->adapterMock, $this->loggerMock);
+
         // Act
         ob_start();
         try {
-            $this->instance->initialize();
+            $instance->initialize();
             $output = ob_get_contents(); // Capture the output before clearing the buffer
         } finally {
             ob_end_clean(); // Ensure the buffer is cleaned even if an exception occurs
         }
 
         // Assert
-        $expectedClientId = $this->getProtectedProperty($this->instance, 'clientId');
+        $expectedClientId = $this->getProtectedProperty($instance, 'clientId');
         $expectedOutput = 'event: endpoint'.PHP_EOL
             .'data: /default-path/messages?sessionId='.$expectedClientId.PHP_EOL.PHP_EOL;
 
@@ -97,24 +100,26 @@ class SseTransportTest extends TestCase
     {
         // Arrange
         $existingClientId = 'predefined-client-id';
-        $this->setProtectedProperty($this->instance, 'clientId', $existingClientId);
-        $this->routerMock
+        $routerMock = $this->createMock(RouterInterface::class);
+        $routerMock
             ->expects($this->once())
             ->method('generate')
             ->with('klp_mcp_server_sse_message', ['sessionId' => $existingClientId])
             ->willReturn('/default-path/messages?sessionId='.$existingClientId);
+        $instance = new SseTransport($routerMock, $this->adapterMock, $this->loggerMock);
+        $this->setProtectedProperty($instance, 'clientId', $existingClientId);
 
         // Act
         ob_start();
         try {
-            $this->instance->initialize();
+            $instance->initialize();
             $output = ob_get_contents(); // Capture the output before clearing the buffer
         } finally {
             ob_end_clean(); // Ensure the buffer is cleaned even if an exception occurs
         }
 
         // Assert
-        $currentClientId = $this->getProtectedProperty($this->instance, 'clientId');
+        $currentClientId = $this->getProtectedProperty($instance, 'clientId');
         $expectedOutput = 'event: endpoint'.PHP_EOL
             .'data: /default-path/messages?sessionId='.$existingClientId.PHP_EOL.PHP_EOL;
 
@@ -308,12 +313,14 @@ class SseTransportTest extends TestCase
     public function test_close_logs_exceptions_in_handlers_or_cleanup(): void
     {
         // Arrange
-        $this->setProtectedProperty($this->instance, 'connected', true);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new SseTransport($this->routerMock, $this->adapterMock, $loggerMock);
+        $this->setProtectedProperty($instance, 'connected', true);
         $invocations = [
             'SSE Transport. Error in close handler: Handler Exception',
             'Error cleaning up SSE adapter resources on close: Adapter Exception',
         ];
-        $this->loggerMock->expects($matcher = $this->exactly(2))
+        $loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
                 $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
@@ -321,13 +328,13 @@ class SseTransportTest extends TestCase
                 return true;
             }));
 
-        $this->instance->onClose(function () {
+        $instance->onClose(function () {
             throw new \Exception('Handler Exception');
         });
 
         $adapterMock = $this->createMock(SseAdapterInterface::class);
-        $this->instance->setAdapter($adapterMock);
-        $this->setProtectedProperty($this->instance, 'clientId', 'test-client-id');
+        $instance->setAdapter($adapterMock);
+        $this->setProtectedProperty($instance, 'clientId', 'test-client-id');
         $adapterMock->expects($this->once())
             ->method('removeAllMessages')
             ->willThrowException(new SseAdapterException('Adapter Exception'));
@@ -335,7 +342,7 @@ class SseTransportTest extends TestCase
         // Act
         ob_start();
         try {
-            $this->instance->close();
+            $instance->close();
         } finally {
             ob_end_clean();
         }
@@ -359,13 +366,15 @@ class SseTransportTest extends TestCase
     public function test_receive_logs_info_when_no_adapter(): void
     {
         // Arrange
-        $this->instance->setAdapter(null);
-        $this->loggerMock->expects($this->once())
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new SseTransport($this->routerMock, $this->adapterMock, $loggerMock);
+        $instance->setAdapter(null);
+        $loggerMock->expects($this->once())
             ->method('info')
             ->with('SSE Transport::receive called but no adapter is configured.');
 
         // Act
-        $this->instance->receive();
+        $instance->receive();
     }
 
     /**
@@ -483,7 +492,7 @@ class SseTransportTest extends TestCase
         $clientId = 'test-client-id';
         $invalidMessage = "\xB1\x31"; // Invalid UTF-8 sequence
 
-        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $adapterMock = $this->createStub(SseAdapterInterface::class);
         $this->instance->setAdapter($adapterMock);
 
         // Expect exception
@@ -548,12 +557,14 @@ class SseTransportTest extends TestCase
     public function test_trigger_error_logs_exceptions_in_handlers(): void
     {
         // Arrange
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new SseTransport($this->routerMock, $this->adapterMock, $loggerMock);
         $message = 'Error Message';
         $invocations = [
             'SSE Transport error: Error Message',
             'Error in SSE Transport error handler itself: Test Exception',
         ];
-        $this->loggerMock->expects($matcher = $this->exactly(2))
+        $loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
                 $this->assertEquals($arg, $invocations[$matcher->numberOfInvocations() - 1]);
@@ -561,17 +572,17 @@ class SseTransportTest extends TestCase
                 return true;
             }));
 
-        $this->instance->onError(function () {
+        $instance->onError(function () {
             throw new \Exception('Test Exception');
         });
 
         $handlerCalled = false;
-        $this->instance->onError(function () use (&$handlerCalled) {
+        $instance->onError(function () use (&$handlerCalled) {
             $handlerCalled = true;
         });
 
         // Act
-        $this->invokeProtectedMethod($this->instance, 'triggerError', [$message]);
+        $this->invokeProtectedMethod($instance, 'triggerError', [$message]);
 
         // Assert
         $this->assertTrue($handlerCalled, 'The second handler was not called after the exception.');
@@ -583,16 +594,18 @@ class SseTransportTest extends TestCase
     public function test_process_message_logs_exceptions_in_handlers(): void
     {
         // Arrange
-        $this->loggerMock->expects($this->once())
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $instance = new SseTransport($this->routerMock, $this->adapterMock, $loggerMock);
+        $loggerMock->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Error processing SSE message via handler: Test Exception'));
 
-        $this->instance->onMessage(function () {
+        $instance->onMessage(function () {
             throw new \Exception('Test Exception');
         });
 
         $handlerCalled = false;
-        $this->instance->onMessage(function () use (&$handlerCalled) {
+        $instance->onMessage(function () use (&$handlerCalled) {
             $handlerCalled = true;
         });
 
@@ -600,7 +613,7 @@ class SseTransportTest extends TestCase
         $message = ['key' => 'value'];
 
         // Act
-        $this->instance->processMessage($clientId, $message);
+        $instance->processMessage($clientId, $message);
 
         // Assert
         $this->assertTrue($handlerCalled, 'The second handler was not called after the exception.');
@@ -727,7 +740,7 @@ class SseTransportTest extends TestCase
     public function test_get_adapter_returns_set_adapter(): void
     {
         // Arrange
-        $adapterMock = $this->createMock(SseAdapterInterface::class);
+        $adapterMock = $this->createStub(SseAdapterInterface::class);
         $this->instance->setAdapter($adapterMock);
 
         // Act
