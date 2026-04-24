@@ -9,22 +9,22 @@ use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 #[Small]
 class ProgressNotifierRepositoryTest extends TestCase
 {
-    private TransportFactoryInterface|MockObject $transportFactory;
+    private TransportFactoryInterface|Stub $transportFactory;
 
-    private TransportInterface|MockObject $transport;
+    private TransportInterface|Stub $transport;
 
     private ProgressNotifierRepository $repository;
 
     protected function setUp(): void
     {
-        $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
-        $this->transport = $this->createMock(TransportInterface::class);
+        $this->transportFactory = $this->createStub(TransportFactoryInterface::class);
+        $this->transport = $this->createStub(TransportInterface::class);
         $this->repository = new ProgressNotifierRepository($this->transportFactory);
     }
 
@@ -36,7 +36,6 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_register_token_creates_progress_notifier(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
 
@@ -52,7 +51,6 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_register_token_with_integer_token(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
 
@@ -67,7 +65,10 @@ class ProgressNotifierRepositoryTest extends TestCase
 
     public function test_register_same_token_twice_returns_null_second_time(): void
     {
-        $this->transportFactory
+        $transportFactory = $this->createMock(TransportFactoryInterface::class);
+        $repository = new ProgressNotifierRepository($transportFactory);
+
+        $transportFactory
             ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
@@ -75,18 +76,17 @@ class ProgressNotifierRepositoryTest extends TestCase
         $progressToken = 'test-token-duplicate';
         $clientId = 'client-123';
 
-        $notifier1 = $this->repository->registerToken($progressToken, $clientId);
-        $notifier2 = $this->repository->registerToken($progressToken, $clientId);
+        $notifier1 = $repository->registerToken($progressToken, $clientId);
+        $notifier2 = $repository->registerToken($progressToken, $clientId);
 
         $this->assertInstanceOf(ProgressNotifier::class, $notifier1);
         $this->assertNull($notifier2);
-        $this->assertTrue($this->repository->isTokenActive($progressToken));
+        $this->assertTrue($repository->isTokenActive($progressToken));
     }
 
     public function test_register_token_throws_exception_when_transport_factory_fails(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willThrowException(new TransportFactoryException('Transport factory error'));
 
@@ -99,7 +99,6 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_unregister_token_removes_active_token(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
 
@@ -143,7 +142,6 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_get_active_tokens_returns_registered_tokens(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
 
@@ -165,10 +163,11 @@ class ProgressNotifierRepositoryTest extends TestCase
 
     public function test_handle_message_pushes_message_to_transport(): void
     {
+        $transport = $this->createMock(TransportInterface::class);
+
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
-            ->willReturn($this->transport);
+            ->willReturn($transport);
 
         $progressToken = 'test-handle-message';
         $clientId = 'client-handle';
@@ -183,7 +182,7 @@ class ProgressNotifierRepositoryTest extends TestCase
             ],
         ];
 
-        $this->transport
+        $transport
             ->expects($this->once())
             ->method('pushMessage')
             ->with($clientId, $message);
@@ -211,10 +210,11 @@ class ProgressNotifierRepositoryTest extends TestCase
 
     public function test_multiple_tokens_with_different_clients(): void
     {
+        $transport = $this->createMock(TransportInterface::class);
+
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
-            ->willReturn($this->transport);
+            ->willReturn($transport);
 
         $token1 = 'token-client-1';
         $token2 = 'token-client-2';
@@ -239,7 +239,7 @@ class ProgressNotifierRepositoryTest extends TestCase
             'params' => ['progressToken' => $token2, 'progress' => 75],
         ];
 
-        $this->transport
+        $transport
             ->expects($this->exactly(2))
             ->method('pushMessage')
             ->willReturnCallback(function ($clientId, $message) use ($clientId1, $clientId2, $message1, $message2) {
@@ -256,7 +256,6 @@ class ProgressNotifierRepositoryTest extends TestCase
     public function test_unregister_one_token_keeps_others_active(): void
     {
         $this->transportFactory
-            ->expects($this->once())
             ->method('get')
             ->willReturn($this->transport);
 
