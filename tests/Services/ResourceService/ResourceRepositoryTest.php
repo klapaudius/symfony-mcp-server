@@ -22,7 +22,7 @@ class ResourceRepositoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = $this->createStub(ContainerInterface::class);
         $this->resourceRepository = new ResourceRepository($this->container);
     }
 
@@ -31,14 +31,16 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_construct_registers_resources_from_container(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
+        $container = $this->createMock(ContainerInterface::class);
+
+        $resource1 = $this->createStub(ResourceInterface::class);
         $resource1->method('getUri')->willReturn('resource1');
 
-        $resource2 = $this->createMock(ResourceInterface::class);
+        $resource2 = $this->createStub(ResourceInterface::class);
         $resource2->method('getUri')->willReturn('resource2');
 
         $invocations = ['klp_mcp_server.resources', 'klp_mcp_server.resources_templates'];
-        $this->container
+        $container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
@@ -51,12 +53,12 @@ class ResourceRepositoryTest extends TestCase
                 null
             );
 
-        $this->container->method('get')->willReturnMap([
+        $container->method('get')->willReturnMap([
             ['ResourceClass1', $resource1],
             ['ResourceClass2', $resource2],
         ]);
 
-        $repository = new ResourceRepository($this->container);
+        $repository = new ResourceRepository($container);
 
         $resources = $repository->getResources();
 
@@ -70,17 +72,19 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_construct_registers_resources_templates_from_container(): void
     {
+        $container = $this->createMock(ContainerInterface::class);
+
         $resourceTemplate = $this->createMock(ResourceTemplateInterface::class);
-        $resource = $this->createMock(Resource::class);
+        $resource = $this->createStub(Resource::class);
         $resource->method('getUri')->willReturn('file:/docs/test.md');
-        $resourceTemplate->method('getResource')->with('file:/docs/test.md')->willReturn($resource);
+        $resourceTemplate->expects($this->once())->method('getResource')->with('file:/docs/test.md')->willReturn($resource);
         $resourceTemplate->method('getUriTemplate')->willReturn('file:/docs/{filename}.md');
 
         $invocations = [
             'klp_mcp_server.resources',
             'klp_mcp_server.resources_templates',
         ];
-        $this->container
+        $container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
@@ -93,13 +97,13 @@ class ResourceRepositoryTest extends TestCase
                 [McpDocumentationResource::class]
             );
 
-        $this->container
+        $container
             ->expects($this->once())
             ->method('get')
             ->with(McpDocumentationResource::class)
             ->willReturn($resourceTemplate);
 
-        $repository = new ResourceRepository($this->container);
+        $repository = new ResourceRepository($container);
 
         // First, verify that the resource template was registered
         $this->assertCount(1, $repository->getResourceTemplateSchemas());
@@ -119,11 +123,13 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_construct_with_no_resources_defined(): void
     {
+        $container = $this->createMock(ContainerInterface::class);
+
         $invocations = [
             'klp_mcp_server.resources',
             'klp_mcp_server.resources_templates',
         ];
-        $this->container
+        $container
             ->expects($matcher = $this->exactly(count($invocations)))
             ->method('getParameter')
             ->with($this->callback(function ($parameter) use ($invocations, $matcher) {
@@ -133,7 +139,7 @@ class ResourceRepositoryTest extends TestCase
             }))
             ->willReturn(null);
 
-        $repository = new ResourceRepository($this->container);
+        $repository = new ResourceRepository($container);
 
         $this->assertEmpty($repository->getResources());
     }
@@ -143,10 +149,10 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_resource_instances(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
+        $resource1 = $this->createStub(ResourceInterface::class);
         $resource1->method('getUri')->willReturn('resource1');
 
-        $resource2 = $this->createMock(ResourceInterface::class);
+        $resource2 = $this->createStub(ResourceInterface::class);
         $resource2->method('getUri')->willReturn('resource2');
 
         $this->resourceRepository->registerMany([$resource1, $resource2]);
@@ -163,17 +169,21 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_register_many_with_valid_resource_class_names(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
+        $container = $this->createMock(ContainerInterface::class);
+        $resourceRepository = new ResourceRepository($container);
+
+        $resource1 = $this->createStub(ResourceInterface::class);
         $resource1->method('getUri')->willReturn('resource1');
 
-        $this->container
+        $container
+            ->expects($this->once())
             ->method('get')
             ->with('ResourceClass1')
             ->willReturn($resource1);
 
-        $this->resourceRepository->registerMany(['ResourceClass1']);
+        $resourceRepository->registerMany(['ResourceClass1']);
 
-        $resources = $this->resourceRepository->getResources();
+        $resources = $resourceRepository->getResources();
 
         $this->assertCount(1, $resources);
         $this->assertSame($resource1, $resources['resource1']);
@@ -209,7 +219,7 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_get_resource_returns_loaded_resource(): void
     {
-        $resource = $this->createMock(ResourceInterface::class);
+        $resource = $this->createStub(ResourceInterface::class);
         $resource->method('getUri')->willReturn('resource1');
 
         $this->resourceRepository->register($resource);
@@ -223,9 +233,9 @@ class ResourceRepositoryTest extends TestCase
     public function test_get_resource_loads_from_resource_template(): void
     {
         $resourceTemplate = $this->createMock(ResourceTemplateInterface::class);
-        $resource = $this->createMock(ResourceInterface::class);
+        $resource = $this->createStub(ResourceInterface::class);
 
-        $resourceTemplate->method('getResource')->with('resource1')->willReturn($resource);
+        $resourceTemplate->expects($this->once())->method('getResource')->with('resource1')->willReturn($resource);
         $resource->method('getUri')->willReturn('resource1');
 
         $this->resourceRepository->registerResourceTemplate($resourceTemplate);
@@ -246,13 +256,13 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_get_resource_schemas_returns_correct_schema(): void
     {
-        $resource1 = $this->createMock(ResourceInterface::class);
+        $resource1 = $this->createStub(ResourceInterface::class);
         $resource1->method('getUri')->willReturn('resource1');
         $resource1->method('getName')->willReturn('Resource 1');
         $resource1->method('getDescription')->willReturn('Description 1');
         $resource1->method('getMimeType')->willReturn('application/json');
 
-        $resource2 = $this->createMock(ResourceInterface::class);
+        $resource2 = $this->createStub(ResourceInterface::class);
         $resource2->method('getUri')->willReturn('resource2');
         $resource2->method('getName')->willReturn('Resource 2');
         $resource2->method('getDescription')->willReturn('Description 2');
@@ -291,13 +301,13 @@ class ResourceRepositoryTest extends TestCase
      */
     public function test_get_resource_template_schemas_returns_correct_schema(): void
     {
-        $resourceTemplate1 = $this->createMock(ResourceTemplateInterface::class);
+        $resourceTemplate1 = $this->createStub(ResourceTemplateInterface::class);
         $resourceTemplate1->method('getUriTemplate')->willReturn('file:/docs/{filename}.md');
         $resourceTemplate1->method('getName')->willReturn('Documentation');
         $resourceTemplate1->method('getDescription')->willReturn('MCP Documentation');
         $resourceTemplate1->method('getMimeType')->willReturn('text/markdown');
 
-        $resourceTemplate2 = $this->createMock(ResourceTemplateInterface::class);
+        $resourceTemplate2 = $this->createStub(ResourceTemplateInterface::class);
         $resourceTemplate2->method('getUriTemplate')->willReturn('file:/images/{filename}.png');
         $resourceTemplate2->method('getName')->willReturn('Images');
         $resourceTemplate2->method('getDescription')->willReturn('Image Resources');
