@@ -28,7 +28,7 @@ class PromptRepositoryTest extends TestCase
 
     public function test_register_prompt_instance(): void
     {
-        $prompt = $this->createMock(PromptInterface::class);
+        $prompt = $this->createStub(PromptInterface::class);
         $prompt->method('getName')->willReturn('test-prompt');
 
         $result = $this->repository->register($prompt);
@@ -39,7 +39,7 @@ class PromptRepositoryTest extends TestCase
 
     public function test_register_prompt_class_string(): void
     {
-        $prompt = $this->createMock(PromptInterface::class);
+        $prompt = $this->createStub(PromptInterface::class);
         $prompt->method('getName')->willReturn('test-prompt');
 
         $this->container->expects($this->once())
@@ -70,10 +70,10 @@ class PromptRepositoryTest extends TestCase
 
     public function test_register_many(): void
     {
-        $prompt1 = $this->createMock(PromptInterface::class);
+        $prompt1 = $this->createStub(PromptInterface::class);
         $prompt1->method('getName')->willReturn('prompt1');
 
-        $prompt2 = $this->createMock(PromptInterface::class);
+        $prompt2 = $this->createStub(PromptInterface::class);
         $prompt2->method('getName')->willReturn('prompt2');
 
         $result = $this->repository->registerMany([$prompt1, $prompt2]);
@@ -85,10 +85,10 @@ class PromptRepositoryTest extends TestCase
 
     public function test_get_prompts(): void
     {
-        $prompt1 = $this->createMock(PromptInterface::class);
+        $prompt1 = $this->createStub(PromptInterface::class);
         $prompt1->method('getName')->willReturn('prompt1');
 
-        $prompt2 = $this->createMock(PromptInterface::class);
+        $prompt2 = $this->createStub(PromptInterface::class);
         $prompt2->method('getName')->willReturn('prompt2');
 
         $this->repository->registerMany([$prompt1, $prompt2]);
@@ -109,14 +109,14 @@ class PromptRepositoryTest extends TestCase
 
     public function test_get_prompt_schemas(): void
     {
-        $prompt1 = $this->createMock(PromptInterface::class);
+        $prompt1 = $this->createStub(PromptInterface::class);
         $prompt1->method('getName')->willReturn('prompt1');
         $prompt1->method('getDescription')->willReturn('Description 1');
         $prompt1->method('getArguments')->willReturn([
             ['name' => 'arg1', 'description' => 'Argument 1', 'required' => true],
         ]);
 
-        $prompt2 = $this->createMock(PromptInterface::class);
+        $prompt2 = $this->createStub(PromptInterface::class);
         $prompt2->method('getName')->willReturn('prompt2');
         $prompt2->method('getDescription')->willReturn('Description 2');
         $prompt2->method('getArguments')->willReturn([]);
@@ -143,7 +143,7 @@ class PromptRepositoryTest extends TestCase
 
     public function test_constructor_loads_prompts_from_container(): void
     {
-        $prompt = $this->createMock(PromptInterface::class);
+        $prompt = $this->createStub(PromptInterface::class);
         $prompt->method('getName')->willReturn('test-prompt');
 
         $container = $this->createMock(ContainerInterface::class);
