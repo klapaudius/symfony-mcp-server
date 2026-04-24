@@ -7,6 +7,7 @@ use KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Redis;
@@ -16,7 +17,7 @@ final class RedisAdapterTest extends TestCase
 {
     private Redis|MockObject $redisMock;
 
-    private LoggerInterface|MockObject $loggerMock;
+    private LoggerInterface|Stub $loggerMock;
 
     private RedisAdapter $redisAdapter;
 
@@ -47,7 +48,7 @@ final class RedisAdapterTest extends TestCase
             PHPUNIT_EVAL);
         }
         $this->redisMock = $this->createMock(Redis::class);
-        $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->loggerMock = $this->createStub(LoggerInterface::class);
 
         $this->redisAdapter = new RedisAdapter(
             $this->getMockRedisConfiguration(),
@@ -84,18 +85,20 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_constructor_throws_exception_on_failed_redis_connection(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $this->redisMock->expects($this->once())
             ->method('connect')
             ->willThrowException(new Exception('Connection error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to initialize Redis SSE Adapter'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to initialize Redis SSE Adapter');
 
-        new RedisAdapter($this->getMockRedisConfiguration(), $this->loggerMock, $this->redisMock);
+        new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
     }
 
     /**
@@ -148,6 +151,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_push_message_throws_exception_when_redis_fails(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_failure';
         $message = 'failure message';
         $key = 'test_:client:client_failure';
@@ -157,14 +163,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key, $message)
             ->willThrowException(new Exception('Redis error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to add message to Redis queue'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to add message to Redis queue');
 
-        $this->redisAdapter->pushMessage($clientId, $message);
+        $adapter->pushMessage($clientId, $message);
     }
 
     /**
@@ -207,6 +213,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_remove_all_messages_throws_exception_when_redis_fails(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error';
 
@@ -215,14 +224,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis delete error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to remove messages from Redis queue'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to remove messages from Redis queue');
 
-        $this->redisAdapter->removeAllMessages($clientId);
+        $adapter->removeAllMessages($clientId);
     }
 
     /**
@@ -266,6 +275,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_receive_messages_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error';
 
@@ -274,14 +286,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis lpop error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to receive messages from Redis queue'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to receive messages from Redis queue');
 
-        $this->redisAdapter->receiveMessages($clientId);
+        $adapter->receiveMessages($clientId);
     }
 
     /**
@@ -326,6 +338,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_pop_message_throws_exception_when_redis_fails(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error';
 
@@ -334,14 +349,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis pop error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to pop message from Redis queue'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to pop message from Redis queue');
 
-        $this->redisAdapter->popMessage($clientId);
+        $adapter->popMessage($clientId);
     }
 
     /**
@@ -381,6 +396,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_has_messages_handles_redis_exception(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_exception';
         $key = 'test_:client:client_exception';
 
@@ -389,11 +407,11 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to get message count'));
 
-        $this->assertFalse($this->redisAdapter->hasMessages($clientId));
+        $this->assertFalse($adapter->hasMessages($clientId));
     }
 
     /**
@@ -437,6 +455,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_get_message_count_logs_error_and_returns_zero_on_exception(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error';
 
@@ -445,11 +466,11 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to get message count'));
 
-        $messageCount = $this->redisAdapter->getMessageCount($clientId);
+        $messageCount = $adapter->getMessageCount($clientId);
 
         $this->assertSame(0, $messageCount);
     }
@@ -499,6 +520,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_store_last_pong_response_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error:last_pong';
 
@@ -507,14 +531,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key, $this->isInt())
             ->willThrowException(new Exception('Redis set error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to store last pong timestamp'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to store last pong timestamp');
 
-        $this->redisAdapter->storeLastPongResponseTimestamp($clientId);
+        $adapter->storeLastPongResponseTimestamp($clientId);
     }
 
     /**
@@ -559,6 +583,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_get_last_pong_response_timestamp_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error:last_pong';
 
@@ -567,14 +594,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis get error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to get last pong timestamp'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to get last pong timestamp');
 
-        $this->redisAdapter->getLastPongResponseTimestamp($clientId);
+        $adapter->getLastPongResponseTimestamp($clientId);
     }
 
     /**
@@ -620,6 +647,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_store_sampling_capability_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error:sampling';
 
@@ -628,14 +658,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key, '1')
             ->willThrowException(new Exception('Redis set error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to store sampling capability'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to store sampling capability');
 
-        $this->redisAdapter->storeSamplingCapability($clientId, true);
+        $adapter->storeSamplingCapability($clientId, true);
     }
 
     /**
@@ -691,6 +721,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_has_sampling_capability_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $clientId = 'client_error';
         $key = 'test_:client:client_error:sampling';
 
@@ -699,14 +732,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis get error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to retrieve sampling capability'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to retrieve sampling capability');
 
-        $this->redisAdapter->hasSamplingCapability($clientId);
+        $adapter->hasSamplingCapability($clientId);
     }
 
     /**
@@ -714,6 +747,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_store_pending_response_success(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_123';
         $responseData = ['status' => 'success', 'data' => ['foo' => 'bar']];
         $key = 'test_:pending_response:msg_123';
@@ -726,14 +762,14 @@ final class RedisAdapterTest extends TestCase
             ->method('expire')
             ->with($key, 120);
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Stored pending response', [
                 'messageId' => $messageId,
                 'key' => $key,
             ]);
 
-        $this->redisAdapter->storePendingResponse($messageId, $responseData);
+        $adapter->storePendingResponse($messageId, $responseData);
     }
 
     /**
@@ -741,6 +777,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_store_pending_response_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_error';
         $responseData = ['status' => 'error'];
         $key = 'test_:pending_response:msg_error';
@@ -750,14 +789,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key, json_encode($responseData))
             ->willThrowException(new Exception('Redis set error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to store pending response'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to store pending response');
 
-        $this->redisAdapter->storePendingResponse($messageId, $responseData);
+        $adapter->storePendingResponse($messageId, $responseData);
     }
 
     /**
@@ -820,6 +859,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_get_pending_response_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_error';
         $key = 'test_:pending_response:msg_error';
 
@@ -828,14 +870,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis get error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to retrieve pending response'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to retrieve pending response');
 
-        $this->redisAdapter->getPendingResponse($messageId);
+        $adapter->getPendingResponse($messageId);
     }
 
     /**
@@ -843,6 +885,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_remove_pending_response_success(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_123';
         $key = 'test_:pending_response:msg_123';
 
@@ -850,14 +895,14 @@ final class RedisAdapterTest extends TestCase
             ->method('del')
             ->with($key);
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Removed pending response', [
                 'messageId' => $messageId,
                 'key' => $key,
             ]);
 
-        $this->redisAdapter->removePendingResponse($messageId);
+        $adapter->removePendingResponse($messageId);
     }
 
     /**
@@ -865,6 +910,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_remove_pending_response_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_error';
         $key = 'test_:pending_response:msg_error';
 
@@ -873,14 +921,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis del error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to remove pending response'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to remove pending response');
 
-        $this->redisAdapter->removePendingResponse($messageId);
+        $adapter->removePendingResponse($messageId);
     }
 
     /**
@@ -920,6 +968,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_has_pending_response_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $messageId = 'msg_error';
         $key = 'test_:pending_response:msg_error';
 
@@ -928,14 +979,14 @@ final class RedisAdapterTest extends TestCase
             ->with($key)
             ->willThrowException(new Exception('Redis exists error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to check pending response'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to check pending response');
 
-        $this->redisAdapter->hasPendingResponse($messageId);
+        $adapter->hasPendingResponse($messageId);
     }
 
     /**
@@ -943,6 +994,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_cleanup_old_pending_responses_no_keys(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $pattern = 'test_:pending_response:*';
 
         $this->redisMock->expects($this->once())
@@ -950,14 +1004,14 @@ final class RedisAdapterTest extends TestCase
             ->with($pattern)
             ->willReturn([]);
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Cleaned up old pending responses', [
                 'deletedCount' => 0,
                 'maxAge' => 60,
             ]);
 
-        $deletedCount = $this->redisAdapter->cleanupOldPendingResponses(60);
+        $deletedCount = $adapter->cleanupOldPendingResponses(60);
 
         $this->assertEquals(0, $deletedCount);
     }
@@ -967,6 +1021,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_cleanup_old_pending_responses_with_deletions(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $pattern = 'test_:pending_response:*';
         $keys = [
             'test_:pending_response:msg_1',
@@ -993,14 +1050,14 @@ final class RedisAdapterTest extends TestCase
             ->method('del')
             ->with($keys[2]);
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Cleaned up old pending responses', [
                 'deletedCount' => 1,
                 'maxAge' => 60,
             ]);
 
-        $deletedCount = $this->redisAdapter->cleanupOldPendingResponses(60);
+        $deletedCount = $adapter->cleanupOldPendingResponses(60);
 
         $this->assertEquals(1, $deletedCount);
     }
@@ -1010,6 +1067,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_cleanup_old_pending_responses_throws_exception_on_failure(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $pattern = 'test_:pending_response:*';
 
         $this->redisMock->expects($this->once())
@@ -1017,14 +1077,14 @@ final class RedisAdapterTest extends TestCase
             ->with($pattern)
             ->willThrowException(new Exception('Redis keys error'));
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('error')
             ->with($this->stringContains('Failed to cleanup old pending responses'));
 
         $this->expectException(SseAdapterException::class);
         $this->expectExceptionMessage('Failed to cleanup old pending responses');
 
-        $this->redisAdapter->cleanupOldPendingResponses(60);
+        $adapter->cleanupOldPendingResponses(60);
     }
 
     /**
@@ -1095,6 +1155,9 @@ final class RedisAdapterTest extends TestCase
      */
     public function test_cleanup_old_pending_responses_all_ttl_scenarios(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $adapter = new RedisAdapter($this->getMockRedisConfiguration(), $logger, $this->redisMock);
+
         $pattern = 'test_:pending_response:*';
         $keys = [
             'test_:pending_response:msg_1',
@@ -1130,14 +1193,14 @@ final class RedisAdapterTest extends TestCase
 
         // After the test, we'll verify the correct keys were deleted
 
-        $this->loggerMock->expects($this->once())
+        $logger->expects($this->once())
             ->method('debug')
             ->with('Cleaned up old pending responses', [
                 'deletedCount' => 2,
                 'maxAge' => 60,
             ]);
 
-        $deletedCount = $this->redisAdapter->cleanupOldPendingResponses(60);
+        $deletedCount = $adapter->cleanupOldPendingResponses(60);
 
         $this->assertEquals(2, $deletedCount);
 
