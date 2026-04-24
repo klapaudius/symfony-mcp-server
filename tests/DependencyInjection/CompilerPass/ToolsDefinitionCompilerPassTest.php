@@ -4,6 +4,7 @@ namespace KLP\KlpMcpServer\Tests\DependencyInjection\CompilerPass;
 
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -103,7 +104,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             ->willReturn([]);
 
         $serverDefinition = $this->createMock(Definition::class);
-        $toolRepositoryDefinition = $this->createMock(Definition::class);
+        $toolRepositoryDefinition = $this->createStub(Definition::class);
 
         // Updated order: tool_repository is retrieved first (for provider registration), then server
         $invocations = [
@@ -159,7 +160,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             ]);
 
         $toolRepositoryDefinition = $this->createMock(Definition::class);
-        $serverDefinition = $this->createMock(Definition::class);
+        $serverDefinition = $this->createStub(Definition::class);
 
         $invocations = [
             'klp_mcp_server.tool_repository',
@@ -223,7 +224,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             ]);
 
         $toolRepositoryDefinition = $this->createMock(Definition::class);
-        $serverDefinition = $this->createMock(Definition::class);
+        $serverDefinition = $this->createStub(Definition::class);
 
         $invocations = [
             'klp_mcp_server.tool_repository',
@@ -268,7 +269,7 @@ class ToolsDefinitionCompilerPassTest extends TestCase
             ->willReturn([]);
 
         $toolRepositoryDefinition = $this->createMock(Definition::class);
-        $serverDefinition = $this->createMock(Definition::class);
+        $serverDefinition = $this->createStub(Definition::class);
 
         $invocations = [
             'klp_mcp_server.tool_repository',
