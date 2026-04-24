@@ -7,7 +7,7 @@ use KLP\KlpMcpServer\Transports\SseAdapters\RedisAdapter;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterException;
 use KLP\KlpMcpServer\Transports\SseAdapters\SseAdapterFactory;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 #[Small]
 class SseAdapterFactoryTest extends TestCase
 {
-    private Redis|MockObject $redisMock;
+    private Redis|Stub $redisMock;
 
     protected function setUp(): void
     {
@@ -45,13 +45,13 @@ class SseAdapterFactoryTest extends TestCase
                 }
             PHPUNIT_EVAL);
         }
-        $this->redisMock = $this->createMock(Redis::class);
+        $this->redisMock = $this->createStub(Redis::class);
     }
 
     public function test_create_returns_redis_adapter_when_config_is_redis(): void
     {
         $container = $this->createMock(ContainerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
 
         $invocations = [
             'klp_mcp_server.sse_adapter',
@@ -82,8 +82,8 @@ class SseAdapterFactoryTest extends TestCase
     public function test_create_returns_cache_pool_adapter_when_config_is_cache(): void
     {
         $container = $this->createMock(ContainerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-        $cachePool = $this->createMock(CacheItemPoolInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
+        $cachePool = $this->createStub(CacheItemPoolInterface::class);
 
         $invocations = [
             'klp_mcp_server.sse_adapter',
