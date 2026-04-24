@@ -8,14 +8,16 @@ use KLP\KlpMcpServer\Protocol\MCPProtocol;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryInterface;
 use KLP\KlpMcpServer\Transports\SseTransportInterface;
 use KLP\KlpMcpServer\Transports\StreamableHttpTransportInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 #[Small]
 class MCPProtocolTest extends TestCase
 {
-    private TransportFactoryInterface|MockObject $mockTransportFactory;
+    private TransportFactoryInterface|Stub $mockTransportFactory;
 
     private SseTransportInterface|MockObject $mockTransport;
 
@@ -25,7 +27,7 @@ class MCPProtocolTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
+        $this->mockTransportFactory = $this->createStub(TransportFactoryInterface::class);
         $this->mockTransport = $this->createMock(SseTransportInterface::class);
         $this->mockTransportFactory->method('create')->willReturn($this->mockTransport);
         $this->mockTransportFactory->method('get')->willReturn($this->mockTransport);
@@ -68,6 +70,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test that initTransport sets connected to true for StreamableHttpTransport
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function test_init_transport_sets_connected_for_streamable_http(): void
     {
         $mockTransportFactory = $this->createMock(TransportFactoryInterface::class);
@@ -253,8 +256,8 @@ class MCPProtocolTest extends TestCase
         $validRequestMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'value1']];
 
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
-        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'value1'])->willReturn(['response' => 'ok']);
+        $mockHandler->expects($this->once())->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('execute')->with('test.method', $clientId, 1, ['param1' => 'value1'])->willReturn(['response' => 'ok']);
         $this->mcpProtocol->registerRequestHandler($mockHandler);
 
         $this->mockTransport
@@ -283,7 +286,7 @@ class MCPProtocolTest extends TestCase
         $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
 
         $mockHandler = $this->createMock(NotificationHandler::class);
-        $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('isHandle')->with('notify.method')->willReturn(true);
         $mockHandler->expects($this->once())->method('execute')->with(['param1' => 'value1']);
         $this->mcpProtocol->registerNotificationHandler($mockHandler);
 
@@ -384,8 +387,8 @@ class MCPProtocolTest extends TestCase
         $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
 
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
-        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
+        $mockHandler->expects($this->once())->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new ToolParamsValidatorException('An error occurred.', ['Invalid params param1']));
 
         $this->mockTransport
@@ -413,8 +416,8 @@ class MCPProtocolTest extends TestCase
         $clientId = 'client_1';
         $invalidParamsMessage = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'test.method', 'params' => ['param1' => 'invalid']];
         $mockHandler = $this->createMock(\KLP\KlpMcpServer\Protocol\Handlers\RequestHandler::class);
-        $mockHandler->method('isHandle')->with('test.method')->willReturn(true);
-        $mockHandler->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
+        $mockHandler->expects($this->once())->method('isHandle')->with('test.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('execute')->with('test.method', $clientId, 1, ['param1' => 'invalid'])
             ->willThrowException(new \Exception('An error occurred.'));
 
         $this->mockTransport
@@ -442,7 +445,7 @@ class MCPProtocolTest extends TestCase
         $validNotificationMessage = ['jsonrpc' => '2.0', 'method' => 'notify.method', 'params' => ['param1' => 'value1']];
 
         $mockHandler = $this->createMock(NotificationHandler::class);
-        $mockHandler->method('isHandle')->with('notify.method')->willReturn(true);
+        $mockHandler->expects($this->once())->method('isHandle')->with('notify.method')->willReturn(true);
         $mockHandler->expects($this->once())->method('execute')
             ->with(['param1' => 'value1'])
             ->willThrowException(new \Exception('An error occurred.'));
@@ -483,6 +486,7 @@ class MCPProtocolTest extends TestCase
     /**
      * Test getClientId method returns a valid client ID from the transport layer
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function test_get_client_id_returns_valid_client_id(): void
     {
         $clientId = $this->mcpProtocol->getClientId();
@@ -499,6 +503,7 @@ class MCPProtocolTest extends TestCase
         $decodedMessages = [json_decode($messages[0]), json_decode($messages[1])];
 
         $this->mockTransport
+            ->expects($this->once())
             ->method('receive')
             ->willReturn($messages);
 
@@ -516,6 +521,7 @@ class MCPProtocolTest extends TestCase
         $decodedMessages = [json_decode($messages[0]), json_decode($messages[2])];
 
         $this->mockTransport
+            ->expects($this->once())
             ->method('receive')
             ->willReturn($messages);
 
