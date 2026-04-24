@@ -6,20 +6,20 @@ use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
 use KLP\KlpMcpServer\Services\PromptService\PromptProviderInterface;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 #[Small]
 class PromptProviderTest extends TestCase
 {
-    private ContainerInterface|MockObject $container;
+    private ContainerInterface|Stub $container;
 
     private PromptRepository $promptRepository;
 
     protected function setUp(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = $this->createStub(ContainerInterface::class);
         $this->promptRepository = new PromptRepository($this->container);
     }
 
@@ -31,8 +31,8 @@ class PromptProviderTest extends TestCase
      */
     public function test_register_provider_registers_prompts_from_provider(): void
     {
-        $prompt1 = $this->createMock(PromptInterface::class);
-        $prompt2 = $this->createMock(PromptInterface::class);
+        $prompt1 = $this->createStub(PromptInterface::class);
+        $prompt2 = $this->createStub(PromptInterface::class);
 
         $prompt1->method('getName')->willReturn('provider_prompt1');
         $prompt2->method('getName')->willReturn('provider_prompt2');
@@ -59,8 +59,8 @@ class PromptProviderTest extends TestCase
      */
     public function test_register_provider_with_prompt_class_names(): void
     {
-        $prompt1 = $this->createMock(PromptInterface::class);
-        $prompt2 = $this->createMock(PromptInterface::class);
+        $prompt1 = $this->createStub(PromptInterface::class);
+        $prompt2 = $this->createStub(PromptInterface::class);
 
         $prompt1->method('getName')->willReturn('prompt_from_class1');
         $prompt2->method('getName')->willReturn('prompt_from_class2');
@@ -94,8 +94,8 @@ class PromptProviderTest extends TestCase
      */
     public function test_register_provider_works_alongside_other_registration_methods(): void
     {
-        $directPrompt = $this->createMock(PromptInterface::class);
-        $providerPrompt = $this->createMock(PromptInterface::class);
+        $directPrompt = $this->createStub(PromptInterface::class);
+        $providerPrompt = $this->createStub(PromptInterface::class);
 
         $directPrompt->method('getName')->willReturn('direct_prompt');
         $providerPrompt->method('getName')->willReturn('provider_prompt');
@@ -104,7 +104,7 @@ class PromptProviderTest extends TestCase
         $this->promptRepository->register($directPrompt);
 
         // Register via provider
-        $provider = $this->createMock(PromptProviderInterface::class);
+        $provider = $this->createStub(PromptProviderInterface::class);
         $provider->method('getPrompts')->willReturn([$providerPrompt]);
         $this->promptRepository->registerProvider($provider);
 
