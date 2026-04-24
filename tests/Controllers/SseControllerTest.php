@@ -5,9 +5,8 @@ namespace KLP\KlpMcpServer\Tests\Controllers;
 use KLP\KlpMcpServer\Controllers\SseController;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Small]
@@ -15,11 +14,11 @@ class SseControllerTest extends TestCase
 {
     private SseController $controller;
 
-    private MCPServerInterface|MockObject $mockServer;
+    private MCPServerInterface|Stub $mockServer;
 
     protected function setUp(): void
     {
-        $this->mockServer = $this->createMock(MCPServerInterface::class);
+        $this->mockServer = $this->createStub(MCPServerInterface::class);
         $this->controller = new SseController($this->mockServer);
     }
 
@@ -37,13 +36,14 @@ class SseControllerTest extends TestCase
 
     public function test_handle_executes_server_connect(): void
     {
-        $this->mockServer
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $controller = new SseController($mockServer);
+
+        $mockServer
             ->expects($this->once())
             ->method('connect');
 
-        $request = $this->createMock(Request::class);
-
-        $response = $this->controller->handle($request);
+        $response = $controller->handle();
 
         // Ensure the response stream executes the connect callback
         ob_start();
