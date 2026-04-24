@@ -7,7 +7,7 @@ use KLP\KlpMcpServer\Protocol\MCPProtocolInterface;
 use KLP\KlpMcpServer\Server\MCPServerInterface;
 use KLP\KlpMcpServer\Transports\Exception\StreamableHttpTransportException;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,22 +18,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Small]
 class StreamableHttpControllerTest extends TestCase
 {
-    private MCPServerInterface|MockObject $mockServer;
+    private MCPServerInterface|Stub $mockServer;
 
-    private LoggerInterface|MockObject $mockLogger;
+    private LoggerInterface|Stub $mockLogger;
 
     private StreamableHttpController $controller;
 
     protected function setUp(): void
     {
-        $this->mockServer = $this->createMock(MCPServerInterface::class);
-        $this->mockLogger = $this->createMock(LoggerInterface::class);
+        $this->mockServer = $this->createStub(MCPServerInterface::class);
+        $this->mockLogger = $this->createStub(LoggerInterface::class);
         $this->controller = new StreamableHttpController($this->mockServer, $this->mockLogger);
     }
 
     public function test_handle_with_get_request(): void
     {
-        $request = $this->createMock(Request::class);
+        $request = $this->createStub(Request::class);
         $request->method('getMethod')->willReturn(Request::METHOD_GET);
 
         $response = $this->controller->handle($request);
@@ -68,16 +68,19 @@ class StreamableHttpControllerTest extends TestCase
         $request->headers->set('mcp-session-id', $clientId);
 
         // Set up server mock expectations for postHandle
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
-        $this->mockServer->expects($this->once())
+        $mockServer->expects($this->once())
             ->method('requestMessage')
             ->with($clientId, $message);
 
+        $controller = new StreamableHttpController($mockServer, $this->mockLogger);
+
         // Call handle() which should internally call postHandle()
-        $response = $this->controller->handle($request);
+        $response = $controller->handle($request);
 
         // Verify the response is what we expect from postHandle()
         $this->assertInstanceOf(StreamedResponse::class, $response);
@@ -125,23 +128,27 @@ class StreamableHttpControllerTest extends TestCase
         $request->headers->set('mcp-session-id', $clientId);
 
         // Set up server mock expectations
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
-        $this->mockServer->expects($this->never())
+        $mockServer->expects($this->never())
             ->method('getClientId');
 
         // We can't use with() here because the actual message might be decoded differently
-        $this->mockServer->expects($this->once())
+        $mockServer->expects($this->once())
             ->method('requestMessage');
 
         // Set up logger mock expectations - we can't be too specific about the parameters
-        $this->mockLogger->expects($this->atLeastOnce())
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $mockLogger->expects($this->atLeastOnce())
             ->method('debug');
 
+        $controller = new StreamableHttpController($mockServer, $mockLogger);
+
         // Call the method and verify response
-        $response = $this->controller->postHandle($request);
+        $response = $controller->postHandle($request);
 
         $this->assertInstanceOf(StreamedResponse::class, $response);
         $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
@@ -176,18 +183,19 @@ class StreamableHttpControllerTest extends TestCase
         $request->headers->set('mcp-protocol-version', MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
         // Set up server mock expectations
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_SECOND_VERSION);
 
-        $this->mockServer->expects($this->never())
+        $mockServer->expects($this->never())
             ->method('getClientId');
 
         $invocations = [
             ['test-client-id', $messages[0]],
             ['test-client-id', $messages[1]],
         ];
-        $this->mockServer->expects($matcher = $this->exactly(count($invocations)))
+        $mockServer->expects($matcher = $this->exactly(count($invocations)))
             ->method('requestMessage')
             ->with($this->callback(function (...$args) use ($invocations, $matcher) {
                 $this->assertEquals($args, $invocations[$matcher->numberOfInvocations() - 1]);
@@ -195,16 +203,19 @@ class StreamableHttpControllerTest extends TestCase
                 return true;
             }));
 
-        $this->mockServer->expects($this->never())
+        $mockServer->expects($this->never())
             ->method('connect');
 
         // Set up logger mock expectations
-        $this->mockLogger->expects($this->once())
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $mockLogger->expects($this->once())
             ->method('debug')
             ->with($this->stringContains('Received message from clientId:'.$clientId), ['message' => $messages]);
 
+        $controller = new StreamableHttpController($mockServer, $mockLogger);
+
         // Call the method and verify response
-        $response = $this->controller->postHandle($request);
+        $response = $controller->postHandle($request);
 
         $this->assertInstanceOf(StreamedResponse::class, $response);
         $headers = $response->headers;
@@ -240,15 +251,18 @@ class StreamableHttpControllerTest extends TestCase
         $request->headers->set('mcp-protocol-version', MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
         // Set up server mock expectations
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
-        $this->mockServer->expects($this->never())
+        $mockServer->expects($this->never())
             ->method('getClientId');
 
+        $controller = new StreamableHttpController($mockServer, $this->mockLogger);
+
         // For protocol version 3, batch requests should return an error
-        $response = $this->controller->postHandle($request);
+        $response = $controller->postHandle($request);
 
         // Assert
         $this->assertInstanceOf(JsonResponse::class, $response);
@@ -278,20 +292,23 @@ class StreamableHttpControllerTest extends TestCase
         );
 
         // Set up server mock expectations
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
-        $this->mockServer->expects($this->once())
+        $mockServer->expects($this->once())
             ->method('getClientId')
             ->willReturn($clientId);
 
-        $this->mockServer->expects($this->once())
+        $mockServer->expects($this->once())
             ->method('requestMessage')
             ->with($clientId, $message);
 
+        $controller = new StreamableHttpController($mockServer, $this->mockLogger);
+
         // Call the method and verify response
-        $response = $this->controller->postHandle($request);
+        $response = $controller->postHandle($request);
 
         $this->assertInstanceOf(StreamedResponse::class, $response);
         $this->assertEquals('text/event-stream', $response->headers->get('Content-Type'));
@@ -346,17 +363,20 @@ class StreamableHttpControllerTest extends TestCase
         $request->headers->set('mcp-session-id', $clientId);
 
         // Set up server mock to throw an exception
-        $this->mockServer->expects($this->once())
+        $mockServer = $this->createMock(MCPServerInterface::class);
+        $mockServer->expects($this->once())
             ->method('setProtocolVersion')
             ->with(MCPProtocolInterface::PROTOCOL_THIRD_VERSION);
 
-        $this->mockServer->expects($this->once())
+        $mockServer->expects($this->once())
             ->method('requestMessage')
             ->with($clientId, $message)
             ->willThrowException(new StreamableHttpTransportException('Test exception'));
 
+        $controller = new StreamableHttpController($mockServer, $this->mockLogger);
+
         // Call the method and verify response
-        $response = $this->controller->postHandle($request);
+        $response = $controller->postHandle($request);
 
         // The response is still a StreamedResponse because exceptions in callbacks are not caught
         $this->assertInstanceOf(StreamedResponse::class, $response);
