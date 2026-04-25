@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Command;
 use KLP\KlpMcpServer\Command\MakeMcpToolCommand;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
@@ -19,7 +20,7 @@ klp_mcp_server:
         - KLP\KlpMcpServer\Services\ToolService\Examples\HelloWorldTool
 YAML;
 
-    private Kernel|MockObject $kernel;
+    private Kernel|Stub $kernel;
 
     private Filesystem|MockObject $filesystem;
 
@@ -27,7 +28,7 @@ YAML;
 
     protected function setUp(): void
     {
-        $this->kernel = $this->createMock(Kernel::class);
+        $this->kernel = $this->createStub(Kernel::class);
         $this->filesystem = $this->createMock(Filesystem::class);
         $this->command = new MakeMcpToolCommand($this->kernel, $this->filesystem);
     }
@@ -195,6 +196,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_4_space_indentation_and_existing_tools(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
     tools:
@@ -216,6 +219,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_2_space_indentation_and_existing_tools(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
   tools:
@@ -236,6 +241,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_4_space_indentation_and_no_existing_tools(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
     tools: []
@@ -254,6 +261,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_2_space_indentation_and_no_existing_tools(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
   tools: []
