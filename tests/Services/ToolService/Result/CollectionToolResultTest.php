@@ -75,7 +75,7 @@ class CollectionToolResultTest extends TestCase
         $textResult = new TextToolResult('Test text');
 
         // Mock image result
-        $imageResult = $this->createMock(ToolResultInterface::class);
+        $imageResult = $this->createStub(ToolResultInterface::class);
         $imageResult->method('getSanitizedResult')->willReturn([
             'type' => 'image',
             'data' => 'base64imagedata',
@@ -83,7 +83,7 @@ class CollectionToolResultTest extends TestCase
         ]);
 
         // Mock audio result
-        $audioResult = $this->createMock(ToolResultInterface::class);
+        $audioResult = $this->createStub(ToolResultInterface::class);
         $audioResult->method('getSanitizedResult')->willReturn([
             'type' => 'audio',
             'data' => 'base64audiodata',
