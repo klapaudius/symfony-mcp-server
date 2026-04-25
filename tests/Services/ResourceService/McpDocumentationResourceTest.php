@@ -22,7 +22,7 @@ class McpDocumentationResourceTest extends TestCase
         $this->baseDir = '/tmp/mcp-docs';
 
         // Create mock kernel
-        $this->kernel = $this->createMock(KernelInterface::class);
+        $this->kernel = $this->createStub(KernelInterface::class);
         $this->kernel->method('getProjectDir')
             ->willReturn('/tmp');
 
