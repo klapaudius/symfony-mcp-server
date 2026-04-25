@@ -9,7 +9,6 @@ use KLP\KlpMcpServer\Services\ToolService\Result\TextToolResult;
 use KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface;
 use KLP\KlpMcpServer\Services\ToolService\StreamableToolInterface;
 use KLP\KlpMcpServer\Services\ToolService\ToolRepository;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -53,12 +52,24 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that an exception is thrown when no tool is provided
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_tool_instance_no_tool_provided_and_no_tool_configured_throws_exception(): void
     {
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
+            ->with('tool')
             ->willReturn(null);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->toolRepositoryMock
+            ->method('getTools')
+            ->willReturn([]);
+
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('No MCP tools are configured. Add tools in config/package/klp-mcp-server.yaml or create a ToolProvider.');
 
         $this->expectException(TestMcpToolCommandException::class);
         $this->expectExceptionMessage('No tool specified.');
@@ -77,9 +88,14 @@ class TestMcpToolCommandTest extends TestCase
             ->willReturn([
                 'hello-world' => $helloWorldTool,
             ]);
-        $this->inputMock
+
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
+            ->with('tool')
             ->willReturn(null);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
@@ -92,7 +108,6 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that a tool instance is returned when a valid class name is provided
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_tool_instance_valid_class_name_returns_tool_instance(): void
     {
         $toolMock = $this->createStub(StreamableToolInterface::class);
@@ -115,6 +130,8 @@ class TestMcpToolCommandTest extends TestCase
             ->expects($this->never())
             ->method('getParameter');
 
+        $this->ioMock->expects($this->never())->method($this->anything());
+
         $command = new TestMcpToolCommand($this->toolRepositoryMock, $containerMock);
         $command->setApplication($this->createStub(Application::class));
         $this->injectPrivateProperty($command, 'input', $inputMock);
@@ -126,7 +143,6 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that a tool instance is returned when a matching configured tool is found
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_tool_instance_matching_configured_tool_returns_tool_instance(): void
     {
         $identifier = 'custom';
@@ -134,10 +150,15 @@ class TestMcpToolCommandTest extends TestCase
 
         $toolMock->method('getName')->willReturn('custom');
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
             ->with('tool')
             ->willReturn($identifier);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $this->toolRepositoryMock
             ->method('getTools')
@@ -151,13 +172,15 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that an exception is thrown when the tool class does not implement StreamableToolInterface
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_tool_instance_invalid_tool_class_throws_exception(): void
     {
         $invalidTool = new \stdClass;
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
+            ->with('tool')
             ->willReturn(HelloWorldTool::class);
 
         $containerMock = $this->createMock(ContainerInterface::class);
@@ -170,9 +193,11 @@ class TestMcpToolCommandTest extends TestCase
             ->expects($this->never())
             ->method('getParameter');
 
+        $this->ioMock->expects($this->never())->method($this->anything());
+
         $command = new TestMcpToolCommand($this->toolRepositoryMock, $containerMock);
         $command->setApplication($this->createStub(Application::class));
-        $this->injectPrivateProperty($command, 'input', $this->inputMock);
+        $this->injectPrivateProperty($command, 'input', $inputMock);
         $this->injectPrivateProperty($command, 'io', $this->ioMock);
 
         $this->expectException(TestMcpToolCommandException::class);
@@ -184,17 +209,21 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that an exception is thrown when the tool is not found
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_tool_instance_tool_not_found_throws_exception(): void
     {
         $identifier = 'nonexistent_tool';
         $validToolMock = $this->createStub(StreamableToolInterface::class);
         $validToolMock->method('getName')->willReturn('Valid Tool');
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
             ->with('tool')
             ->willReturn($identifier);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $this->toolRepositoryMock
             ->method('getTools')
@@ -373,15 +402,19 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that valid JSON input from the --input option is correctly parsed and returned as an array.
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_input_data_from_option_valid_json_returns_array(): void
     {
         $validJson = '{"key": "value", "number": 42}';
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn($validJson);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $result = $this->invokePrivateMethod('getInputDataFromOption');
 
@@ -399,10 +432,13 @@ class TestMcpToolCommandTest extends TestCase
     {
         $invalidJson = '{"key": "value"';
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn($invalidJson);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
@@ -417,12 +453,17 @@ class TestMcpToolCommandTest extends TestCase
     /**
      * Tests that when the --input option is not provided, the method returns null.
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_get_input_data_from_option_empty_input_option_returns_null(): void
     {
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
+            ->with('input')
             ->willReturn(null);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $result = $this->invokePrivateMethod('getInputDataFromOption');
 
@@ -481,10 +522,13 @@ class TestMcpToolCommandTest extends TestCase
             ->method('getTools')
             ->willReturn(['hello-world' => $toolMock]);
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
             ->with('tool')
             ->willReturn(HelloWorldTool::class);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
@@ -511,10 +555,13 @@ class TestMcpToolCommandTest extends TestCase
             ->method('getTools')
             ->willReturn(['hello-world' => $toolMock]);
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getArgument')
             ->with('tool')
             ->willReturn(HelloWorldTool::class);
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
@@ -756,9 +803,13 @@ class TestMcpToolCommandTest extends TestCase
         $this->assertEquals(['metadata' => null], $result);
     }
 
-    #[AllowMockObjectsWithoutExpectations]
     public function test_ask_for_input_data_handles_empty_schema(): void
     {
+        $this->ioMock
+            ->expects($this->once())
+            ->method('warning')
+            ->with('The getInputSchema() method should return an instance of StructuredSchema. Using array is deprecated and will be removed in a future version.');
+
         $schema = [];
         $result = $this->command->askForInputData($schema);
 
@@ -1304,10 +1355,13 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_get_input_data_from_option_with_exception(): void
     {
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn('{"invalid": json}');
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
