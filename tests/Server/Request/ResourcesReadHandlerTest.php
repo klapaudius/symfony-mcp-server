@@ -6,6 +6,7 @@ use KLP\KlpMcpServer\Server\Request\ResourcesReadHandler;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceInterface;
 use KLP\KlpMcpServer\Services\ResourceService\ResourceRepository;
 use PHPUnit\Framework\Attributes\Small;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,13 +17,13 @@ use PHPUnit\Framework\TestCase;
 #[Small]
 class ResourcesReadHandlerTest extends TestCase
 {
-    private ResourceRepository $resourceRepository;
+    private ResourceRepository|Stub $resourceRepository;
 
     private ResourcesReadHandler $handler;
 
     protected function setUp(): void
     {
-        $this->resourceRepository = $this->createMock(ResourceRepository::class);
+        $this->resourceRepository = $this->createStub(ResourceRepository::class);
         $this->handler = new ResourcesReadHandler($this->resourceRepository, null);
     }
 
@@ -32,19 +33,22 @@ class ResourcesReadHandlerTest extends TestCase
      */
     public function test_execute_resource_found_with_text_mime_type(): void
     {
-        $resourceMock = $this->createMock(ResourceInterface::class);
+        $resourceMock = $this->createStub(ResourceInterface::class);
         $resourceMock->method('getUri')->willReturn('test-uri');
         $resourceMock->method('getMimeType')->willReturn('text/plain');
         $resourceMock->method('getData')->willReturn('Sample text data');
         $resourceMock->method('getName')->willReturn('Sample text name');
         $resourceMock->method('getDescription')->willReturn('Sample text description');
 
-        $this->resourceRepository
+        $resourceRepository = $this->createMock(ResourceRepository::class);
+        $resourceRepository
+            ->expects($this->once())
             ->method('getResource')
             ->with('test-uri')
             ->willReturn($resourceMock);
 
-        $result = $this->handler->execute('resources/read', 'test-client', 123, ['uri' => 'test-uri']);
+        $result = (new ResourcesReadHandler($resourceRepository, null))
+            ->execute('resources/read', 'test-client', 123, ['uri' => 'test-uri']);
 
         $this->assertEquals([
             'contents' => [
@@ -65,19 +69,22 @@ class ResourcesReadHandlerTest extends TestCase
      */
     public function test_execute_resource_found_with_non_text_mime_type(): void
     {
-        $resourceMock = $this->createMock(ResourceInterface::class);
+        $resourceMock = $this->createStub(ResourceInterface::class);
         $resourceMock->method('getUri')->willReturn('image-uri');
         $resourceMock->method('getMimeType')->willReturn('image/png');
         $resourceMock->method('getData')->willReturn('binarydata123');
         $resourceMock->method('getName')->willReturn('image name');
         $resourceMock->method('getDescription')->willReturn('image description');
 
-        $this->resourceRepository
+        $resourceRepository = $this->createMock(ResourceRepository::class);
+        $resourceRepository
+            ->expects($this->once())
             ->method('getResource')
             ->with('image-uri')
             ->willReturn($resourceMock);
 
-        $result = $this->handler->execute('resources/read', 'test-client', 456, ['uri' => 'image-uri']);
+        $result = (new ResourcesReadHandler($resourceRepository, null))
+            ->execute('resources/read', 'test-client', 456, ['uri' => 'image-uri']);
 
         $this->assertEquals([
             'contents' => [
@@ -97,12 +104,15 @@ class ResourcesReadHandlerTest extends TestCase
      */
     public function test_execute_resource_not_found(): void
     {
-        $this->resourceRepository
+        $resourceRepository = $this->createMock(ResourceRepository::class);
+        $resourceRepository
+            ->expects($this->once())
             ->method('getResource')
             ->with('unknown-uri')
             ->willReturn(null);
 
-        $result = $this->handler->execute('resources/read', 'test-client', 789, ['uri' => 'unknown-uri']);
+        $result = (new ResourcesReadHandler($resourceRepository, null))
+            ->execute('resources/read', 'test-client', 789, ['uri' => 'unknown-uri']);
 
         $this->assertEquals([], $result);
     }
