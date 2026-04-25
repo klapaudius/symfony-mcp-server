@@ -11,6 +11,7 @@ use KLP\KlpMcpServer\Services\PromptService\PromptInterface;
 use KLP\KlpMcpServer\Services\PromptService\PromptRepository;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -23,23 +24,23 @@ class TestMcpPromptCommandTest extends TestCase
 {
     private TestMcpPromptCommand $command;
 
-    private PromptRepository|MockObject $promptRepositoryMock;
+    private PromptRepository|Stub $promptRepositoryMock;
 
-    private InputInterface|MockObject $inputMock;
+    private InputInterface|Stub $inputMock;
 
-    private OutputInterface|MockObject $outputMock;
+    private OutputInterface|Stub $outputMock;
 
     private SymfonyStyle|MockObject $ioMock;
 
     protected function setUp(): void
     {
-        $this->promptRepositoryMock = $this->createMock(PromptRepository::class);
-        $this->inputMock = $this->createMock(InputInterface::class);
-        $this->outputMock = $this->createMock(OutputInterface::class);
+        $this->promptRepositoryMock = $this->createStub(PromptRepository::class);
+        $this->inputMock = $this->createStub(InputInterface::class);
+        $this->outputMock = $this->createStub(OutputInterface::class);
         $this->ioMock = $this->createMock(SymfonyStyle::class);
 
         $this->command = new TestMcpPromptCommand($this->promptRepositoryMock);
-        $this->command->setApplication($this->createMock(Application::class));
+        $this->command->setApplication($this->createStub(Application::class));
         $this->injectPrivateProperty($this->command, 'input', $this->inputMock);
         $this->injectPrivateProperty($this->command, 'io', $this->ioMock);
     }
@@ -51,7 +52,6 @@ class TestMcpPromptCommandTest extends TestCase
     {
         $this->inputMock
             ->method('getArgument')
-            ->with('prompt')
             ->willReturn(null);
 
         $this->promptRepositoryMock
@@ -74,22 +74,31 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_get_prompt_instance_valid_identifier_returns_prompt_instance(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $identifier = 'test-prompt';
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
             ->expects($this->once())
             ->method('getArgument')
             ->with('prompt')
             ->willReturn($identifier);
 
-        $this->promptRepositoryMock
+        $promptRepositoryMock = $this->createMock(PromptRepository::class);
+        $promptRepositoryMock
             ->expects($this->once())
             ->method('getPrompt')
             ->with($identifier)
             ->willReturn($promptMock);
 
-        $this->assertSame($promptMock, $this->command->getPromptInstance());
+        $this->ioMock->expects($this->never())->method($this->anything());
+
+        $command = new TestMcpPromptCommand($promptRepositoryMock);
+        $command->setApplication($this->createStub(Application::class));
+        $this->injectPrivateProperty($command, 'input', $inputMock);
+        $this->injectPrivateProperty($command, 'io', $this->ioMock);
+
+        $this->assertSame($promptMock, $command->getPromptInstance());
     }
 
     /**
@@ -101,13 +110,13 @@ class TestMcpPromptCommandTest extends TestCase
 
         $this->inputMock
             ->method('getArgument')
-            ->with('prompt')
             ->willReturn($identifier);
 
         $this->promptRepositoryMock
             ->method('getPrompt')
-            ->with($identifier)
             ->willReturn(null);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $this->expectException(TestMcpPromptCommandException::class);
         $this->expectExceptionMessage("Prompt 'nonexistent-prompt' not found.");
@@ -120,7 +129,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_schema_for_prompt_with_no_arguments(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('SimplePrompt');
         $promptMock->method('getDescription')->willReturn('A simple prompt.');
         $promptMock->method('getArguments')->willReturn([]);
@@ -153,7 +162,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_schema_for_prompt_with_arguments(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('ComplexPrompt');
         $promptMock->method('getDescription')->willReturn('A complex prompt.');
         $promptMock->method('getArguments')->willReturn([
@@ -206,10 +215,16 @@ class TestMcpPromptCommandTest extends TestCase
     {
         $validJson = '{"topic": "AI", "style": "formal"}';
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn($validJson);
+
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $result = $this->command->getArgumentsFromOption();
 
@@ -227,10 +242,14 @@ class TestMcpPromptCommandTest extends TestCase
     {
         $invalidJson = '{"topic": "AI"';
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn($invalidJson);
+
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->ioMock
             ->expects($this->once())
@@ -247,10 +266,16 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_get_arguments_from_option_empty_option_returns_null(): void
     {
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
+            ->expects($this->once())
             ->method('getOption')
             ->with('input')
             ->willReturn(null);
+
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
+
+        $this->ioMock->expects($this->never())->method($this->anything());
 
         $result = $this->command->getArgumentsFromOption();
 
@@ -262,6 +287,8 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_ask_for_arguments_empty_schema_returns_empty_array(): void
     {
+        $this->ioMock->expects($this->never())->method($this->anything());
+
         $result = $this->command->askForArguments([]);
 
         $this->assertEquals([], $result);
@@ -335,11 +362,14 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_list_all_prompts_when_no_prompts_configured_displays_warning(): void
     {
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
             ->expects($this->once())
             ->method('getOption')
             ->with('list')
             ->willReturn(true);
+
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->promptRepositoryMock
             ->method('getPrompts')
@@ -350,7 +380,7 @@ class TestMcpPromptCommandTest extends TestCase
             ->method('warning')
             ->with('No MCP prompts are configured. Add prompts in config/packages/klp_mcp_server.yaml or create a PromptProvider.');
 
-        $result = $this->command->execute($this->inputMock, $this->outputMock);
+        $result = $this->command->execute($inputMock, $this->outputMock);
 
         $this->assertEquals(Command::SUCCESS, $result);
     }
@@ -360,21 +390,24 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_list_all_prompts_displays_table(): void
     {
-        $prompt1Mock = $this->createMock(PromptInterface::class);
+        $prompt1Mock = $this->createStub(PromptInterface::class);
         $prompt1Mock->method('getName')->willReturn('greeting');
         $prompt1Mock->method('getDescription')->willReturn('A greeting prompt that says hello to the user with their name');
         $prompt1Mock->method('getArguments')->willReturn([['name' => 'user_name', 'required' => true]]);
 
-        $prompt2Mock = $this->createMock(PromptInterface::class);
+        $prompt2Mock = $this->createStub(PromptInterface::class);
         $prompt2Mock->method('getName')->willReturn('summary');
         $prompt2Mock->method('getDescription')->willReturn('Summarizes a text');
         $prompt2Mock->method('getArguments')->willReturn([]);
 
-        $this->inputMock
+        $inputMock = $this->createMock(InputInterface::class);
+        $inputMock
             ->expects($this->once())
             ->method('getOption')
             ->with('list')
             ->willReturn(true);
+
+        $this->injectPrivateProperty($this->command, 'input', $inputMock);
 
         $this->promptRepositoryMock
             ->method('getPrompts')
@@ -414,7 +447,7 @@ class TestMcpPromptCommandTest extends TestCase
                 '    php bin/console mcp:test-prompt [prompt_name] --input=\'{"name":"value"}\'',
             ]);
 
-        $result = $this->command->execute($this->inputMock, $this->outputMock);
+        $result = $this->command->execute($inputMock, $this->outputMock);
 
         $this->assertEquals(Command::SUCCESS, $result);
     }
@@ -443,7 +476,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_ask_for_prompt_with_selection(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('test-prompt');
 
         $this->promptRepositoryMock
@@ -466,7 +499,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_result_with_text_messages(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $arguments = ['topic' => 'AI'];
         $messages = [
             [
@@ -529,7 +562,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_result_with_invalid_role(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $arguments = [];
         $messages = [
             [
@@ -555,7 +588,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_result_with_image_message(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $arguments = [];
         $messages = [
             [
@@ -598,7 +631,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_result_with_resource_message(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $arguments = [];
         $messages = [
             [
@@ -644,7 +677,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_display_result_with_malformed_message(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $arguments = [];
         $messages = [
             [
@@ -681,7 +714,7 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_test_prompt_success(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('test-prompt');
         $promptMock->method('getDescription')->willReturn('Test prompt');
         $promptMock->method('getArguments')->willReturn([]);
@@ -692,10 +725,10 @@ class TestMcpPromptCommandTest extends TestCase
 
         $promptMock->method('getMessages')->willReturn($collectionMessage);
 
-        $this->inputMock->method('getArgument')->with('prompt')->willReturn('test-prompt');
+        $this->inputMock->method('getArgument')->willReturn('test-prompt');
         $this->inputMock->method('getOption')->willReturn(null);
 
-        $this->promptRepositoryMock->method('getPrompt')->with('test-prompt')->willReturn($promptMock);
+        $this->promptRepositoryMock->method('getPrompt')->willReturn($promptMock);
 
         $this->ioMock->expects($this->once())->method('success')->with('Prompt executed successfully!');
 
@@ -709,16 +742,16 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_test_prompt_execution_failure(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('test-prompt');
         $promptMock->method('getDescription')->willReturn('Test prompt');
         $promptMock->method('getArguments')->willReturn([]);
         $promptMock->method('getMessages')->willThrowException(new \RuntimeException('Execution error'));
 
-        $this->inputMock->method('getArgument')->with('prompt')->willReturn('test-prompt');
+        $this->inputMock->method('getArgument')->willReturn('test-prompt');
         $this->inputMock->method('getOption')->willReturn(null);
 
-        $this->promptRepositoryMock->method('getPrompt')->with('test-prompt')->willReturn($promptMock);
+        $this->promptRepositoryMock->method('getPrompt')->willReturn($promptMock);
 
         // Update expectations - displaySchema will be called first
         $textCallCount = 0;
@@ -758,19 +791,31 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_get_prompt_instance_asks_for_prompt_when_none_provided(): void
     {
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('interactive-prompt');
 
-        $this->inputMock->method('getArgument')->with('prompt')->willReturn(null);
+        $this->inputMock->method('getArgument')->willReturn(null);
 
         $this->promptRepositoryMock->method('getPrompts')->willReturn([$promptMock]);
-        $this->promptRepositoryMock->method('getPrompt')->with('interactive-prompt')->willReturn($promptMock);
+
+        $promptRepositoryMock = $this->createMock(PromptRepository::class);
+        $promptRepositoryMock->method('getPrompts')->willReturn([$promptMock]);
+        $promptRepositoryMock
+            ->expects($this->once())
+            ->method('getPrompt')
+            ->with('interactive-prompt')
+            ->willReturn($promptMock);
+
+        $command = new TestMcpPromptCommand($promptRepositoryMock);
+        $command->setApplication($this->createStub(Application::class));
+        $this->injectPrivateProperty($command, 'input', $this->inputMock);
+        $this->injectPrivateProperty($command, 'io', $this->ioMock);
 
         $this->ioMock->expects($this->once())->method('choice')
             ->with('Select a prompt to test', ['interactive-prompt ('.get_class($promptMock).')'])
             ->willReturn('interactive-prompt ('.get_class($promptMock).')');
 
-        $result = $this->command->getPromptInstance();
+        $result = $command->getPromptInstance();
 
         $this->assertSame($promptMock, $result);
     }
@@ -780,13 +825,13 @@ class TestMcpPromptCommandTest extends TestCase
      */
     public function test_test_prompt_with_invalid_arguments_from_option(): void
     {
-        $this->inputMock->method('getArgument')->with('prompt')->willReturn('test-prompt');
+        $this->inputMock->method('getArgument')->willReturn('test-prompt');
         $this->inputMock->method('getOption')->willReturnMap([
             ['list', false], // First call is for --list
             ['input', 'invalid-json'], // Second call is for --input
         ]);
 
-        $promptMock = $this->createMock(PromptInterface::class);
+        $promptMock = $this->createStub(PromptInterface::class);
         $promptMock->method('getName')->willReturn('test-prompt');
         $promptMock->method('getDescription')->willReturn('Test prompt');
         $promptMock->method('getArguments')->willReturn([
