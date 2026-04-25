@@ -5,6 +5,7 @@ namespace KLP\KlpMcpServer\Tests\Command;
 use KLP\KlpMcpServer\Command\MakeMcpPromptCommand;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
@@ -30,7 +31,7 @@ klp_mcp_server:
         - SomeTool
 YAML;
 
-    private Kernel|MockObject $kernel;
+    private Kernel|Stub $kernel;
 
     private Filesystem|MockObject $filesystem;
 
@@ -38,7 +39,7 @@ YAML;
 
     protected function setUp(): void
     {
-        $this->kernel = $this->createMock(Kernel::class);
+        $this->kernel = $this->createStub(Kernel::class);
         $this->filesystem = $this->createMock(Filesystem::class);
         $this->command = new MakeMcpPromptCommand($this->kernel, $this->filesystem);
     }
@@ -114,7 +115,7 @@ YAML;
         $promptPath = '/fake-path/src/MCP/Prompts/'.$promptName.'.php';
 
         $this->kernel->method('getProjectDir')->willReturn('/fake-path');
-        $this->filesystem->method('exists')->with($promptPath)->willReturn(true);
+        $this->filesystem->expects($this->once())->method('exists')->with($promptPath)->willReturn(true);
 
         $commandTester = new CommandTester($this->command);
         $commandTester->execute(['name' => $promptName]);
@@ -387,6 +388,8 @@ YAML;
      */
     public function test_get_class_name_variations(): void
     {
+        $this->filesystem->expects($this->atLeastOnce())->method('exists')->willReturn(true);
+
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('getClassName');
 
@@ -461,6 +464,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_4_space_indentation_and_existing_prompts(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
     prompts:
@@ -481,6 +486,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_2_space_indentation_and_existing_prompts(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
   prompts:
@@ -501,6 +508,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_4_space_indentation_and_no_existing_prompts(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
     prompts: []
@@ -519,6 +528,8 @@ YAML;
      */
     public function test_detect_yaml_indentation_with_2_space_indentation_and_no_existing_prompts(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $content = <<<'YAML'
 klp_mcp_server:
   prompts: []
@@ -537,6 +548,8 @@ YAML;
      */
     public function test_kebab_case_conversion(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('kebab');
 
@@ -561,6 +574,8 @@ YAML;
      */
     public function test_studly_case_conversion(): void
     {
+        $this->filesystem->expects($this->never())->method($this->anything());
+
         $reflection = new \ReflectionClass($this->command);
         $method = $reflection->getMethod('studly');
 
