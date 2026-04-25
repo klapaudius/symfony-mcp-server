@@ -9,7 +9,7 @@ use KLP\KlpMcpServer\Transports\SseTransport;
 use KLP\KlpMcpServer\Transports\StreamableHttpTransport;
 use KLP\KlpMcpServer\Transports\TransportInterface;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -17,19 +17,19 @@ use Symfony\Component\Routing\RouterInterface;
 #[Small]
 class TransportFactoryTest extends TestCase
 {
-    private RouterInterface|MockObject $router;
+    private RouterInterface|Stub $router;
 
-    private SseAdapterInterface|MockObject $adapter;
+    private SseAdapterInterface|Stub $adapter;
 
-    private LoggerInterface|MockObject $logger;
+    private LoggerInterface|Stub $logger;
 
     private TransportFactory $factory;
 
     protected function setUp(): void
     {
-        $this->router = $this->createMock(RouterInterface::class);
-        $this->adapter = $this->createMock(SseAdapterInterface::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->router = $this->createStub(RouterInterface::class);
+        $this->adapter = $this->createStub(SseAdapterInterface::class);
+        $this->logger = $this->createStub(LoggerInterface::class);
         $this->factory = new TransportFactory($this->router, $this->adapter, $this->logger);
     }
 
@@ -111,7 +111,6 @@ class TransportFactoryTest extends TestCase
         $versions = $this->factory->getSupportedVersions();
 
         // Assert
-        $this->assertIsArray($versions);
         $this->assertCount(3, $versions);
         $this->assertContains(MCPProtocolInterface::PROTOCOL_FIRST_VERSION, $versions);
         $this->assertContains(MCPProtocolInterface::PROTOCOL_SECOND_VERSION, $versions);
