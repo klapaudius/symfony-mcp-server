@@ -49,6 +49,8 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_execute_throws_exception_when_tool_name_is_missing(): void
     {
+        $this->toolRepository->expects($this->never())->method('getTool');
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->expectException(JsonRpcErrorException::class);
         $this->expectExceptionMessage('Tool name is required');
 
@@ -58,10 +60,12 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_throws_exception_when_tool_not_found(): void
     {
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('nonexistent-tool')
             ->willReturn(null);
 
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->expectException(JsonRpcErrorException::class);
         $this->expectExceptionMessage("Tool 'nonexistent-tool' not found");
 
@@ -77,10 +81,12 @@ class ToolsCallHandlerTest extends TestCase
         $toolMock->method('getInputSchema')->willReturn($realTool->getInputSchema());
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('VersionCheckTool')
             ->willReturn($toolMock);
 
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->expectException(ToolParamsValidatorException::class);
 
         $this->toolsCallHandler->execute('tools/call', 'client1', 3, ['name' => 'VersionCheckTool', 'arguments' => ['invalid' => 'data']]);
@@ -89,9 +95,12 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_returns_content_for_tools_call(): void
     {
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('HelloWorldTool')
             ->willReturn(new HelloWorldTool);
+
+        $this->progressNotifierRepository->expects($this->once())->method('unregisterToken')->with(null);
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 4, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);
 
@@ -108,9 +117,12 @@ class ToolsCallHandlerTest extends TestCase
     public function test_execute_returns_content_for_tools_call_alternative(): void
     {
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('HelloWorldTool')
             ->willReturn(new HelloWorldTool);
+
+        $this->progressNotifierRepository->expects($this->once())->method('unregisterToken')->with(null);
 
         $result = $this->toolsCallHandler->execute('tools/call', 'client1', 5, ['name' => 'HelloWorldTool', 'arguments' => ['name' => 'Success Message']]);
 
@@ -126,16 +138,22 @@ class ToolsCallHandlerTest extends TestCase
 
     public function test_is_handle_returns_true_for_tools_call(): void
     {
+        $this->toolRepository->expects($this->never())->method('getTool');
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->assertTrue($this->toolsCallHandler->isHandle('tools/call'));
     }
 
     public function test_is_handle_returns_false_for_tools_execute(): void
     {
+        $this->toolRepository->expects($this->never())->method('getTool');
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->assertFalse($this->toolsCallHandler->isHandle('tools/execute'));
     }
 
     public function test_is_handle_returns_false_for_invalid_method(): void
     {
+        $this->toolRepository->expects($this->never())->method('getTool');
+        $this->progressNotifierRepository->expects($this->never())->method('unregisterToken');
         $this->assertFalse($this->toolsCallHandler->isHandle('invalid/method'));
     }
 
@@ -154,6 +172,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($progressNotifier);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -197,6 +216,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -237,6 +257,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('non-streaming-tool')
             ->willReturn($tool);
@@ -275,6 +296,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn(new TextToolResult('Tool result'));
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('any-tool')
             ->willReturn($tool);
@@ -309,6 +331,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('test-tool')
             ->willReturn($tool);
@@ -350,6 +373,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('test-tool')
             ->willReturn($tool);
@@ -390,6 +414,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($imageResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('image-tool')
             ->willReturn($tool);
@@ -429,6 +454,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($audioResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('audio-tool')
             ->willReturn($tool);
@@ -471,6 +497,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($resourceResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('resource-tool')
             ->willReturn($tool);
@@ -539,6 +566,7 @@ class ToolsCallHandlerTest extends TestCase
         };
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('empty-args-tool')
             ->willReturn($tool);
@@ -570,6 +598,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn(new TextToolResult('Complex result'));
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('complex-tool')
             ->willReturn($tool);
@@ -611,6 +640,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($progressNotifier);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -646,6 +676,7 @@ class ToolsCallHandlerTest extends TestCase
         $streamingTool = new StreamingDataTool;
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('stream-data')
             ->willReturn($streamingTool);
@@ -691,6 +722,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($samplingClient);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('sampling-aware-tool')
             ->willReturn($samplingAwareTool);
@@ -733,6 +765,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setSamplingClient');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('sampling-aware-tool')
             ->willReturn($samplingAwareTool);
@@ -822,6 +855,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with('client1');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('combined-tool')
             ->willReturn($combinedTool);
@@ -874,6 +908,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setCurrentClientId');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('regular-tool')
             ->willReturn($regularTool);
@@ -923,6 +958,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($samplingClient);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('sampling-aware-tool')
             ->willReturn($samplingAwareTool);
@@ -969,6 +1005,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($collectionResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('collection-tool')
             ->willReturn($tool);
@@ -1010,6 +1047,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($progressNotifier);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('failing-tool')
             ->willReturn($streamingTool);
@@ -1086,6 +1124,7 @@ class ToolsCallHandlerTest extends TestCase
         };
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('deprecated-array-schema-tool')
             ->willReturn($tool);
@@ -1128,6 +1167,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willThrowException(new \Exception('Generic error occurred'));
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('exception-tool')
             ->willReturn($tool);
@@ -1157,6 +1197,7 @@ class ToolsCallHandlerTest extends TestCase
         ));
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('custom-exception-tool')
             ->willReturn($tool);
@@ -1186,6 +1227,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -1228,6 +1270,7 @@ class ToolsCallHandlerTest extends TestCase
             ->method('setProgressNotifier');
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -1272,6 +1315,7 @@ class ToolsCallHandlerTest extends TestCase
             ->with($progressNotifier);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('streaming-tool')
             ->willReturn($streamingTool);
@@ -1313,6 +1357,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($emptyCollection);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('empty-collection-tool')
             ->willReturn($tool);
@@ -1355,6 +1400,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($collection);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('mixed-collection-tool')
             ->willReturn($tool);
@@ -1401,6 +1447,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($structuredResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('structured-tool')
             ->willReturn($tool);
@@ -1442,6 +1489,7 @@ class ToolsCallHandlerTest extends TestCase
         $tool->method('execute')->willReturn($structuredResult);
 
         $this->toolRepository
+            ->expects($this->once())
             ->method('getTool')
             ->with('structured-tool')
             ->willReturn($tool);
