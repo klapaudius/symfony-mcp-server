@@ -86,7 +86,6 @@ class StreamingDataTool implements StreamableToolInterface
                     );
                 } catch (\Exception $e) {
                     // Continue processing even if progress notification fails
-                    error_log('Progress notification failed: '.$e->getMessage());
                 }
             }
         }
