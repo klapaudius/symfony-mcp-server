@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php }}-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer update --prefer-dist --no-progress
         env:
           COMPOSER_PLATFORM_PHP: ${{ matrix.php }}
 
