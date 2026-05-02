@@ -4,7 +4,6 @@ namespace KLP\KlpMcpServer\Tests\DependencyInjection\CompilerPass;
 
 use KLP\KlpMcpServer\DependencyInjection\CompilerPass\ToolsDefinitionCompilerPass;
 use PHPUnit\Framework\Attributes\Small;
-use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;

@@ -32,6 +32,8 @@ class SamplingClientTest extends TestCase
 
     private function setUpSamplingClient(): void
     {
+        $this->transport = $this->createStub(AbstractTransport::class);
+        $this->transport->method('getAdapter')->willReturn($this->adapter);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
         $this->transportFactory->method('create')->willReturn($this->transport);
@@ -449,6 +451,7 @@ class SamplingClientTest extends TestCase
 
     public function test_message_id_is_unique(): void
     {
+        $this->adapter = $this->createMock(SseAdapterInterface::class);
         $this->transport = $this->createMock(AbstractTransport::class);
         $this->transport->expects($this->exactly(2))->method('getAdapter')->willReturn($this->adapter);
         $this->transportFactory = $this->createMock(TransportFactoryInterface::class);
@@ -457,7 +460,11 @@ class SamplingClientTest extends TestCase
         $clientId = 'test-unique-id';
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $this->adapter->method('hasSamplingCapability')->willReturn(true);
+        $this->adapter
+            ->expects($this->exactly(2))
+            ->method('hasSamplingCapability')
+            ->with($clientId)
+            ->willReturn(true);
 
         $capturedIds = [];
         $messageCallback = null;

@@ -567,7 +567,7 @@ class SseTransportTest extends TestCase
         $loggerMock->expects($matcher = $this->exactly(2))
             ->method('error')
             ->with($this->callback(function ($arg) use (&$invocations, $matcher) {
-                $this->assertEquals($arg, $invocations[$matcher->numberOfInvocations() - 1]);
+                $this->assertEquals($invocations[$matcher->numberOfInvocations() - 1], $arg);
 
                 return true;
             }));
