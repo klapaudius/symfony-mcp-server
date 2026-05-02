@@ -19,6 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: xdebug
+          coverage: xdebug
+
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
 
@@ -27,27 +34,17 @@ jobs:
         uses: actions/cache@v5
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-8.2-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-8.2-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
-        env:
-          COMPOSER_PLATFORM_PHP: 8.2
-
-      # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-      # Docs: https://getcomposer.org/doc/articles/scripts.md
+        run: composer update --prefer-dist --no-progress
 
       - name: Run test suite
-        uses: php-actions/phpunit@v4
+        run: vendor/bin/phpunit --log-junit junit.xml --coverage-clover coverage.xml
         env:
           XDEBUG_MODE: coverage
-        with:
-          php_extensions: "xdebug"
-          coverage_clover: "coverage.xml"
-          args: --log-junit junit.xml
-          php_version: 8.2
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
