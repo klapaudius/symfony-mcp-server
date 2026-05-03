@@ -796,8 +796,6 @@ class TestMcpPromptCommandTest extends TestCase
 
         $this->inputMock->method('getArgument')->willReturn(null);
 
-        $this->promptRepositoryMock->method('getPrompts')->willReturn([$promptMock]);
-
         $promptRepositoryMock = $this->createMock(PromptRepository::class);
         $promptRepositoryMock->method('getPrompts')->willReturn([$promptMock]);
         $promptRepositoryMock
