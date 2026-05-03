@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace KLP\KlpMcpServer\Tests\Services\SamplingService;
 
+use KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode;
 use KLP\KlpMcpServer\Exceptions\JsonRpcErrorException;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
 use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingMessage;
 use KLP\KlpMcpServer\Services\SamplingService\ModelPreferences;
+use KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter;
 use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
 use KLP\KlpMcpServer\Transports\AbstractTransport;
 use KLP\KlpMcpServer\Transports\Factory\TransportFactoryException;
@@ -154,7 +156,7 @@ class SamplingClientTest extends TestCase
             });
 
         // Create a mock response waiter
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn([
@@ -239,7 +241,7 @@ class SamplingClientTest extends TestCase
             });
 
         // Create a mock response waiter
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn([
@@ -347,7 +349,7 @@ class SamplingClientTest extends TestCase
             });
 
         // Create a mock response waiter
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn([
@@ -478,7 +480,7 @@ class SamplingClientTest extends TestCase
             });
 
         // Create a mock response waiter
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter
             ->expects($this->exactly(2))
             ->method('waitForResponse')
@@ -754,7 +756,7 @@ class SamplingClientTest extends TestCase
 
         $this->samplingClient->setCurrentClientId($clientId);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('handleResponse')
             ->with($message);
@@ -798,7 +800,7 @@ class SamplingClientTest extends TestCase
 
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter
             ->expects($this->once())
             ->method('waitForResponse')
@@ -832,7 +834,7 @@ class SamplingClientTest extends TestCase
 
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn('invalid string response'); // String instead of array
@@ -870,7 +872,7 @@ class SamplingClientTest extends TestCase
 
         $invalidArrayData = ['invalid' => 'structure']; // Missing required fields
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn($invalidArrayData);
@@ -903,9 +905,9 @@ class SamplingClientTest extends TestCase
 
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
-        $errorException = new JsonRpcErrorException('Sampling failed', \KLP\KlpMcpServer\Exceptions\Enums\JsonRpcErrorCode::INTERNAL_ERROR);
+        $errorException = new JsonRpcErrorException('Sampling failed', JsonRpcErrorCode::INTERNAL_ERROR);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->willReturn($errorException);
@@ -948,7 +950,7 @@ class SamplingClientTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -994,7 +996,7 @@ class SamplingClientTest extends TestCase
 
         $this->adapter->method('hasSamplingCapability')->willReturn(true);
 
-        $mockResponseWaiter = $this->createMock(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createMock(ResponseWaiter::class);
         $mockResponseWaiter->expects($this->once())
             ->method('waitForResponse')
             ->with($this->anything(), 1) // Should use 1 second timeout in tests
@@ -1032,7 +1034,7 @@ class SamplingClientTest extends TestCase
 
         $responseWaiter = $samplingClient->getResponseWaiter();
 
-        $this->assertInstanceOf(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class, $responseWaiter);
+        $this->assertInstanceOf(ResponseWaiter::class, $responseWaiter);
     }
 
     /**
@@ -1054,7 +1056,7 @@ class SamplingClientTest extends TestCase
                 'messageCount' => 0,
             ]);
 
-        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',
@@ -1099,7 +1101,7 @@ class SamplingClientTest extends TestCase
 
         $capturedIds = [];
 
-        $mockResponseWaiter = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\ResponseWaiter::class);
+        $mockResponseWaiter = $this->createStub(ResponseWaiter::class);
         $mockResponseWaiter->method('waitForResponse')
             ->willReturn([
                 'role' => 'assistant',

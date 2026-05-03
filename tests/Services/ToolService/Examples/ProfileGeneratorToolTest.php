@@ -3,6 +3,9 @@
 namespace KLP\KlpMcpServer\Tests\Services\ToolService\Examples;
 
 use KLP\KlpMcpServer\Services\ProgressService\ProgressNotifierInterface;
+use KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingClient;
+use KLP\KlpMcpServer\Services\SamplingService\SamplingResponse;
 use KLP\KlpMcpServer\Services\ToolService\Annotation\ToolAnnotation;
 use KLP\KlpMcpServer\Services\ToolService\Examples\ProfileGeneratorTool;
 use KLP\KlpMcpServer\Services\ToolService\Result\CollectionToolResult;
@@ -97,11 +100,11 @@ class ProfileGeneratorToolTest extends TestCase
         $this->tool->setProgressNotifier($progressNotifier);
 
         // Set up sampling client to avoid uninitialized property error
-        $samplingClient = $this->createStub(\KLP\KlpMcpServer\Services\SamplingService\SamplingClient::class);
+        $samplingClient = $this->createStub(SamplingClient::class);
         $samplingClient->method('createTextRequest')->willReturn(
-            new \KLP\KlpMcpServer\Services\SamplingService\SamplingResponse(
+            new SamplingResponse(
                 'assistant',
-                new \KLP\KlpMcpServer\Services\SamplingService\Message\SamplingContent('text', 'Welcome!')
+                new SamplingContent('text', 'Welcome!')
             )
         );
         $this->tool->setSamplingClient($samplingClient);
