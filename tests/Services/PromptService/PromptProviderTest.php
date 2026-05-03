@@ -104,8 +104,10 @@ class PromptProviderTest extends TestCase
         $this->promptRepository->register($directPrompt);
 
         // Register via provider
-        $provider = $this->createStub(PromptProviderInterface::class);
-        $provider->method('getPrompts')->willReturn([$providerPrompt]);
+        $provider = $this->createMock(PromptProviderInterface::class);
+        $provider->expects($this->once())
+            ->method('getPrompts')
+            ->willReturn([$providerPrompt]);
         $this->promptRepository->registerProvider($provider);
 
         $prompts = $this->promptRepository->getPrompts();
