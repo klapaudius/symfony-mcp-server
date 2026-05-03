@@ -237,7 +237,7 @@ class TestMcpToolCommandTest extends TestCase
         $this->invokeGetToolInstanceMethod();
     }
 
-    private function invokeGetToolInstanceMethod(TestMcpToolCommand|null $command = null): StreamableToolInterface
+    private function invokeGetToolInstanceMethod(?TestMcpToolCommand $command = null): StreamableToolInterface
     {
         $reflection = new \ReflectionMethod(TestMcpToolCommand::class, 'getToolInstance');
 
@@ -1004,7 +1004,7 @@ class TestMcpToolCommandTest extends TestCase
         $toolMock = $this->createStub(StreamableToolInterface::class);
         $toolMock->method('isStreaming')->willReturn(true);
 
-        $resultMock = $this->createStub(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock = $this->createStub(ToolResultInterface::class);
         $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
 
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
@@ -1024,7 +1024,7 @@ class TestMcpToolCommandTest extends TestCase
      */
     public function test_display_result_without_tool(): void
     {
-        $resultMock = $this->createStub(\KLP\KlpMcpServer\Services\ToolService\Result\ToolResultInterface::class);
+        $resultMock = $this->createStub(ToolResultInterface::class);
         $resultMock->method('getSanitizedResult')->willReturn(['status' => 'success']);
 
         $this->ioMock->expects($this->once())->method('success')->with('Tool executed successfully!');
