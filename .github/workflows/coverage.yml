@@ -47,7 +47,7 @@ jobs:
           XDEBUG_MODE: coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_ORG_TOKEN }}
 
