@@ -2,7 +2,9 @@
 
 namespace KLP\KlpMcpServer\Tests\Services\ToolService\Schema;
 
+use InvalidArgumentException;
 use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaComposition;
 use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
@@ -203,5 +205,65 @@ class SchemaPropertyTest extends TestCase
             type: PropertyType::STRING
         );
         $this->assertEquals('camelCasePropertyName', $property2->getName());
+    }
+
+    public function test_construct_with_composition(): void
+    {
+        $property = new SchemaProperty(
+            name: 'id',
+            description: 'Record id',
+            required: true,
+            composition: SchemaComposition::ONE_OF,
+            subSchemas: [['type' => 'string'], ['type' => 'integer']]
+        );
+
+        $this->assertNull($property->getType());
+        $this->assertSame(SchemaComposition::ONE_OF, $property->getComposition());
+        $this->assertEquals(
+            [['type' => 'string'], ['type' => 'integer']],
+            $property->getSubSchemas()
+        );
+    }
+
+    public function test_single_type_property_has_no_composition(): void
+    {
+        $property = new SchemaProperty(
+            name: 'name',
+            type: PropertyType::STRING
+        );
+
+        $this->assertSame(PropertyType::STRING, $property->getType());
+        $this->assertNull($property->getComposition());
+        $this->assertSame([], $property->getSubSchemas());
+    }
+
+    public function test_construct_without_type_or_composition_throws(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new SchemaProperty(name: 'invalid');
+    }
+
+    public function test_construct_with_both_type_and_composition_throws(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new SchemaProperty(
+            name: 'invalid',
+            type: PropertyType::STRING,
+            composition: SchemaComposition::ONE_OF,
+            subSchemas: [['type' => 'string']]
+        );
+    }
+
+    public function test_construct_with_composition_but_no_sub_schemas_throws(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new SchemaProperty(
+            name: 'invalid',
+            composition: SchemaComposition::ANY_OF,
+            subSchemas: []
+        );
     }
 }

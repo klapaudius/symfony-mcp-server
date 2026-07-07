@@ -449,4 +449,179 @@ class ToolParamsValidatorTest extends TestCase
         $this->assertSame($instance1, $instance2);
         $this->assertInstanceOf(ToolParamsValidator::class, $instance1);
     }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function oneOfValidValuesProvider(): array
+    {
+        return [
+            'string branch' => ['a-string-id'],
+            'integer branch' => [42],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('oneOfValidValuesProvider')]
+    public function test_validate_one_of_accepts_matching_branch(mixed $value): void
+    {
+        $schema = [
+            'properties' => [
+                'id' => ['oneOf' => [['type' => 'string'], ['type' => 'integer']]],
+            ],
+            'required' => [],
+        ];
+
+        $this->expectNotToPerformAssertions();
+
+        ToolParamsValidator::validate($schema, ['id' => $value]);
+    }
+
+    public function test_validate_one_of_rejects_value_matching_no_branch(): void
+    {
+        $schema = [
+            'properties' => [
+                'id' => ['oneOf' => [['type' => 'string'], ['type' => 'integer']]],
+            ],
+            'required' => [],
+        ];
+
+        try {
+            ToolParamsValidator::validate($schema, ['id' => true]);
+            $this->fail('Expected ToolParamsValidatorException to be thrown');
+        } catch (ToolParamsValidatorException $exception) {
+            $this->assertContains(
+                'Invalid argument type for: id. Expected one of: string, integer, got: boolean',
+                ToolParamsValidator::getErrors()
+            );
+        }
+    }
+
+    public function test_validate_any_of_accepts_value_matching_at_least_one_branch(): void
+    {
+        $schema = [
+            'properties' => [
+                'x' => ['anyOf' => [['type' => 'string'], ['type' => 'number']]],
+            ],
+            'required' => [],
+        ];
+
+        $this->expectNotToPerformAssertions();
+
+        ToolParamsValidator::validate($schema, ['x' => 3.14]);
+    }
+
+    public function test_validate_all_of_requires_every_typed_branch_to_match(): void
+    {
+        // A scalar value can never satisfy two disjoint typed branches at once.
+        $schema = [
+            'properties' => [
+                'x' => ['allOf' => [['type' => 'string'], ['type' => 'integer']]],
+            ],
+            'required' => [],
+        ];
+
+        $this->expectException(ToolParamsValidatorException::class);
+
+        ToolParamsValidator::validate($schema, ['x' => 'hello']);
+    }
+
+    public function test_validate_all_of_passes_when_all_typed_branches_match(): void
+    {
+        // Same type across branches, extra constraints are not type-checked.
+        $schema = [
+            'properties' => [
+                'x' => ['allOf' => [['type' => 'string'], ['type' => 'string', 'minLength' => 3]]],
+            ],
+            'required' => [],
+        ];
+
+        $this->expectNotToPerformAssertions();
+
+        ToolParamsValidator::validate($schema, ['x' => 'hello']);
+    }
+
+    public function test_validate_one_of_with_overlapping_types_is_rejected_by_strict_rule(): void
+    {
+        // Documented limitation: type-only discrimination means an integer also satisfies
+        // the `number` branch, so `matches === 2` and the strict oneOf rule rejects it.
+        $schema = [
+            'properties' => [
+                'x' => ['oneOf' => [['type' => 'integer'], ['type' => 'number']]],
+            ],
+            'required' => [],
+        ];
+
+        $this->expectException(ToolParamsValidatorException::class);
+
+        ToolParamsValidator::validate($schema, ['x' => 42]);
+    }
+
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function legitimateFalsyValuesProvider(): array
+    {
+        return [
+            'integer zero' => ['integer', 0],
+            'float zero' => ['number', 0.0],
+            'boolean false' => ['boolean', false],
+            'string zero' => ['string', '0'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('legitimateFalsyValuesProvider')]
+    public function test_required_argument_accepts_legitimate_falsy_values(string $type, mixed $value): void
+    {
+        // The required check must treat 0 / 0.0 / false / "0" as provided (not "missing").
+        $schema = [
+            'properties' => [
+                'id' => ['type' => $type],
+            ],
+            'required' => ['id'],
+        ];
+
+        $this->expectNotToPerformAssertions();
+
+        ToolParamsValidator::validate($schema, ['id' => $value]);
+    }
+
+    public function test_required_argument_still_rejects_empty_string_and_null(): void
+    {
+        $schema = [
+            'properties' => [
+                'name' => ['type' => 'string'],
+            ],
+            'required' => ['name'],
+        ];
+
+        foreach (['' => '', 'null' => null] as $case) {
+            try {
+                ToolParamsValidator::validate($schema, ['name' => $case]);
+                $this->fail('Expected ToolParamsValidatorException to be thrown');
+            } catch (ToolParamsValidatorException $exception) {
+                $this->assertContains('Missing required argument: name', $exception->getErrors());
+            }
+        }
+    }
+
+    public function test_errors_do_not_leak_across_successive_validate_calls(): void
+    {
+        $schema = [
+            'properties' => ['arg1' => ['type' => 'string']],
+            'required' => ['arg1'],
+        ];
+
+        // First call fails and populates the static error list.
+        try {
+            ToolParamsValidator::validate($schema, []);
+            $this->fail('Expected ToolParamsValidatorException to be thrown');
+        } catch (ToolParamsValidatorException) {
+            $this->assertNotEmpty(ToolParamsValidator::getErrors());
+        }
+
+        // A subsequent successful validation must not carry over the previous errors.
+        ToolParamsValidator::validate($schema, ['arg1' => 'ok']);
+
+        $this->assertSame([], ToolParamsValidator::getErrors());
+    }
 }

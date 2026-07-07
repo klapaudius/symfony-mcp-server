@@ -55,10 +55,18 @@ class StructuredSchema
         $required = [];
 
         foreach ($this->properties as $property) {
-            $propertySchema = [
-                'type' => $property->getType()->value,
-                'description' => $property->getDescription(),
-            ];
+            $propertySchema = [];
+
+            // A property is described either by a single type or by a composition keyword.
+            if ($property->getType() !== null) {
+                $propertySchema['type'] = $property->getType()->value;
+            }
+
+            if ($property->getComposition() !== null) {
+                $propertySchema[$property->getComposition()->value] = $property->getSubSchemas();
+            }
+
+            $propertySchema['description'] = $property->getDescription();
 
             // Handle array items
             if ($property->getType() === PropertyType::ARRAY && $property->getItems() !== null) {

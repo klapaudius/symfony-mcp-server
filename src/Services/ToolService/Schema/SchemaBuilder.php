@@ -77,6 +77,94 @@ class SchemaBuilder
     }
 
     /**
+     * Creates a property whose value must match exactly one of the given sub-schemas (JSON Schema `oneOf`).
+     *
+     * Branches may be given as {@see PropertyType} cases (normalized to `['type' => value]`)
+     * and/or as raw sub-schema arrays (passed through unchanged), allowing richer branches
+     * such as `['type' => 'string', 'minLength' => 3]`.
+     *
+     * Example usage:
+     * ```php
+     * SchemaBuilder::oneOf('id', [PropertyType::STRING, PropertyType::INTEGER], 'Record id', required: true)
+     * ```
+     *
+     * @param  string  $name  Property name
+     * @param  array<int, PropertyType|array<string, mixed>>  $branches  The candidate sub-schemas
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the property is required
+     */
+    public static function oneOf(
+        string $name,
+        array $branches,
+        string $description = '',
+        bool $required = false
+    ): SchemaProperty {
+        return self::composition(SchemaComposition::ONE_OF, $name, $branches, $description, $required);
+    }
+
+    /**
+     * Creates a property whose value must match at least one of the given sub-schemas (JSON Schema `anyOf`).
+     *
+     * @param  string  $name  Property name
+     * @param  array<int, PropertyType|array<string, mixed>>  $branches  The candidate sub-schemas
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the property is required
+     */
+    public static function anyOf(
+        string $name,
+        array $branches,
+        string $description = '',
+        bool $required = false
+    ): SchemaProperty {
+        return self::composition(SchemaComposition::ANY_OF, $name, $branches, $description, $required);
+    }
+
+    /**
+     * Creates a property whose value must match all of the given sub-schemas (JSON Schema `allOf`).
+     *
+     * @param  string  $name  Property name
+     * @param  array<int, PropertyType|array<string, mixed>>  $branches  The sub-schemas that must all match
+     * @param  string  $description  Property description
+     * @param  bool  $required  Whether the property is required
+     */
+    public static function allOf(
+        string $name,
+        array $branches,
+        string $description = '',
+        bool $required = false
+    ): SchemaProperty {
+        return self::composition(SchemaComposition::ALL_OF, $name, $branches, $description, $required);
+    }
+
+    /**
+     * Builds a composition SchemaProperty from a keyword and a list of branches.
+     *
+     * @param  array<int, PropertyType|array<string, mixed>>  $branches  The candidate sub-schemas
+     */
+    private static function composition(
+        SchemaComposition $composition,
+        string $name,
+        array $branches,
+        string $description,
+        bool $required
+    ): SchemaProperty {
+        $subSchemas = array_map(
+            static fn (PropertyType|array $branch): array => $branch instanceof PropertyType
+                ? ['type' => $branch->value]
+                : $branch,
+            array_values($branches)
+        );
+
+        return new SchemaProperty(
+            name: $name,
+            description: $description,
+            required: $required,
+            composition: $composition,
+            subSchemas: $subSchemas
+        );
+    }
+
+    /**
      * Creates an object property with nested properties.
      *
      * @param  string  $name  Property name

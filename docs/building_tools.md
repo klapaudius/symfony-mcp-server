@@ -331,6 +331,49 @@ public function getInputSchema(): StructuredSchema
 
 The `PropertyType` enum provides a list of supported data types: `STRING`, `INTEGER`, `BOOLEAN`, `NUMBER`, `ARRAY`, `OBJECT`
 
+#### Composition keywords (`oneOf` / `anyOf` / `allOf`)
+
+When a property may accept more than one type, describe it with a JSON Schema composition keyword instead of a single `type`. Use the `SchemaBuilder::oneOf()`, `anyOf()`, and `allOf()` factories:
+
+```php
+use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaBuilder;
+use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
+
+public function getInputSchema(): StructuredSchema
+{
+    return new StructuredSchema(
+        // `id` accepts either a string or an integer.
+        SchemaBuilder::oneOf(
+            'id',
+            [PropertyType::STRING, PropertyType::INTEGER],
+            description: 'Record identifier',
+            required: true
+        ),
+    );
+}
+```
+
+This emits the standard JSON Schema shape:
+
+```json
+{
+    "id": {
+        "oneOf": [
+            { "type": "string" },
+            { "type": "integer" }
+        ],
+        "description": "Record identifier"
+    }
+}
+```
+
+Branches may be given as `PropertyType` cases (normalized to `{"type": ...}`) and/or raw sub-schema arrays for richer constraints, e.g. `['type' => 'string', 'minLength' => 3]`.
+
+The `ToolParamsValidator` enforces each keyword's semantics on the argument's type: `anyOf` matches at least one branch, `oneOf` exactly one, and `allOf` all typed branches. Branches without a `type` are treated as unconstrained.
+
+> **Note:** validation discriminates only on each branch's declared `type`. With `oneOf`, use **disjoint** branch types (e.g. `string` / `integer`). Overlapping types such as `integer` and `number`, or two `string` branches differing only by `format`/`minLength`, can match more than one branch and would be rejected by the strict "exactly one" rule — use `anyOf` when overlap is intended.
+
 ### 4. getOutputSchema(): ?StructuredSchema
 
 Similarly to `getInputSchema`, this method defines the structure of the tool's output. Providing an output schema is optional but recommended, as it helps LLM clients understand and handle the tool's output correctly.

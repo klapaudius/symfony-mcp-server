@@ -4,6 +4,7 @@ namespace Tests\Services\ToolService\Schema;
 
 use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
 use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaBuilder;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaComposition;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use PHPUnit\Framework\TestCase;
 
@@ -113,5 +114,64 @@ class SchemaBuilderTest extends TestCase
             'timestamp' => ['type' => 'integer'],
         ], $properties['properties']);
         $this->assertEquals(['author'], $properties['required']);
+    }
+
+    public function test_one_of_normalizes_property_types_to_sub_schemas(): void
+    {
+        $property = SchemaBuilder::oneOf(
+            'id',
+            [PropertyType::STRING, PropertyType::INTEGER],
+            'Record id',
+            required: true
+        );
+
+        $this->assertEquals('id', $property->getName());
+        $this->assertNull($property->getType());
+        $this->assertSame(SchemaComposition::ONE_OF, $property->getComposition());
+        $this->assertEquals(
+            [['type' => 'string'], ['type' => 'integer']],
+            $property->getSubSchemas()
+        );
+        $this->assertEquals('Record id', $property->getDescription());
+        $this->assertTrue($property->isRequired());
+    }
+
+    public function test_any_of_uses_any_of_composition(): void
+    {
+        $property = SchemaBuilder::anyOf('x', [PropertyType::STRING, PropertyType::NUMBER]);
+
+        $this->assertSame(SchemaComposition::ANY_OF, $property->getComposition());
+        $this->assertEquals(
+            [['type' => 'string'], ['type' => 'number']],
+            $property->getSubSchemas()
+        );
+        $this->assertFalse($property->isRequired());
+    }
+
+    public function test_all_of_uses_all_of_composition(): void
+    {
+        $property = SchemaBuilder::allOf('x', [PropertyType::STRING, PropertyType::INTEGER]);
+
+        $this->assertSame(SchemaComposition::ALL_OF, $property->getComposition());
+        $this->assertEquals(
+            [['type' => 'string'], ['type' => 'integer']],
+            $property->getSubSchemas()
+        );
+    }
+
+    public function test_composition_passes_raw_array_branches_through_unchanged(): void
+    {
+        $property = SchemaBuilder::oneOf('id', [
+            ['type' => 'string', 'minLength' => 3],
+            PropertyType::INTEGER,
+        ]);
+
+        $this->assertEquals(
+            [
+                ['type' => 'string', 'minLength' => 3],
+                ['type' => 'integer'],
+            ],
+            $property->getSubSchemas()
+        );
     }
 }

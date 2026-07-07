@@ -3,6 +3,7 @@
 namespace KLP\KlpMcpServer\Tests\Services\ToolService\Schema;
 
 use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
+use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaBuilder;
 use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use PHPUnit\Framework\Attributes\Small;
@@ -302,5 +303,53 @@ class StructuredSchemaTest extends TestCase
         $result = $schema->asArray();
 
         $this->assertEquals(['first', 'third', 'fourth'], $result['required']);
+    }
+
+    public function test_as_array_emits_one_of_composition_without_type_key(): void
+    {
+        $schema = new StructuredSchema(
+            SchemaBuilder::oneOf('id', [PropertyType::STRING, PropertyType::INTEGER], 'Record id', required: true)
+        );
+
+        $result = $schema->asArray();
+
+        $this->assertEquals(
+            [
+                'oneOf' => [['type' => 'string'], ['type' => 'integer']],
+                'description' => 'Record id',
+            ],
+            $result['properties']['id']
+        );
+        $this->assertArrayNotHasKey('type', $result['properties']['id']);
+        $this->assertEquals(['id'], $result['required']);
+    }
+
+    public function test_as_array_emits_any_of_and_all_of_keywords(): void
+    {
+        $schema = new StructuredSchema(
+            SchemaBuilder::anyOf('a', [PropertyType::STRING, PropertyType::NUMBER]),
+            SchemaBuilder::allOf('b', [PropertyType::STRING, PropertyType::INTEGER])
+        );
+
+        $result = $schema->asArray();
+
+        $this->assertArrayHasKey('anyOf', $result['properties']['a']);
+        $this->assertArrayHasKey('allOf', $result['properties']['b']);
+        $this->assertArrayNotHasKey('type', $result['properties']['a']);
+        $this->assertArrayNotHasKey('type', $result['properties']['b']);
+    }
+
+    public function test_as_array_single_type_property_output_unchanged(): void
+    {
+        $schema = new StructuredSchema(
+            new SchemaProperty(name: 'name', type: PropertyType::STRING, description: 'A name')
+        );
+
+        $result = $schema->asArray();
+
+        $this->assertEquals(
+            ['type' => 'string', 'description' => 'A name'],
+            $result['properties']['name']
+        );
     }
 }
