@@ -34,7 +34,7 @@ readonly class SchemaProperty
      */
     public function __construct(
         private string $name,
-        private PropertyType|null $type = null,
+        private ?PropertyType $type = null,
         private string $description = '',
         private array $enum = [],
         private string $default = '',
@@ -42,7 +42,7 @@ readonly class SchemaProperty
         private ?array $items = null,
         private ?array $properties = null,
         private array $additionalProperties = [],
-        private SchemaComposition|null $composition = null,
+        private ?SchemaComposition $composition = null,
         private array $subSchemas = []
     ) {
         $hasType = $this->type !== null;
@@ -76,7 +76,7 @@ readonly class SchemaProperty
      *
      * @return PropertyType|null The JSON Schema type for this property, or null when described by a composition keyword
      */
-    public function getType(): PropertyType|null
+    public function getType(): ?PropertyType
     {
         return $this->type;
     }
@@ -86,7 +86,7 @@ readonly class SchemaProperty
      *
      * @return SchemaComposition|null The composition keyword (oneOf/anyOf/allOf), or null when described by a single type
      */
-    public function getComposition(): SchemaComposition|null
+    public function getComposition(): ?SchemaComposition
     {
         return $this->composition;
     }

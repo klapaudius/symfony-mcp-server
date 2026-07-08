@@ -7,6 +7,7 @@ use KLP\KlpMcpServer\Services\ToolService\Schema\PropertyType;
 use KLP\KlpMcpServer\Services\ToolService\Schema\SchemaProperty;
 use KLP\KlpMcpServer\Services\ToolService\Schema\StructuredSchema;
 use KLP\KlpMcpServer\Services\ToolService\ToolParamsValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Small;
 use PHPUnit\Framework\TestCase;
 
@@ -461,7 +462,7 @@ class ToolParamsValidatorTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('oneOfValidValuesProvider')]
+    #[DataProvider('oneOfValidValuesProvider')]
     public function test_validate_one_of_accepts_matching_branch(mixed $value): void
     {
         $schema = [
@@ -569,7 +570,7 @@ class ToolParamsValidatorTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('legitimateFalsyValuesProvider')]
+    #[DataProvider('legitimateFalsyValuesProvider')]
     public function test_required_argument_accepts_legitimate_falsy_values(string $type, mixed $value): void
     {
         // The required check must treat 0 / 0.0 / false / "0" as provided (not "missing").
